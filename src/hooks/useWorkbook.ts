@@ -1,6 +1,6 @@
 import writeExcelFile from "write-excel-file/browser";
 import type { Row, SheetData } from "write-excel-file/browser";
-import type { GeminiResponse } from "./useGemini";
+import type { LaudoExtraido } from "./extractLaudoData";
 
 function toF(value: unknown): number {
   const n = Number(value);
@@ -10,7 +10,7 @@ function toF(value: unknown): number {
 /**
  * Constrói o mapa de dados base (coluna A = rótulo, coluna B = valor).
  */
-function buildBaseMap(dados: GeminiResponse): [string, string | number][] {
+function buildBaseMap(dados: LaudoExtraido): [string, string | number][] {
   return [
     ["proponente", String(dados.proponente ?? "").toUpperCase()],
     ["cpf_cnpj", String(dados.cpf_cnpj ?? "")],
@@ -48,7 +48,7 @@ function buildBaseMap(dados: GeminiResponse): [string, string | number][] {
  *   Colunas C-F: incidências (20 linhas, C=rótulo, D-F=merge com valor)
  *   Colunas G-J: acumulado proposto (37 linhas, G=rótulo, H-J=merge com valor)
  */
-function buildSheetData(dados: GeminiResponse): SheetData {
+function buildSheetData(dados: LaudoExtraido): SheetData {
   const baseMap = buildBaseMap(dados);
   const incs = dados.incidencias ?? [];
   const ap = dados.acumulado_proposto ?? [];
@@ -107,7 +107,7 @@ function buildSheetData(dados: GeminiResponse): SheetData {
 /**
  * Gera o nome base do proponente para o nome do arquivo.
  */
-function buildFileName(dados: GeminiResponse): string {
+function buildFileName(dados: LaudoExtraido): string {
   const proponente = String(dados.proponente ?? "").trim();
   const nomes = proponente.split(/\s+/);
   let nome: string;
@@ -121,7 +121,7 @@ function buildFileName(dados: GeminiResponse): string {
   return `DADOS_IA_${nome}.xlsx`;
 }
 
-export async function generateWorkbook(dados: GeminiResponse): Promise<void> {
+export async function generateWorkbook(dados: LaudoExtraido): Promise<void> {
   const sheetData = buildSheetData(dados);
   const fileName = buildFileName(dados);
 
