@@ -1,15 +1,15 @@
-interface LinkProps {
-  href?: string | undefined;
-  text?: string | undefined;
-}
+import type { AnchorHTMLAttributes } from "react";
 
-export function Link({ href, text }: LinkProps) {
+type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement>;
+
+export function Link({ href, className, children, ...props }: LinkProps) {
   return (
     <a
-      className="text-blue-500 hover:text-blue-700 underline text-sm"
       href={href ?? "#"}
+      className={`w-fit text-blue-500 hover:text-blue-700 underline text-sm ${className?.trim() ?? ""}`}
+      {...props}
     >
-      {text ?? ""}
+      {children}
     </a>
   );
 }

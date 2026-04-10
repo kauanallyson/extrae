@@ -1,15 +1,16 @@
-interface CheckboxProps {
-  label?: string;
-  defaultChecked?: boolean;
-}
+import type { InputHTMLAttributes } from "react";
 
-export function Checkbox({ label, defaultChecked = false }: CheckboxProps) {
+type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
+  label?: string;
+};
+
+export function Checkbox({ label, className, ...props }: CheckboxProps) {
   return (
     <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
       <input
         type="checkbox"
-        defaultChecked={defaultChecked}
-        className="accent-blue-500 cursor-pointer w-4 h-4"
+        className={`accent-blue-500 cursor-pointer w-4 h-4 ${className?.trim() ?? ""}`}
+        {...props}
       />
       {label}
     </label>

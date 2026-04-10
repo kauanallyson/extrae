@@ -1,21 +1,22 @@
-interface FileDropZoneProps {
-  label: string;
-  hint: string;
-  browseText: string;
+type FileDropZoneProps = {
+  label?: string;
+  hint?: string;
+  browseText?: string;
   accept?: string;
   multiple?: boolean;
-}
+  onChange?: (files: FileList | null) => void;
+};
 
 export function FileDropZone({
-  label,
-  hint,
-  browseText,
+  label = "Drop files here",
+  hint = "or click to browse",
+  browseText = "Browse",
   accept = ".pdf",
   multiple = true,
+  onChange,
 }: FileDropZoneProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm text-slate-300">Laudos Técnicos (PDFs)</label>
       <div className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg p-4">
         <div className="flex flex-col">
           <span className="text-sm text-slate-300">{label}</span>
@@ -28,6 +29,7 @@ export function FileDropZone({
             multiple={multiple}
             accept={accept}
             className="hidden"
+            onChange={(e) => onChange?.(e.target.files)}
           />
         </label>
       </div>
