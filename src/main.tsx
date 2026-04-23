@@ -6,7 +6,8 @@ import { App } from "./App.tsx";
 
 const queryClient = new QueryClient();
 
-createRoot(document.getElementById("root")).render(
+// biome-ignore lint/style/noNonNullAssertion: anoying
+createRoot(document.getElementById("root")!).render(
 	<StrictMode>
 		<QueryClientProvider client={queryClient}>
 			<App />
