@@ -72,7 +72,7 @@ export function App() {
 						Extrator de Laudo
 					</h1>
 					<p className="text-sm text-slate-400">
-						Faça upload do PDF, aguarde as 3 etapas e baixe a planilha RAE.
+						Faça upload do PDF e baixe a planilha para preenchimento da RAE.
 					</p>
 				</div>
 
