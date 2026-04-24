@@ -1,6 +1,6 @@
 const BASE_URL = "/api";
 
-export type Profissional = {
+export type Avaliador = {
 	id: number;
 	nome: string;
 	nomeFantasia: string;
@@ -9,11 +9,11 @@ export type Profissional = {
 	registroCrea: string;
 };
 
-export async function fetchProfissionais(): Promise<Profissional[]> {
-	const res = await fetch(`${BASE_URL}/profissionais`);
+export async function fetchAvaliadores(): Promise<Avaliador[]> {
+	const res = await fetch(`${BASE_URL}/avaliadores`);
 	if (!res.ok) {
 		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao buscar profissionais: ${msg}`);
+		throw new Error(`Erro ao buscar avaliadores: ${msg}`);
 	}
 	return res.json();
 }
@@ -35,31 +35,31 @@ export async function extrairTextoPdf(pdf: File): Promise<string> {
 	return res.text();
 }
 
-export async function gerarLaudoIa(
-	profissionalId: number,
-	laudoText: string,
+export async function gerarAmostraIa(
+	avaliadorId: number,
+	amostraText: string,
 ): Promise<number> {
-	const res = await fetch(`${BASE_URL}/gerar-laudo-ia`, {
+	const res = await fetch(`${BASE_URL}/gerar-amostra-ia`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ profissionalId, laudoText }),
+		body: JSON.stringify({ avaliadorId, amostraText }),
 	});
 
 	if (!res.ok) {
 		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Etapa 2 - Geração do laudo: ${msg}`);
+		throw new Error(`Etapa 2 - Geração da amostra: ${msg}`);
 	}
 
 	const data = await res.json();
-	return data.laudoId as number;
+	return data.amostraId as number;
 }
 
 export type DownloadResult = { blobUrl: string; filename: string };
 
 export async function downloadExcelRae(
-	laudoId: number,
+	amostraId: number,
 ): Promise<DownloadResult> {
-	const res = await fetch(`${BASE_URL}/gerar-excel-rae/${laudoId}`);
+	const res = await fetch(`${BASE_URL}/gerar-excel-rae/${amostraId}`);
 
 	if (!res.ok) {
 		const msg = await res.text().catch(() => res.statusText);
@@ -69,7 +69,7 @@ export async function downloadExcelRae(
 	const disposition = res.headers.get("Content-Disposition");
 	const filename =
 		disposition?.split("filename=")[1]?.replace(/"/g, "") ||
-		`dados-rae-${laudoId}.xlsx`;
+		`dados-rae-${amostraId}.xlsx`;
 
 	const blob = await res.blob();
 	return { blobUrl: URL.createObjectURL(blob), filename };

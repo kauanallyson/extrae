@@ -6,16 +6,16 @@ import { FileDropZone } from "./components/FileDropZone";
 import { Layout } from "./components/Layout";
 import { Link } from "./components/Link";
 import {
+	type Avaliador,
 	type DownloadResult,
 	downloadExcelRae,
 	extrairTextoPdf,
-	fetchProfissionais,
-	gerarLaudoIa,
-	type Profissional,
+	fetchAvaliadores,
+	gerarAmostraIa,
 } from "./lib/api";
 
 type FormValues = {
-	profissionalId: string;
+	avaliadorId: string;
 	pdf: FileList | null;
 };
 
@@ -23,12 +23,12 @@ export function App() {
 	const downloadRef = useRef<HTMLAnchorElement>(null);
 
 	const {
-		data: profissionais,
-		isLoading: profissionaisLoading,
-		isError: profissionaisIsError,
-	} = useQuery<Profissional[]>({
-		queryKey: ["profissionais"],
-		queryFn: fetchProfissionais,
+		data: avaliadores,
+		isLoading: avaliadoresLoading,
+		isError: avaliadoresIsError,
+	} = useQuery<Avaliador[]>({
+		queryKey: ["avaliadores"],
+		queryFn: fetchAvaliadores,
 	});
 
 	const {
@@ -38,7 +38,7 @@ export function App() {
 		watch,
 		formState: { errors },
 	} = useForm<FormValues>({
-		defaultValues: { profissionalId: "", pdf: null },
+		defaultValues: { avaliadorId: "", pdf: null },
 	});
 
 	const selectedFile = watch("pdf");
@@ -47,11 +47,11 @@ export function App() {
 		mutationFn: async (values: FormValues) => {
 			const pdf = values.pdf?.[0];
 			if (!pdf) throw new Error("Nenhum arquivo PDF selecionado.");
-			const profissionalId = Number(values.profissionalId);
+			const avaliadorId = Number(values.avaliadorId);
 
-			const laudoText = await extrairTextoPdf(pdf);
-			const laudoId = await gerarLaudoIa(profissionalId, laudoText);
-			return await downloadExcelRae(laudoId);
+			const amostraText = await extrairTextoPdf(pdf);
+			const amostraId = await gerarAmostraIa(avaliadorId, amostraText);
+			return await downloadExcelRae(amostraId);
 		},
 	});
 
@@ -69,7 +69,7 @@ export function App() {
 			<div className="flex flex-col gap-6 w-full max-w-2xl px-6 py-10">
 				<div className="flex flex-col gap-1">
 					<h1 className="text-4xl font-bold tracking-tight">
-						Extrator de Laudo
+						Extrator de Amostra
 					</h1>
 					<p className="text-sm text-slate-400">
 						Faça upload do PDF e baixe a planilha para preenchimento da RAE.
@@ -106,30 +106,30 @@ export function App() {
 					)}
 
 					<label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-						Profissional
+						Avaliador
 						<select
-							disabled={profissionaisLoading || isRunning}
+							disabled={avaliadoresLoading || isRunning}
 							className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50"
-							{...register("profissionalId", {
-								required: "Selecione um profissional.",
+							{...register("avaliadorId", {
+								required: "Selecione um avaliador.",
 							})}
 						>
 							<option value="" disabled>
-								{profissionaisLoading
+								{avaliadoresLoading
 									? "Carregando…"
-									: profissionaisIsError
+									: avaliadoresIsError
 										? "Erro ao carregar"
-										: "Selecione um profissional"}
+										: "Selecione um avaliador"}
 							</option>
-							{profissionais?.map((p) => (
+							{avaliadores?.map((p) => (
 								<option key={p.id} value={String(p.id)}>
 									{p.nome}
 								</option>
 							))}
 						</select>
-						{errors.profissionalId && (
+						{errors.avaliadorId && (
 							<p className="text-xs text-red-400">
-								{errors.profissionalId.message}
+								{errors.avaliadorId.message}
 							</p>
 						)}
 					</label>
@@ -146,7 +146,7 @@ export function App() {
 				)}
 				{isDone && (
 					<p className="text-sm text-emerald-400 bg-emerald-950/40 border border-emerald-800 rounded px-3 py-2">
-						✓ Concluído! O download do Excel foi iniciado automaticamente.
+						Concluído! O download do Excel foi iniciado automaticamente.
 					</p>
 				)}
 				{pipeline.data && (
