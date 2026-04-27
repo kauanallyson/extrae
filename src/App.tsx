@@ -100,6 +100,8 @@ export function App() {
 					<a
 						href="https://1drv.ms/x/c/40a54d6a68848790/IQC52jTKXpb4TLBBP3KGlrzzASOTalHY8GjPdigS9q06MUk"
 						className="mb-4 block w-fit text-blue-500 underline hover:text-blue-700"
+						target="_blank"
+						rel="noopener"
 					>
 						Acessar Planilha RAE Atualizada e Automatizada
 					</a>
