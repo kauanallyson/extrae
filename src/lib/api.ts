@@ -22,7 +22,7 @@ export async function extrairTextoPdf(pdf: File): Promise<string> {
 	const form = new FormData();
 	form.append("pdf", pdf);
 
-	const res = await fetch(`${BASE_URL}/extrair-texto-pdf`, {
+	const res = await fetch(`${BASE_URL}/pdf`, {
 		method: "POST",
 		body: form,
 	});
@@ -39,7 +39,7 @@ export async function gerarAmostraIa(
 	avaliadorId: number,
 	amostraText: string,
 ): Promise<number> {
-	const res = await fetch(`${BASE_URL}/gerar-amostra-ia`, {
+	const res = await fetch(`${BASE_URL}/amostras/ia`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ avaliadorId, amostraText }),
@@ -59,7 +59,7 @@ export type DownloadResult = { blobUrl: string; filename: string };
 export async function downloadExcelRae(
 	amostraId: number,
 ): Promise<DownloadResult> {
-	const res = await fetch(`${BASE_URL}/gerar-excel-rae/${amostraId}`);
+	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`);
 
 	if (!res.ok) {
 		const msg = await res.text().catch(() => res.statusText);
