@@ -123,7 +123,7 @@ export async function downloadExcelRae(
 }
 
 export async function fetchAmostras(): Promise<Amostra[]> {
-	const res = await fetch(`${BASE_URL}/amostras/`);
+	const res = await fetch(`${BASE_URL}/amostras`);
 	if (!res.ok) {
 		const msg = await res.text().catch(() => res.statusText);
 		throw new Error(`Erro ao carregar as amostras: ${msg}`);
