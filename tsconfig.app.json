@@ -4,10 +4,8 @@
 		"target": "es2023",
 		"lib": ["ES2023", "DOM", "DOM.Iterable"],
 		"module": "esnext",
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
 		},
 		"types": ["vite/client"],
 		"skipLibCheck": true,
@@ -24,7 +22,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"erasableSyntaxOnly": true,
-		"noFallthroughCasesInSwitch": true
+		"noFallthroughCasesInSwitch": true,
 	},
-	"include": ["src"]
+	"include": ["src"],
 }

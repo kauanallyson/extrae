@@ -1,34 +1,51 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
+
 	"files": {
-		"ignoreUnknown": false,
-		"includes": ["**", "!.bun-install", "!.bun-tmp"]
+		"ignoreUnknown": true,
+		"includes": ["**", "!.bun-install", "!.bun-tmp", "!dist", "!build", "!node_modules"]
 	},
+
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "tab",
+		"lineWidth": 100
 	},
+
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"recommended": true
 		}
 	},
+
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "double"
+			"quoteStyle": "double",
+			"semicolons": "always",
+			"trailingCommas": "all",
+			"arrowParentheses": "always"
 		}
 	},
+
+	"json": {
+		"formatter": {
+			"indentStyle": "tab"
+		}
+	},
+
 	"css": {
 		"parser": {
 			"tailwindDirectives": true
 		}
 	},
+
 	"assist": {
 		"enabled": true,
 		"actions": {

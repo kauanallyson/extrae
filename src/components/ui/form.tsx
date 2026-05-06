@@ -20,9 +20,7 @@ type FormFieldContextValue<
 	name: TName;
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-	{} as FormFieldContextValue,
-);
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
 
 const FormItemContext = React.createContext<{ id: string }>({ id: "" });
 
@@ -67,18 +65,11 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
 	);
 }
 
-function FormLabel({
-	className,
-	...props
-}: React.ComponentProps<typeof Label>) {
+function FormLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
 	const { error, formItemId } = useFormField();
 
 	return (
-		<Label
-			className={cn(error && "text-red-400", className)}
-			htmlFor={formItemId}
-			{...props}
-		/>
+		<Label className={cn(error && "text-red-400", className)} htmlFor={formItemId} {...props} />
 	);
 }
 
@@ -86,41 +77,21 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 	const { formDescriptionId } = useFormField();
 
 	return (
-		<p
-			id={formDescriptionId}
-			className={cn("text-xs text-slate-500", className)}
-			{...props}
-		/>
+		<p id={formDescriptionId} className={cn("text-xs text-slate-500", className)} {...props} />
 	);
 }
 
-function FormMessage({
-	className,
-	children,
-	...props
-}: React.ComponentProps<"p">) {
+function FormMessage({ className, children, ...props }: React.ComponentProps<"p">) {
 	const { error, formMessageId } = useFormField();
 	const body = error ? String(error.message ?? "") : children;
 
 	if (!body) return null;
 
 	return (
-		<p
-			id={formMessageId}
-			className={cn("text-xs text-red-400", className)}
-			{...props}
-		>
+		<p id={formMessageId} className={cn("text-xs text-red-400", className)} {...props}>
 			{body}
 		</p>
 	);
 }
 
-export {
-	Form,
-	FormDescription,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-	useFormField,
-};
+export { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage, useFormField };
