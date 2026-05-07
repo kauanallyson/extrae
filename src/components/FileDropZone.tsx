@@ -34,9 +34,7 @@ export function FileDropZone({
 			<div className="flex items-center justify-between px-4 py-4">
 				<div className="flex flex-col gap-1">
 					<span className="text-sm text-slate-200">{browseText}</span>
-					{hint ? (
-						<span className="text-xs text-slate-500">{hint}</span>
-					) : null}
+					{hint ? <span className="text-xs text-slate-500">{hint}</span> : null}
 				</div>
 				<label
 					htmlFor={id}
@@ -58,9 +56,7 @@ export function FileDropZone({
 			{selectedFileName ? (
 				<div className="border-t border-white/5 px-4 py-3 text-xs text-slate-400">
 					Arquivo selecionado:{" "}
-					<span className="font-medium text-slate-200">
-						{selectedFileName}
-					</span>
+					<span className="font-medium text-slate-200">{selectedFileName}</span>
 				</div>
 			) : null}
 		</div>

@@ -82,10 +82,7 @@ export async function extrairTextoPdf(pdf: File): Promise<string> {
 	return res.text();
 }
 
-export async function gerarAmostraIa(
-	avaliadorId: number,
-	amostraText: string,
-): Promise<number> {
+export async function gerarAmostraIa(avaliadorId: number, amostraText: string): Promise<number> {
 	const res = await fetch(`${BASE_URL}/amostras/ia`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
@@ -103,9 +100,7 @@ export async function gerarAmostraIa(
 
 export type DownloadResult = { blobUrl: string; filename: string };
 
-export async function downloadExcelRae(
-	amostraId: number,
-): Promise<DownloadResult> {
+export async function downloadExcelRae(amostraId: number): Promise<DownloadResult> {
 	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`);
 
 	if (!res.ok) {
@@ -115,8 +110,7 @@ export async function downloadExcelRae(
 
 	const disposition = res.headers.get("Content-Disposition");
 	const filename =
-		disposition?.split("filename=")[1]?.replace(/"/g, "") ||
-		`dados-rae-${amostraId}.xlsx`;
+		disposition?.split("filename=")[1]?.replace(/"/g, "") || `dados-rae-${amostraId}.xlsx`;
 
 	const blob = await res.blob();
 	return { blobUrl: URL.createObjectURL(blob), filename };

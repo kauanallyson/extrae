@@ -22,16 +22,9 @@ export function HomePage() {
 							label: "Amostras organizadas por coordenadas.",
 						},
 					].map((item) => (
-						<div
-							key={item.value}
-							className="rounded-lg border border-white/10 bg-slate-950 p-5"
-						>
-							<p className="text-2xl font-semibold text-slate-50">
-								{item.value}
-							</p>
-							<p className="mt-2 text-sm leading-6 text-slate-400">
-								{item.label}
-							</p>
+						<div key={item.value} className="rounded-lg border border-white/10 bg-slate-950 p-5">
+							<p className="text-2xl font-semibold text-slate-50">{item.value}</p>
+							<p className="mt-2 text-sm leading-6 text-slate-400">{item.label}</p>
 						</div>
 					))}
 				</section>
