@@ -1,11 +1,22 @@
 import type { ReactNode } from "react";
+import { cn } from "../lib/utils";
 import { Navbar } from "./Navbar";
 
-export function Layout({ children }: { children: ReactNode }) {
+type LayoutProps = {
+	children: ReactNode;
+	contentClassName?: string;
+};
+
+export function Layout({ children, contentClassName }: LayoutProps) {
 	return (
-		<main className="dark min-h-dvh w-full bg-slate-900 text-slate-100">
+		<main className="dark flex min-h-dvh w-full flex-col bg-slate-900 text-slate-100">
 			<Navbar />
-			<div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-5xl items-center justify-center px-4 py-10">
+			<div
+				className={cn(
+					"mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-4 py-10",
+					contentClassName,
+				)}
+			>
 				{children}
 			</div>
 		</main>
