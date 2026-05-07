@@ -12,7 +12,7 @@ const routes = [
 export function Navbar() {
 	return (
 		<header className="w-full border-b border-white/10 bg-slate-950/90 backdrop-blur">
-			<div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
 				<Link to="/" className="flex items-center gap-3">
 					<Logo />
 					<span className="text-sm font-semibold tracking-[0.28em] text-slate-100">
