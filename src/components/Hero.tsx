@@ -1,4 +1,8 @@
-import { ArrowRightIcon, FileSpreadsheetIcon, MapPinnedIcon } from "lucide-react";
+import {
+	ArrowRightIcon,
+	FileSpreadsheetIcon,
+	MapPinnedIcon,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { buttonVariants } from "./ui/button";
@@ -15,8 +19,9 @@ export function Hero() {
 						Extraia dados de laudos e colete amostras.
 					</h1>
 					<p className="max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
-						O EXTRAE, extrai os dados dos laudos de avaliação e salva as amostras coletadas em um
-						banco de dados centralizado e de fácil acesso.
+						O EXTRAE, extrai os dados dos laudos de avaliação e
+						salva as amostras coletadas em um banco de dados
+						centralizado e de fácil acesso.
 					</p>
 				</div>
 				<div className="flex flex-col gap-3 sm:flex-row">
@@ -47,8 +52,12 @@ export function Hero() {
 				<div className="space-y-4">
 					<div className="flex items-center justify-between border-b border-white/10 pb-4">
 						<div>
-							<p className="text-sm font-medium text-slate-100">Fluxo da amostra</p>
-							<p className="text-xs text-slate-500">Do laudo ao acompanhamento geográfico</p>
+							<p className="text-sm font-medium text-slate-100">
+								Fluxo da amostra
+							</p>
+							<p className="text-xs text-slate-500">
+								Do laudo ao acompanhamento geográfico
+							</p>
 						</div>
 						<div className="rounded-md border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">
 							Automatizado
@@ -59,15 +68,18 @@ export function Hero() {
 						{[
 							{
 								title: "1. Envie o laudo",
-								description: "Selecione o PDF e o avaliador responsável.",
+								description:
+									"Selecione o PDF e o avaliador responsável.",
 							},
 							{
 								title: "2. Gere a amostra",
-								description: "A IA identifica os dados importantes do documento.",
+								description:
+									"A IA identifica os dados importantes do documento.",
 							},
 							{
 								title: "3. Baixe e visualize",
-								description: "A planilha é entregue pronta e as amostras aparecem no mapa.",
+								description:
+									"A planilha é entregue pronta e as amostras aparecem no mapa.",
 							},
 						].map((item) => (
 							<div
@@ -78,8 +90,12 @@ export function Hero() {
 									<ArrowRightIcon className="size-4" />
 								</div>
 								<div>
-									<p className="text-sm font-medium text-slate-100">{item.title}</p>
-									<p className="mt-1 text-sm leading-6 text-slate-400">{item.description}</p>
+									<p className="text-sm font-medium text-slate-100">
+										{item.title}
+									</p>
+									<p className="mt-1 text-sm leading-6 text-slate-400">
+										{item.description}
+									</p>
 								</div>
 							</div>
 						))}
