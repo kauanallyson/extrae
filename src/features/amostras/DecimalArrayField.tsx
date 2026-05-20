@@ -16,6 +16,7 @@ type DecimalArrayFieldProps<TName extends DecimalArrayName> = {
 	control: Control<AmostraFormValues>;
 	name: TName;
 	title: string;
+	disabled?: boolean;
 	fieldArray: {
 		fields: { id: string }[];
 		append: (value: { value: string }) => void;
@@ -31,6 +32,7 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 	control,
 	name,
 	title,
+	disabled = false,
 	fieldArray,
 }: DecimalArrayFieldProps<TName>) {
 	return (
@@ -46,6 +48,7 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 					type="button"
 					variant="outline"
 					size="sm"
+					disabled={disabled}
 					onClick={() => fieldArray.append({ value: "" })}
 					className={secondaryButtonClassName}
 				>
@@ -71,17 +74,19 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 									inputMode="decimal"
 									placeholder="0,00"
 									aria-invalid={fieldState.invalid}
+									disabled={disabled}
 									className={fieldInputClassName}
 								/>
 								<Button
 									type="button"
 									variant="outline"
 									size="icon-lg"
-									disabled={fieldArray.fields.length === 1}
+									disabled={disabled || fieldArray.fields.length === 1}
+									aria-label={`Remover valor ${index + 1}`}
 									onClick={() => fieldArray.remove(index)}
 									className={cn("h-10 w-10 rounded-md", secondaryButtonClassName)}
 								>
-									<Trash2Icon />
+									<Trash2Icon aria-hidden />
 								</Button>
 							</div>
 							<FormMessage />

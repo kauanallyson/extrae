@@ -31,11 +31,7 @@ export const dddRegex = /^\d{2}$/;
 export const phoneRegex = /^\d{4,5}-\d{4}$/;
 const twoDecimalRegex = /^\d+(?:[,.]\d{2})$/;
 
-export const moneyFields = new Set<TextField>([
-	"valorTerreno",
-	"valorImovel",
-	"valorUnitario",
-]);
+export const moneyFields = new Set<TextField>(["valorTerreno", "valorImovel", "valorUnitario"]);
 export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
 const requiredFields = new Set<TextField>(["cpf", "cnpj", "cep", "dataReferencia"]);
 export const positiveNumberFields = new Set<TextField>([
@@ -119,7 +115,13 @@ export const fieldGroups = [
 	{
 		title: "Registro",
 		description: "Informações cartoriais e responsáveis.",
-		fields: ["empresaResponsavel", "matricula", "oficio", "comarca", "ufMatricula"] satisfies TextField[],
+		fields: [
+			"empresaResponsavel",
+			"matricula",
+			"oficio",
+			"comarca",
+			"ufMatricula",
+		] satisfies TextField[],
 	},
 	{
 		title: "Valores",
@@ -237,12 +239,25 @@ const decimalArrayValueSchema = z.object({
 	}),
 });
 
+function hasDecimalArrayValue(values: ArrayValue[]) {
+	return values.some((item) => {
+		const value = item.value.trim();
+		return value !== "" && twoDecimalRegex.test(value);
+	});
+}
+
 export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	avaliadorId: z.string().min(1, "Selecione um avaliador."),
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
 	telefone: z.string().regex(phoneRegex, "Informe o telefone com máscara: 00000-0000."),
-	incidencias: z.array(decimalArrayValueSchema).min(1),
-	acumuladoProposto: z.array(decimalArrayValueSchema).min(1),
+	incidencias: z
+		.array(decimalArrayValueSchema)
+		.min(1)
+		.refine(hasDecimalArrayValue, "Informe ao menos um valor decimal."),
+	acumuladoProposto: z
+		.array(decimalArrayValueSchema)
+		.min(1)
+		.refine(hasDecimalArrayValue, "Informe ao menos um valor decimal."),
 	...textFieldShape,
 });
 

@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircle2Icon, LoaderCircleIcon } from "lucide-react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { AvaliadorSelectField } from "@/components/AvaliadorSelectField";
 import { Layout } from "@/components/Layout";
@@ -23,7 +24,18 @@ import { FormSection } from "@/features/amostras/FormSection";
 import { type Amostra, type CreateAmostraInput, createAmostra } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-type NewAmostraRequest = CreateAmostraInput;
+function getErrorMessage(error: unknown) {
+	if (error instanceof Error) return error.message;
+	if (typeof error === "string") return error;
+	if (error) {
+		try {
+			return JSON.stringify(error) ?? String(error);
+		} catch {
+			return String(error);
+		}
+	}
+	return "Erro desconhecido.";
+}
 
 export function NewAmostraPage() {
 	const form = useForm<AmostraFormValues>({
@@ -38,9 +50,26 @@ export function NewAmostraPage() {
 		control: form.control,
 		name: "acumuladoProposto",
 	});
-	const createAmostraMutation = useMutation<Amostra, Error, NewAmostraRequest>({
+	const createAmostraMutation = useMutation<Amostra, unknown, CreateAmostraInput>({
 		mutationFn: createAmostra,
+		onSuccess: () => {
+			form.reset();
+		},
 	});
+	const isSubmitting = createAmostraMutation.isPending;
+	const createAmostraError = createAmostraMutation.error;
+	const createdAmostra = createAmostraMutation.data;
+	const resetCreateAmostraMutation = createAmostraMutation.reset;
+
+	useEffect(() => {
+		if (!createdAmostra) return;
+
+		const timeout = window.setTimeout(() => {
+			resetCreateAmostraMutation();
+		}, 5000);
+
+		return () => window.clearTimeout(timeout);
+	}, [createdAmostra, resetCreateAmostraMutation]);
 
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
@@ -68,7 +97,7 @@ export function NewAmostraPage() {
 									<AvaliadorSelectField
 										control={form.control}
 										name="avaliadorId"
-										disabled={createAmostraMutation.isPending}
+										disabled={isSubmitting}
 									/>
 
 									<FormField
@@ -84,6 +113,7 @@ export function NewAmostraPage() {
 													maxLength={2}
 													placeholder="00"
 													aria-invalid={fieldState.invalid}
+													disabled={isSubmitting}
 													className={cn(fieldInputClassName, "text-center")}
 												/>
 												<FormMessage />
@@ -103,6 +133,7 @@ export function NewAmostraPage() {
 													inputMode="tel"
 													placeholder="00000-0000"
 													aria-invalid={fieldState.invalid}
+													disabled={isSubmitting}
 													className={fieldInputClassName}
 												/>
 												<FormMessage />
@@ -120,6 +151,7 @@ export function NewAmostraPage() {
 												key={fieldName}
 												control={form.control}
 												name={fieldName}
+												disabled={isSubmitting}
 											/>
 										))}
 									</div>
@@ -135,12 +167,14 @@ export function NewAmostraPage() {
 										control={form.control}
 										name="incidencias"
 										title="Incidências"
+										disabled={isSubmitting}
 										fieldArray={incidencias}
 									/>
 									<DecimalArrayField
 										control={form.control}
 										name="acumuladoProposto"
 										title="Acumulado proposto"
+										disabled={isSubmitting}
 										fieldArray={acumuladoProposto}
 									/>
 								</div>
@@ -160,10 +194,10 @@ export function NewAmostraPage() {
 								</Button>
 								<Button
 									type="submit"
-									disabled={createAmostraMutation.isPending}
+									disabled={isSubmitting}
 									className="h-10 bg-slate-100 text-slate-900 hover:bg-slate-200"
 								>
-									{createAmostraMutation.isPending ? (
+									{isSubmitting ? (
 										<>
 											<LoaderCircleIcon className="animate-spin" />
 											Salvando...
@@ -179,18 +213,18 @@ export function NewAmostraPage() {
 						</form>
 					</Form>
 
-					{createAmostraMutation.error && (
+					{createAmostraError != null && (
 						<Alert variant="destructive" className="mt-6 border-red-900 bg-red-950/40">
 							<AlertDescription className="text-red-300">
-								{createAmostraMutation.error.message}
+								{getErrorMessage(createAmostraError)}
 							</AlertDescription>
 						</Alert>
 					)}
 
-					{createAmostraMutation.data && (
+					{createdAmostra && (
 						<Alert className="mt-6 border-emerald-900 bg-emerald-950/40 text-emerald-300">
 							<AlertDescription className="text-emerald-300">
-								Amostra {createAmostraMutation.data.id} criada com sucesso.
+								Amostra {createdAmostra.id} criada com sucesso.
 							</AlertDescription>
 						</Alert>
 					)}

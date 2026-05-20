@@ -16,9 +16,10 @@ import {
 type AmostraTextFieldProps = {
 	control: Control<AmostraFormValues>;
 	name: TextField;
+	disabled?: boolean;
 };
 
-export function AmostraTextField({ control, name }: AmostraTextFieldProps) {
+export function AmostraTextField({ control, name, disabled = false }: AmostraTextFieldProps) {
 	const prefix = moneyFields.has(name) ? "R$" : areaFields.has(name) ? "m²" : null;
 
 	return (
@@ -40,6 +41,7 @@ export function AmostraTextField({ control, name }: AmostraTextFieldProps) {
 							inputMode={getInputMode(name)}
 							placeholder={getPlaceholder(name)}
 							aria-invalid={fieldState.invalid}
+							disabled={disabled}
 							className={cn(fieldInputClassName, prefix && "pl-10")}
 						/>
 					</div>
