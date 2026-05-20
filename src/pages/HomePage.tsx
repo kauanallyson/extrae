@@ -24,14 +24,10 @@ export function HomePage() {
 					].map((item) => (
 						<div
 							key={item.value}
-							className="rounded-lg border border-white/10 bg-slate-950 p-5"
+							className="rounded-lg border border-slate-600 bg-slate-800 p-5 shadow-xl shadow-black/20"
 						>
-							<p className="text-2xl font-semibold text-slate-50">
-								{item.value}
-							</p>
-							<p className="mt-2 text-sm leading-6 text-slate-400">
-								{item.label}
-							</p>
+							<p className="text-2xl font-semibold text-slate-50">{item.value}</p>
+							<p className="mt-2 text-sm leading-6 text-slate-400">{item.label}</p>
 						</div>
 					))}
 				</section>

@@ -1,18 +1,13 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
+import { AvaliadorSelectField } from "@/components/AvaliadorSelectField";
 import { FileDropZone } from "../components/FileDropZone";
 import { Layout } from "../components/Layout";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Button } from "../components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "../components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Checkbox } from "../components/ui/checkbox";
 import {
 	Form,
@@ -22,21 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "../components/ui/form";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../components/ui/select";
-import {
-	type Avaliador,
-	type DownloadResult,
-	downloadExcelRae,
-	extrairTextoPdf,
-	fetchAvaliadores,
-	gerarAmostraIa,
-} from "../lib/api";
+import { type DownloadResult, downloadExcelRae, extrairTextoPdf, gerarAmostraIa } from "../lib/api";
 
 type FormValues = {
 	avaliadorId: string;
@@ -54,15 +35,6 @@ function getStoredGerarRae() {
 export function ExtrairAmostraPage() {
 	const downloadRef = useRef<HTMLAnchorElement>(null);
 
-	const {
-		data: avaliadores,
-		isLoading: avaliadoresLoading,
-		isError: avaliadoresIsError,
-	} = useQuery<Avaliador[]>({
-		queryKey: ["avaliadores"],
-		queryFn: fetchAvaliadores,
-	});
-
 	const form = useForm<FormValues>({
 		defaultValues: {
 			avaliadorId: "",
@@ -72,9 +44,6 @@ export function ExtrairAmostraPage() {
 	});
 
 	const selectedFile = form.watch("pdf");
-	const getAvaliadorNome = (avaliadorId: string) =>
-		avaliadores?.find((avaliador) => String(avaliador.id) === avaliadorId)
-			?.nome;
 
 	const pipeline = useMutation<DownloadResult | null, Error, FormValues>({
 		mutationFn: async (values: FormValues) => {
@@ -103,19 +72,16 @@ export function ExtrairAmostraPage() {
 		<Layout>
 			<Card className="w-full max-w-2xl border-white/10 bg-slate-900 px-6 py-8 text-slate-100 shadow-2xl shadow-black/30 backdrop-blur">
 				<CardHeader>
-					<CardTitle className="text-4xl text-slate-50">
-						Extrator de Amostra
-					</CardTitle>
+					<CardTitle className="text-4xl text-slate-50">Extrator de Amostra</CardTitle>
 					<CardDescription className="text-slate-400">
-						Faça upload do PDF e baixe a planilha para preenchimento
-						da RAE.
+						Faça upload do PDF e baixe a planilha para preenchimento da RAE.
 					</CardDescription>
 				</CardHeader>
 
 				<CardContent className="space-y-6">
 					<a
 						href="https://1drv.ms/x/c/40a54d6a68848790/IQC52jTKXpb4TLBBP3KGlrzzASOTalHY8GjPdigS9q06MUk"
-						className="mb-4 block w-fit text-blue-500 underline hover:text-blue-700"
+						className="mb-4 block w-fit text-slate-300 underline underline-offset-4 transition-colors hover:text-slate-50"
 						target="_blank"
 						rel="noopener"
 					>
@@ -124,23 +90,18 @@ export function ExtrairAmostraPage() {
 
 					<Form {...form}>
 						<form
-							onSubmit={form.handleSubmit((values) =>
-								pipeline.mutate(values),
-							)}
+							onSubmit={form.handleSubmit((values) => pipeline.mutate(values))}
 							className="space-y-5"
 						>
 							<FormField
 								control={form.control}
 								name="pdf"
 								rules={{
-									validate: (value) =>
-										value?.[0]
-											? true
-											: "Selecione um arquivo PDF.",
+									validate: (value) => (value?.[0] ? true : "Selecione um arquivo PDF."),
 								}}
 								render={({ field, fieldState }) => (
 									<FormItem>
-										<FormLabel htmlFor="pdf-upload">
+										<FormLabel htmlFor="pdf-upload" className="text-slate-200">
 											Laudo em PDF
 										</FormLabel>
 										<FileDropZone
@@ -148,108 +109,39 @@ export function ExtrairAmostraPage() {
 											hint="Upload de arquivo"
 											browseText="Arraste e solte o laudo aqui"
 											multiple={false}
-											selectedFileName={
-												selectedFile?.[0]?.name
-											}
-											ariaDescribedBy={
-												fieldState.invalid
-													? "pdf-message"
-													: "pdf-description"
-											}
+											selectedFileName={selectedFile?.[0]?.name}
+											ariaDescribedBy={fieldState.invalid ? "pdf-message" : "pdf-description"}
 											ariaInvalid={fieldState.invalid}
-											onChange={(files) =>
-												field.onChange(
-													files as FileList | null,
-												)
-											}
+											onChange={(files) => field.onChange(files as FileList | null)}
 										/>
-										<FormDescription id="pdf-description">
-											Exceto laudos A413
-										</FormDescription>
+										<FormDescription id="pdf-description">Exceto laudos A413</FormDescription>
 										<FormMessage id="pdf-message" />
 									</FormItem>
 								)}
 							/>
 
-							<FormField
+							<AvaliadorSelectField
 								control={form.control}
 								name="avaliadorId"
-								rules={{ required: "Selecione um avaliador." }}
-								render={({ field, fieldState }) => (
-									<FormItem>
-										<FormLabel htmlFor="avaliador-trigger">
-											Avaliador
-										</FormLabel>
-										<Select
-											value={field.value || undefined}
-											disabled={
-												avaliadoresLoading || isRunning
-											}
-											onValueChange={(value) =>
-												field.onChange(value ?? "")
-											}
-										>
-											<SelectTrigger
-												id="avaliador-trigger"
-												className="h-10 w-full rounded-md border-slate-700 bg-slate-900 text-slate-100 dark:border-slate-700 dark:bg-slate-900"
-												aria-invalid={
-													fieldState.invalid
-												}
-											>
-												<SelectValue
-													placeholder={
-														avaliadoresLoading
-															? "Carregando!"
-															: avaliadoresIsError
-																? "Erro ao carregar"
-																: "Selecione um avaliador"
-													}
-												>
-													{field.value
-														? getAvaliadorNome(
-																field.value,
-															)
-														: null}
-												</SelectValue>
-											</SelectTrigger>
-											<SelectContent className="bg-slate-900 text-slate-100">
-												{avaliadores?.map((p) => (
-													<SelectItem
-														key={p.id}
-														value={String(p.id)}
-													>
-														{p.nome}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
+								disabled={isRunning}
 							/>
 
 							<FormField
 								control={form.control}
 								name="gerarRae"
 								render={({ field }) => (
-									<FormItem className="flex items-center gap-3 space-y-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-3">
+									<FormItem className="flex items-center gap-3 space-y-0 rounded-md border border-slate-600 bg-slate-800 px-3 py-3">
 										<Checkbox
 											id="gerar-rae"
 											checked={field.value}
 											disabled={isRunning}
 											onCheckedChange={(checked) => {
 												field.onChange(checked);
-												window.localStorage.setItem(
-													GERAR_RAE_STORAGE_KEY,
-													String(checked),
-												);
+												window.localStorage.setItem(GERAR_RAE_STORAGE_KEY, String(checked));
 											}}
-											className="border-slate-600 bg-slate-800 text-slate-900 data-checked:border-slate-100 data-checked:bg-slate-100"
+											className="border-slate-500 bg-slate-700 text-slate-900 data-checked:border-slate-100 data-checked:bg-slate-100"
 										/>
-										<FormLabel
-											htmlFor="gerar-rae"
-											className="text-slate-100"
-										>
+										<FormLabel htmlFor="gerar-rae" className="text-slate-100">
 											Incluir geração de RAE
 										</FormLabel>
 									</FormItem>
@@ -274,13 +166,8 @@ export function ExtrairAmostraPage() {
 					</Form>
 
 					{pipeline.error && (
-						<Alert
-							variant="destructive"
-							className="border-red-900 bg-red-950/40"
-						>
-							<AlertDescription className="text-red-300">
-								{pipeline.error.message}
-							</AlertDescription>
+						<Alert variant="destructive" className="border-red-900 bg-red-950/40">
+							<AlertDescription className="text-red-300">{pipeline.error.message}</AlertDescription>
 						</Alert>
 					)}
 					{isDone && (

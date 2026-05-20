@@ -58,6 +58,8 @@ export type Amostra = {
 	updatedAt: string;
 };
 
+export type CreateAmostraInput = Omit<Amostra, "id" | "createdAt" | "updatedAt">;
+
 export async function fetchAvaliadores(): Promise<Avaliador[]> {
 	const res = await fetch(`${BASE_URL}/avaliadores`);
 	if (!res.ok) {
@@ -124,5 +126,20 @@ export async function fetchAmostras(): Promise<Amostra[]> {
 		const msg = await res.text().catch(() => res.statusText);
 		throw new Error(`Erro ao carregar as amostras: ${msg}`);
 	}
+	return res.json();
+}
+
+export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostra> {
+	const res = await fetch(`${BASE_URL}/amostras/`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(amostra),
+	});
+
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao criar a amostra: ${msg}`);
+	}
+
 	return res.json();
 }
