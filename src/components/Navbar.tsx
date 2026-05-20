@@ -6,6 +6,7 @@ import { buttonVariants } from "./ui/button";
 const routes = [
 	{ to: "/", label: "Home" },
 	{ to: "/extrair-amostra", label: "Extrair amostra" },
+	{ to: "/nova-amostra", label: "Nova amostra" },
 	{ to: "/mapa", label: "Mapa de amostras" },
 ];
 
@@ -15,9 +16,7 @@ export function Navbar() {
 			<div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
 				<Link to="/" className="flex items-center gap-3">
 					<Logo />
-					<span className="text-sm font-semibold tracking-[0.28em] text-slate-100">
-						EXTRAE
-					</span>
+					<span className="text-sm font-semibold tracking-[0.28em] text-slate-100">EXTRAE</span>
 				</Link>
 
 				<nav className="flex flex-wrap items-center gap-2 sm:justify-end">
