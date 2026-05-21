@@ -65,8 +65,13 @@ export function EditAmostraPage() {
 			const parsed = parseFormValues(values);
 			const updated = await updateAmostra(amostraId, parsed);
 			if (!shouldGenerate) return { amostra: updated };
-			const download = await downloadExcelRae(amostraId);
-			return { amostra: updated, download };
+			try {
+				const download = await downloadExcelRae(amostraId);
+				return { amostra: updated, download };
+			} catch (err) {
+				console.error("RAE download failed:", err);
+				return { amostra: updated };
+			}
 		},
 	});
 
@@ -91,13 +96,23 @@ export function EditAmostraPage() {
 		);
 	}
 
-	if (loadError) {
+	if (loadError || Number.isNaN(amostraId)) {
 		return (
 			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
 				<Alert variant="destructive" className="border-red-900 bg-red-950/40">
 					<AlertDescription className="text-red-300">
-						{getErrorMessage(loadError)}
+						{loadError ? getErrorMessage(loadError) : "ID de amostra inválido."}
 					</AlertDescription>
+				</Alert>
+			</Layout>
+		);
+	}
+
+	if (!isLoading && !amostra) {
+		return (
+			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
+				<Alert variant="destructive" className="border-red-900 bg-red-950/40">
+					<AlertDescription className="text-red-300">Amostra não encontrada.</AlertDescription>
 				</Alert>
 			</Layout>
 		);

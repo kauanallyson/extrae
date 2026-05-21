@@ -55,7 +55,7 @@ export function ExtrairAmostraPage() {
 				<CardHeader>
 					<CardTitle className="text-4xl text-slate-50">Extrator de Amostra</CardTitle>
 					<CardDescription className="text-slate-400">
-						Faça upload do PDF e baixe a planilha para preenchimento da RAE.
+						Faça upload do PDF e você será redirecionado para a página de edição para preencher a RAE.
 					</CardDescription>
 				</CardHeader>
 

@@ -44,8 +44,13 @@ export function NewAmostraPage() {
 			const parsed = parseFormValues(values);
 			const amostra = await createAmostra(parsed);
 			if (!shouldGenerate) return { amostra };
-			const download = await downloadExcelRae(amostra.id);
-			return { amostra, download };
+			try {
+				const download = await downloadExcelRae(amostra.id);
+				return { amostra, download };
+			} catch (err) {
+				console.error("RAE download failed:", err);
+				return { amostra };
+			}
 		},
 		onSuccess: () => form.reset(),
 	});

@@ -96,19 +96,17 @@ export function AmostrasPage() {
 													: "—"}
 											</td>
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
-												{amostra.valorImovel ? brl.format(amostra.valorImovel) : "—"}
+												{amostra.valorImovel != null ? brl.format(amostra.valorImovel) : "—"}
 											</td>
 											<td className="py-3 pr-4 text-slate-300">
 												{formatDate(amostra.dataReferencia)}
 											</td>
 											<td className="py-3">
-												<div
-													className="flex items-center gap-1"
-													onClick={(e) => e.stopPropagation()}
-												>
+												<div className="flex items-center gap-1">
 													<Link
 														to={`/amostras/${amostra.id}`}
 														title="Ver detalhes"
+														onClick={(e) => e.stopPropagation()}
 														className={cn(
 															buttonVariants({ variant: "ghost", size: "icon" }),
 															"h-7 w-7 hover:bg-white/10",
@@ -119,6 +117,7 @@ export function AmostrasPage() {
 													<Link
 														to={`/amostras/${amostra.id}/editar`}
 														title="Editar"
+														onClick={(e) => e.stopPropagation()}
 														className={cn(
 															buttonVariants({ variant: "ghost", size: "icon" }),
 															"h-7 w-7 hover:bg-white/10",

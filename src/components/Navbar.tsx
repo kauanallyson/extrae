@@ -39,6 +39,7 @@ export function Navbar() {
 					<NavLink
 						to="/mapa"
 						title="Mapa de amostras"
+						aria-label="Mapa de amostras"
 						className={({ isActive }) =>
 							cn(
 								buttonVariants({ variant: isActive ? "default" : "ghost", size: "icon" }),
@@ -46,7 +47,7 @@ export function Navbar() {
 							)
 						}
 					>
-						<MapIcon className="h-4 w-4" />
+						<MapIcon className="h-4 w-4" aria-hidden="true" />
 					</NavLink>
 				</nav>
 			</div>
