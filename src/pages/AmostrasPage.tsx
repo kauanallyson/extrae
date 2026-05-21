@@ -5,7 +5,7 @@ import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchAmostras } from "@/lib/api";
+import { type Amostra, fetchAmostras } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -19,7 +19,7 @@ function formatDate(value: string): string {
 
 export function AmostrasPage() {
 	const navigate = useNavigate();
-	const { data: amostras, isLoading, error } = useQuery({ queryKey: ["amostras"], queryFn: fetchAmostras });
+	const { data: amostras, isLoading, error } = useQuery<Amostra[], Error>({ queryKey: ["amostras"], queryFn: fetchAmostras });
 
 	if (isLoading) {
 		return (
