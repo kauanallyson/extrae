@@ -64,19 +64,24 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 					render={({ field, fieldState }) => (
 						<FormItem>
 							<div className="flex gap-2">
-								<Input
-									name={field.name}
-									ref={field.ref}
-									onBlur={field.onBlur}
-									onChange={field.onChange}
-									value={typeof field.value === "string" ? field.value : ""}
-									type="text"
-									inputMode="decimal"
-									placeholder="0,00"
-									aria-invalid={fieldState.invalid}
-									disabled={disabled}
-									className={fieldInputClassName}
-								/>
+								<div className="relative flex-1">
+									<Input
+										name={field.name}
+										ref={field.ref}
+										onBlur={field.onBlur}
+										onChange={field.onChange}
+										value={typeof field.value === "string" ? field.value : ""}
+										type="text"
+										inputMode="decimal"
+										placeholder="0,00"
+										aria-invalid={fieldState.invalid}
+										disabled={disabled}
+										className={cn(fieldInputClassName, "pr-8")}
+									/>
+									<span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
+										%
+									</span>
+								</div>
 								<Button
 									type="button"
 									variant="outline"

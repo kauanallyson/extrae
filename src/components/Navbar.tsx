@@ -1,44 +1,54 @@
+import { MapIcon } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Logo } from "./Logo";
 import { buttonVariants } from "./ui/button";
 
-const routes = [
-	{ to: "/", label: "Home" },
+const textRoutes = [
+	{ to: "/amostras", label: "Amostras" },
 	{ to: "/extrair-amostra", label: "Extrair amostra" },
-	{ to: "/nova-amostra", label: "Nova amostra" },
-	{ to: "/mapa", label: "Mapa de amostras" },
 ];
 
 export function Navbar() {
 	return (
 		<header className="w-full border-b border-white/10 bg-slate-950/90 backdrop-blur">
-			<div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3">
 				<Link to="/" className="flex items-center gap-3">
 					<Logo />
 					<span className="text-sm font-semibold tracking-[0.28em] text-slate-100">EXTRAE</span>
 				</Link>
 
-				<nav className="flex flex-wrap items-center gap-2 sm:justify-end">
-					{routes.map((route) => (
+				<nav className="flex items-center gap-1">
+					{textRoutes.map((route) => (
 						<NavLink
 							key={route.to}
 							to={route.to}
 							className={({ isActive }) =>
 								cn(
-									buttonVariants({
-										variant: isActive ? "default" : "ghost",
-										size: "sm",
-									}),
+									buttonVariants({ variant: isActive ? "default" : "ghost", size: "sm" }),
 									"hover:bg-white hover:text-slate-950 dark:hover:bg-white dark:hover:text-slate-950",
-									"px-4",
 								)
 							}
-							end={route.to === "/"}
 						>
 							{route.label}
 						</NavLink>
 					))}
+
+					<div className="mx-2 h-4 w-px bg-white/20" />
+
+					<NavLink
+						to="/mapa"
+						title="Mapa de amostras"
+						aria-label="Mapa de amostras"
+						className={({ isActive }) =>
+							cn(
+								buttonVariants({ variant: isActive ? "default" : "ghost", size: "icon" }),
+								"hover:bg-white hover:text-slate-950 dark:hover:bg-white dark:hover:text-slate-950",
+							)
+						}
+					>
+						<MapIcon className="h-4 w-4" aria-hidden="true" />
+					</NavLink>
 				</nav>
 			</div>
 		</header>

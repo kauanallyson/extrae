@@ -143,3 +143,25 @@ export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostr
 
 	return res.json();
 }
+
+export async function fetchAmostra(id: number): Promise<Amostra> {
+	const res = await fetch(`${BASE_URL}/amostras/${id}`);
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao carregar amostra: ${msg}`);
+	}
+	return res.json();
+}
+
+export async function updateAmostra(id: number, amostra: CreateAmostraInput): Promise<Amostra> {
+	const res = await fetch(`${BASE_URL}/amostras/${id}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(amostra),
+	});
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao atualizar amostra: ${msg}`);
+	}
+	return res.json();
+}

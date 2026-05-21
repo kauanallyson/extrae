@@ -9,6 +9,7 @@ import {
 	fieldLabels,
 	getInputMode,
 	getPlaceholder,
+	meterFields,
 	moneyFields,
 	type TextField,
 } from "./amostraFormSchema";
@@ -20,8 +21,8 @@ type AmostraTextFieldProps = {
 };
 
 export function AmostraTextField({ control, name, disabled = false }: AmostraTextFieldProps) {
-	const prefix = moneyFields.has(name) ? "R$" : areaFields.has(name) ? "m²" : null;
-
+	const prefix = moneyFields.has(name) ? "R$" : null;
+	const suffix = areaFields.has(name) ? "m²" : meterFields.has(name) ? "m" : null;
 	return (
 		<FormField
 			control={control}
@@ -42,8 +43,13 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 							placeholder={getPlaceholder(name)}
 							aria-invalid={fieldState.invalid}
 							disabled={disabled}
-							className={cn(fieldInputClassName, prefix && "pl-10")}
+							className={cn(fieldInputClassName, prefix && "pl-10", suffix && "pr-10")}
 						/>
+						{suffix && (
+							<span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
+								{suffix}
+							</span>
+						)}
 					</div>
 					<FormMessage />
 				</FormItem>
