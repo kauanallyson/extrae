@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import {
 	MapControls,
@@ -87,7 +88,7 @@ export function MapPage() {
 									closeButton
 									className="border-slate-600 bg-slate-800 text-slate-100 shadow-xl shadow-black/30"
 								>
-									<div className="space-y-1 text-sm p-2">
+									<div className="space-y-2 p-2 text-sm">
 										<p className="font-semibold">{amostra.proponente || `Amostra ${amostra.id}`}</p>
 										<p className="text-muted-foreground">
 											{amostra.municipio}
@@ -96,6 +97,12 @@ export function MapPage() {
 										<p className="text-muted-foreground">
 											{amostra.latitude.toFixed(6)}, {amostra.longitude.toFixed(6)}
 										</p>
+										<Link
+											to={`/amostras/${amostra.id}`}
+											className="mt-1 block text-xs text-emerald-400 hover:text-emerald-300 hover:underline"
+										>
+											Ver detalhes →
+										</Link>
 									</div>
 								</MarkerPopup>
 							</MapMarker>

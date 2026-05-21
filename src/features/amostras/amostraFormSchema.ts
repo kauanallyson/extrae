@@ -1,6 +1,6 @@
 import type { FieldError, Resolver } from "react-hook-form";
 import { z } from "zod";
-import type { CreateAmostraInput } from "@/lib/api";
+import type { Amostra, CreateAmostraInput } from "@/lib/api";
 
 type NewAmostraRequest = CreateAmostraInput;
 
@@ -31,9 +31,20 @@ export const dddRegex = /^\d{2}$/;
 export const phoneRegex = /^\d{4,5}-\d{4}$/;
 const twoDecimalRegex = /^\d+(?:[,.]\d{2})$/;
 
-export const moneyFields = new Set<TextField>(["valorTerreno", "valorImovel", "valorUnitario"]);
+export const moneyFields = new Set<TextField>([
+	"valorTerreno",
+	"valorImovel",
+	"valorUnitario",
+]);
 export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
-const requiredFields = new Set<TextField>(["cpf", "cnpj", "cep", "dataReferencia"]);
+export const meterFields = new Set<TextField>(["testada"]);
+export const integerFields = new Set<TextField>(["quartos", "banheiros", "suites", "vagas"]);
+const requiredFields = new Set<TextField>([
+	"cpf",
+	"cnpj",
+	"cep",
+	"dataReferencia",
+]);
 export const positiveNumberFields = new Set<TextField>([
 	"valorTerreno",
 	"valorImovel",
@@ -88,13 +99,15 @@ export const fieldLabels: Record<TextField, string> = {
 	servicosPublicos: "Serviços públicos",
 	usosPredominantes: "Usos predominantes",
 	viaAcesso: "Via de acesso",
-	regiaoContexto: "Região e contexto",
+	regiaoContexto: "Região no contexto urbano",
 	dataReferencia: "Data de referência",
 };
 
+export const identificationGroupTitle = "Identificação";
+
 export const fieldGroups = [
 	{
-		title: "Identificação",
+		title: identificationGroupTitle,
 		description: "Dados principais da amostra e do proponente.",
 		fields: ["proponente", "cpf", "cnpj"] satisfies TextField[],
 	},
@@ -125,8 +138,13 @@ export const fieldGroups = [
 	},
 	{
 		title: "Valores",
-		description: "Valores e etapas usadas na avaliação.",
-		fields: ["valorTerreno", "valorImovel", "numeroEtapas", "valorUnitario"] satisfies TextField[],
+		description: "Valores do terreno, imóvel e unitário.",
+		fields: [
+			"valorTerreno",
+			"valorImovel",
+			"numeroEtapas",
+			"valorUnitario",
+		] satisfies TextField[],
 	},
 	{
 		title: "Características",
@@ -136,11 +154,12 @@ export const fieldGroups = [
 			"idadeEstimada",
 			"areaTerreno",
 			"areaConstruida",
-			"quartos",
-			"banheiros",
-			"suites",
-			"vagas",
 		] satisfies TextField[],
+	},
+	{
+		title: "Distribuição",
+		description: "Quantidade de cômodos e vagas.",
+		fields: ["quartos", "banheiros", "suites", "vagas"] satisfies TextField[],
 	},
 	{
 		title: "Contexto",
@@ -184,12 +203,24 @@ export function getPlaceholder(field: TextField) {
 }
 
 export function getInputMode(field: TextField) {
+	if (integerFields.has(field)) return "numeric";
 	if (positiveNumberFields.has(field)) return "decimal";
-	if (field === "cpf" || field === "cnpj" || field === "cep") return "numeric";
+	if (field === "cpf" || field === "cnpj" || field === "cep")
+		return "numeric";
 	return "text";
 }
 
 function positiveNumberString(field: TextField) {
+	if (integerFields.has(field)) {
+		return z.string().refine(
+			(value) => {
+				if (!value.trim()) return true;
+				const parsed = Number(value);
+				return Number.isInteger(parsed) && parsed >= 0;
+			},
+			{ message: "Informe um número inteiro." },
+		);
+	}
 	return z.string().refine(
 		(value) => {
 			if (!value.trim()) return !requiredFields.has(field);
@@ -197,7 +228,9 @@ function positiveNumberString(field: TextField) {
 			return Number.isFinite(parsed) && parsed >= 0;
 		},
 		{
-			message: requiredFields.has(field) ? "Preencha este campo." : "Informe um número positivo.",
+			message: requiredFields.has(field)
+				? "Preencha este campo."
+				: "Informe um número positivo.",
 		},
 	);
 }
@@ -215,7 +248,10 @@ function textFieldSchema(field: TextField) {
 			.string()
 			.trim()
 			.min(1, "Informe o CNPJ.")
-			.regex(cnpjRegex, "Informe o CNPJ com máscara: 00.000.000/0000-00.");
+			.regex(
+				cnpjRegex,
+				"Informe o CNPJ com máscara: 00.000.000/0000-00.",
+			);
 	}
 	if (field === "cep") {
 		return z
@@ -225,7 +261,8 @@ function textFieldSchema(field: TextField) {
 			.regex(cepRegex, "Informe o CEP com máscara: 00000-000.");
 	}
 	if (positiveNumberFields.has(field)) return positiveNumberString(field);
-	if (requiredFields.has(field)) return z.string().trim().min(1, "Preencha este campo.");
+	if (requiredFields.has(field))
+		return z.string().trim().min(1, "Preencha este campo.");
 	return z.string();
 }
 
@@ -234,9 +271,14 @@ const textFieldShape = Object.fromEntries(
 ) as unknown as Record<TextField, z.ZodType<string>>;
 
 const decimalArrayValueSchema = z.object({
-	value: z.string().refine((value) => !value.trim() || twoDecimalRegex.test(value.trim()), {
-		message: "Informe um número positivo com duas casas decimais.",
-	}),
+	value: z
+		.string()
+		.refine(
+			(value) => !value.trim() || twoDecimalRegex.test(value.trim()),
+			{
+				message: "Informe um número positivo com duas casas decimais.",
+			},
+		),
 });
 
 function hasDecimalArrayValue(values: ArrayValue[]) {
@@ -249,7 +291,9 @@ function hasDecimalArrayValue(values: ArrayValue[]) {
 export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	avaliadorId: z.string().min(1, "Selecione um avaliador."),
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
-	telefone: z.string().regex(phoneRegex, "Informe o telefone com máscara: 00000-0000."),
+	telefone: z
+		.string()
+		.regex(phoneRegex, "Informe o telefone com máscara: 00000-0000."),
 	incidencias: z
 		.array(decimalArrayValueSchema)
 		.min(1)
@@ -263,7 +307,11 @@ export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 
 type ErrorNode = Record<string, unknown>;
 
-function assignFieldError(errors: ErrorNode, path: PropertyKey[], message: string) {
+function assignFieldError(
+	errors: ErrorNode,
+	path: PropertyKey[],
+	message: string,
+) {
 	let cursor = errors;
 	for (const segment of path.slice(0, -1)) {
 		const key = String(segment);
@@ -275,7 +323,9 @@ function assignFieldError(errors: ErrorNode, path: PropertyKey[], message: strin
 	cursor[key] = { type: "validation", message } satisfies FieldError;
 }
 
-export const amostraFormResolver: Resolver<AmostraFormValues> = async (values) => {
+export const amostraFormResolver: Resolver<AmostraFormValues> = async (
+	values,
+) => {
 	const result = amostraFormSchema.safeParse(values);
 	if (result.success) return { values: result.data, errors: {} };
 
@@ -297,6 +347,71 @@ function parseNumberArray(values: ArrayValue[]) {
 		.filter(Boolean)
 		.map(Number)
 		.filter((item) => Number.isFinite(item));
+}
+
+function formatTelefone(digits: string): string {
+	const d = digits.replace(/\D/g, "");
+	if (d.length === 9) return `${d.slice(0, 5)}-${d.slice(5)}`;
+	if (d.length === 8) return `${d.slice(0, 4)}-${d.slice(4)}`;
+	return digits;
+}
+
+export function amostraToFormValues(amostra: Amostra): AmostraFormValues {
+	return {
+		avaliadorId: String(amostra.avaliadorId),
+		ddd: amostra.ddd,
+		telefone: formatTelefone(amostra.telefone),
+		incidencias:
+			amostra.incidencias.length > 0
+				? amostra.incidencias.map((v) => ({ value: v.toFixed(2) }))
+				: [{ value: "" }],
+		acumuladoProposto:
+			amostra.acumuladoProposto.length > 0
+				? amostra.acumuladoProposto.map((v) => ({
+						value: v.toFixed(2),
+					}))
+				: [{ value: "" }],
+		proponente: amostra.proponente,
+		cpf: amostra.cpf,
+		cnpj: amostra.cnpj,
+		enderecoLiteral: amostra.enderecoLiteral,
+		coordenadaS: amostra.coordenadaS,
+		coordenadaW: amostra.coordenadaW,
+		complemento: amostra.complemento,
+		bairro: amostra.bairro,
+		cep: amostra.cep,
+		municipio: amostra.municipio,
+		uf: amostra.uf,
+		empresaResponsavel: amostra.empresaResponsavel,
+		valorTerreno: amostra.valorTerreno ? String(amostra.valorTerreno) : "",
+		matricula: amostra.matricula,
+		oficio: amostra.oficio,
+		comarca: amostra.comarca,
+		ufMatricula: amostra.ufMatricula,
+		valorImovel: amostra.valorImovel ? String(amostra.valorImovel) : "",
+		numeroEtapas: amostra.numeroEtapas ? String(amostra.numeroEtapas) : "",
+		valorUnitario: amostra.valorUnitario
+			? String(amostra.valorUnitario)
+			: "",
+		testada: amostra.testada ? String(amostra.testada) : "",
+		idadeEstimada: amostra.idadeEstimada,
+		areaTerreno: amostra.areaTerreno ? String(amostra.areaTerreno) : "",
+		areaConstruida: amostra.areaConstruida
+			? String(amostra.areaConstruida)
+			: "",
+		quartos: amostra.quartos ? String(amostra.quartos) : "",
+		banheiros: amostra.banheiros ? String(amostra.banheiros) : "",
+		suites: amostra.suites ? String(amostra.suites) : "",
+		vagas: amostra.vagas ? String(amostra.vagas) : "",
+		padraoAcabamento: amostra.padraoAcabamento,
+		estadoConservacao: amostra.estadoConservacao,
+		infraestrutura: amostra.infraestrutura,
+		servicosPublicos: amostra.servicosPublicos,
+		usosPredominantes: amostra.usosPredominantes,
+		viaAcesso: amostra.viaAcesso,
+		regiaoContexto: amostra.regiaoContexto,
+		dataReferencia: amostra.dataReferencia,
+	};
 }
 
 export function parseFormValues(values: AmostraFormValues): NewAmostraRequest {
