@@ -165,3 +165,11 @@ export async function updateAmostra(id: number, amostra: CreateAmostraInput): Pr
 	}
 	return res.json();
 }
+
+export async function deleteAmostra(id: number): Promise<void> {
+	const res = await fetch(`${BASE_URL}/amostras/${id}`, { method: "DELETE" });
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao deletar amostra: ${msg}`);
+	}
+}

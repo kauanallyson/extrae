@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, LoaderCircleIcon, PencilIcon } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { AlertDialog } from "@base-ui/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftIcon, LoaderCircleIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
 	moneyFields,
 	type TextField,
 } from "@/features/amostras/amostraFormSchema";
-import { type Amostra, type Avaliador, fetchAmostra, fetchAvaliadores } from "@/lib/api";
+import { type Amostra, type Avaliador, deleteAmostra, fetchAmostra, fetchAvaliadores } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -69,6 +70,8 @@ function AmostraSection({
 export function AmostraDetailsPage() {
 	const { id } = useParams<{ id: string }>();
 	const amostraId = Number(id);
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	const { data: amostra, isLoading, error } = useQuery<Amostra, Error>({
 		queryKey: ["amostra", amostraId],
@@ -82,6 +85,14 @@ export function AmostraDetailsPage() {
 	});
 
 	const avaliador = avaliadores?.find((a) => a.id === amostra?.avaliadorId);
+
+	const deleteMutation = useMutation({
+		mutationFn: () => deleteAmostra(amostraId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["amostras"] });
+			navigate("/amostras");
+		},
+	});
 
 	if (isLoading) {
 		return (
@@ -134,16 +145,69 @@ export function AmostraDetailsPage() {
 									.join(", ") || `Amostra #${amostra.id}`}
 							</CardDescription>
 						</div>
-						<Link
-							to={`/amostras/${amostra.id}/editar`}
-							className={cn(
-								buttonVariants({ size: "sm" }),
-								"shrink-0 bg-slate-100 text-slate-900 hover:bg-slate-200",
-							)}
-						>
-							<PencilIcon />
-							Editar
-						</Link>
+						<div className="flex shrink-0 gap-2">
+							<Link
+								to={`/amostras/${amostra.id}/editar`}
+								className={cn(
+									buttonVariants({ size: "sm" }),
+									"bg-slate-100 text-slate-900 hover:bg-slate-200",
+								)}
+							>
+								<PencilIcon />
+								Editar
+							</Link>
+							<AlertDialog.Root>
+								<AlertDialog.Trigger
+									render={
+										<button
+											type="button"
+											className={cn(
+												buttonVariants({ variant: "ghost", size: "icon-sm" }),
+												"text-red-400 hover:bg-red-950/60 hover:text-red-300",
+											)}
+											title="Deletar amostra"
+										>
+											<Trash2Icon />
+										</button>
+									}
+								/>
+								<AlertDialog.Portal>
+									<AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
+									<AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/50">
+										<AlertDialog.Title className="text-base font-semibold text-slate-100">
+											Deletar amostra?
+										</AlertDialog.Title>
+										<AlertDialog.Description className="mt-2 text-sm text-slate-400">
+											Essa ação não pode ser desfeita. A amostra será permanentemente removida.
+										</AlertDialog.Description>
+										<div className="mt-5 flex justify-end gap-3">
+											<AlertDialog.Close
+												render={
+													<button
+														type="button"
+														className="rounded-md px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+													>
+														Cancelar
+													</button>
+												}
+											/>
+											<AlertDialog.Close
+												render={
+													<button
+														type="button"
+														className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+														disabled={deleteMutation.isLoading}
+														onClick={() => deleteMutation.mutate()}
+													>
+														{deleteMutation.isLoading ? "Deletando..." : "Deletar"}
+													</button>
+												}
+											/>
+										</div>
+									</AlertDialog.Popup>
+								</AlertDialog.Portal>
+							</AlertDialog.Root>
+						</div>
 					</div>
 				</CardHeader>
 
