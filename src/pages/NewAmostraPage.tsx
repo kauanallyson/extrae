@@ -43,7 +43,11 @@ export function NewAmostraPage() {
 	const [gerarRae, setGerarRae] = useState(getStoredGerarRae);
 	const downloadRef = useRef<HTMLAnchorElement>(null);
 
-	const createAmostraMutation = useMutation<CreateResult, unknown, { values: AmostraFormValues; gerarRae: boolean }>({
+	const createAmostraMutation = useMutation<
+		CreateResult,
+		unknown,
+		{ values: AmostraFormValues; gerarRae: boolean }
+	>({
 		mutationFn: async ({ values, gerarRae: shouldGenerate }) => {
 			const parsed = parseFormValues(values);
 			const amostra = await createAmostra(parsed);
@@ -60,7 +64,11 @@ export function NewAmostraPage() {
 	});
 
 	const isSubmitting = createAmostraMutation.isPending;
-	const { error: createAmostraError, data: createResult, reset: resetMutation } = createAmostraMutation;
+	const {
+		error: createAmostraError,
+		data: createResult,
+		reset: resetMutation,
+	} = createAmostraMutation;
 	const createdAmostra = createResult?.amostra;
 	const downloadData = createResult?.download;
 

@@ -46,7 +46,11 @@ export function EditAmostraPage() {
 	const downloadRef = useRef<HTMLAnchorElement>(null);
 	const queryClient = useQueryClient();
 
-	const { data: amostra, isLoading, error: loadError } = useQuery<Amostra, Error>({
+	const {
+		data: amostra,
+		isLoading,
+		error: loadError,
+	} = useQuery<Amostra, Error>({
 		queryKey: ["amostra", amostraId],
 		queryFn: () => fetchAmostra(amostraId),
 		enabled: !Number.isNaN(amostraId),
@@ -63,7 +67,11 @@ export function EditAmostraPage() {
 
 	const [gerarRae, setGerarRae] = useState(getStoredGerarRae);
 
-	const updateMutation = useMutation<UpdateResult, Error, { values: AmostraFormValues; gerarRae: boolean }>({
+	const updateMutation = useMutation<
+		UpdateResult,
+		Error,
+		{ values: AmostraFormValues; gerarRae: boolean }
+	>({
 		mutationFn: async ({ values, gerarRae: shouldGenerate }) => {
 			const parsed = parseFormValues(values);
 			const updated = await updateAmostra(amostraId, parsed);
@@ -144,9 +152,7 @@ export function EditAmostraPage() {
 				<CardHeader className="px-6 pt-6">
 					<div className="flex items-start justify-between gap-4">
 						<div>
-							<CardTitle className="text-3xl text-slate-50">
-								Revisar Amostra #{amostraId}
-							</CardTitle>
+							<CardTitle className="text-3xl text-slate-50">Revisar Amostra #{amostraId}</CardTitle>
 							<CardDescription className="text-slate-400">
 								Verifique e corrija os dados extraídos pelo sistema antes de salvar.
 							</CardDescription>

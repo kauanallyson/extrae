@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { amostraToFormValues } from "@/features/amostras/amostraFormSchema";
 import { FileDropZone } from "../components/FileDropZone";
 import { Layout } from "../components/Layout";
 import { Alert, AlertDescription } from "../components/ui/alert";
@@ -15,9 +16,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "../components/ui/form";
-import { amostraToFormValues } from "@/features/amostras/amostraFormSchema";
-import { gerarAmostraIa } from "../lib/api";
 import type { CreateAmostraInput } from "../lib/api";
+import { gerarAmostraIa } from "../lib/api";
 
 type FormValues = {
 	pdf: FileList | null;
@@ -54,7 +54,8 @@ export function ExtrairAmostraPage() {
 				<CardHeader>
 					<CardTitle className="text-4xl text-slate-50">Extrator de Amostra</CardTitle>
 					<CardDescription className="text-slate-400">
-						Faça upload do PDF e você será redirecionado para a página de edição para preencher a RAE.
+						Faça upload do PDF e você será redirecionado para a página de edição para preencher a
+						RAE.
 					</CardDescription>
 				</CardHeader>
 
