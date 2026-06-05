@@ -60,6 +60,8 @@ export type Amostra = {
 
 export type CreateAmostraInput = Omit<Amostra, "id" | "createdAt" | "updatedAt">;
 
+export type CreateAvaliadorInput = Omit<Avaliador, "id">;
+
 export async function fetchAvaliadores(): Promise<Avaliador[]> {
 	const res = await fetch(`${BASE_URL}/avaliadores`);
 	if (!res.ok) {
@@ -69,37 +71,56 @@ export async function fetchAvaliadores(): Promise<Avaliador[]> {
 	return res.json();
 }
 
-export async function extrairTextoPdf(pdf: File): Promise<string> {
+export async function createAvaliador(input: CreateAvaliadorInput): Promise<Avaliador> {
+	const res = await fetch(`${BASE_URL}/avaliadores`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao criar avaliador: ${msg}`);
+	}
+	return res.json();
+}
+
+export async function updateAvaliador(id: number, input: Partial<CreateAvaliadorInput>): Promise<Avaliador> {
+	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao atualizar avaliador: ${msg}`);
+	}
+	return res.json();
+}
+
+export async function deleteAvaliador(id: number): Promise<void> {
+	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, { method: "DELETE" });
+	if (!res.ok) {
+		const msg = await res.text().catch(() => res.statusText);
+		throw new Error(`Erro ao deletar avaliador: ${msg}`);
+	}
+}
+
+
+export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
 	const form = new FormData();
 	form.append("pdf", pdf);
 
-	const res = await fetch(`${BASE_URL}/pdf`, {
+	const res = await fetch(`${BASE_URL}/amostras/ia`, {
 		method: "POST",
 		body: form,
 	});
 
 	if (!res.ok) {
 		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Extração de texto: ${msg}`);
+		throw new Error(`Geração da amostra: ${msg}`);
 	}
 
-	return res.text();
-}
-
-export async function gerarAmostraIa(avaliadorId: number, amostraText: string): Promise<number> {
-	const res = await fetch(`${BASE_URL}/amostras/ia`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ avaliadorId, amostraText }),
-	});
-
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Etapa 2 - Geração da amostra: ${msg}`);
-	}
-
-	const data = await res.json();
-	return data.amostraId as number;
+	return res.json() as Promise<CreateAmostraInput>;
 }
 
 export type DownloadResult = { blobUrl: string; filename: string };

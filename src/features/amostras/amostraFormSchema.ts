@@ -1,6 +1,6 @@
 import type { FieldError, Resolver } from "react-hook-form";
 import { z } from "zod";
-import type { Amostra, CreateAmostraInput } from "@/lib/api";
+import type { CreateAmostraInput } from "@/lib/api";
 
 type NewAmostraRequest = CreateAmostraInput;
 
@@ -356,7 +356,7 @@ function formatTelefone(digits: string): string {
 	return digits;
 }
 
-export function amostraToFormValues(amostra: Amostra): AmostraFormValues {
+export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormValues {
 	return {
 		avaliadorId: String(amostra.avaliadorId),
 		ddd: amostra.ddd,

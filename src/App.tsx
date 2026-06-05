@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AmostraDetailsPage } from "./pages/AmostraDetailsPage";
 import { AmostrasPage } from "./pages/AmostrasPage";
+import { AvaliadorPage } from "./pages/AvaliadorPage";
 import { EditAmostraPage } from "./pages/EditAmostraPage";
 import { ExtrairAmostraPage } from "./pages/ExtrairAmostraPage";
 import { HomePage } from "./pages/HomePage";
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
 	{
 		path: "/amostras/:id/editar",
 		element: <EditAmostraPage />,
+	},
+	{
+		path: "/avaliadores",
+		element: <AvaliadorPage />,
 	},
 	{
 		path: "/mapa",

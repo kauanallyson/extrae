@@ -7,6 +7,7 @@ import { buttonVariants } from "./ui/button";
 const textRoutes = [
 	{ to: "/amostras", label: "Amostras" },
 	{ to: "/extrair-amostra", label: "Extrair amostra" },
+	{ to: "/avaliadores", label: "Avaliadores" },
 ];
 
 export function Navbar() {
