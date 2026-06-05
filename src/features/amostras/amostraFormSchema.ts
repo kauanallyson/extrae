@@ -1,6 +1,6 @@
 import type { FieldError, Resolver } from "react-hook-form";
 import { z } from "zod";
-import type { Amostra, CreateAmostraInput } from "@/lib/api";
+import type { CreateAmostraInput } from "@/lib/api";
 
 type NewAmostraRequest = CreateAmostraInput;
 
