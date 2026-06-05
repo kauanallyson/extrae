@@ -11,11 +11,18 @@ import {
 	fieldGroups,
 	fieldLabels,
 	identificationGroupTitle,
+	incidenciaServicos,
 	meterFields,
 	moneyFields,
 	type TextField,
 } from "@/features/amostras/amostraFormSchema";
-import { type Amostra, type Avaliador, deleteAmostra, fetchAmostra, fetchAvaliadores } from "@/lib/api";
+import {
+	type Amostra,
+	type Avaliador,
+	deleteAmostra,
+	fetchAmostra,
+	fetchAvaliadores,
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -73,7 +80,11 @@ export function AmostraDetailsPage() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	const { data: amostra, isLoading, error } = useQuery<Amostra, Error>({
+	const {
+		data: amostra,
+		isLoading,
+		error,
+	} = useQuery<Amostra, Error>({
 		queryKey: ["amostra", amostraId],
 		queryFn: () => fetchAmostra(amostraId),
 		enabled: !Number.isNaN(amostraId),
@@ -214,10 +225,7 @@ export function AmostraDetailsPage() {
 				<CardContent className="space-y-8 px-6 pb-6">
 					<AmostraSection title="Avaliador">
 						<SectionGrid>
-							<DetailItem
-								label="Nome"
-								value={avaliador?.nome ?? `ID ${amostra.avaliadorId}`}
-							/>
+							<DetailItem label="Nome" value={avaliador?.nome ?? `ID ${amostra.avaliadorId}`} />
 							{avaliador?.nomeFantasia && (
 								<DetailItem label="Nome fantasia" value={avaliador.nomeFantasia} />
 							)}
@@ -239,20 +247,13 @@ export function AmostraDetailsPage() {
 					{fieldGroups
 						.filter((g) => g.title !== identificationGroupTitle)
 						.map((group) => (
-							<AmostraSection
-								key={group.title}
-								title={group.title}
-								description={group.description}
-							>
+							<AmostraSection key={group.title} title={group.title} description={group.description}>
 								<SectionGrid>
 									{group.fields.map((field) => (
 										<DetailItem
 											key={field}
 											label={fieldLabels[field]}
-											value={formatValue(
-												field,
-												amostra[field as keyof Amostra] as string | number,
-											)}
+											value={formatValue(field, amostra[field as keyof Amostra] as string | number)}
 										/>
 									))}
 								</SectionGrid>
@@ -264,40 +265,56 @@ export function AmostraDetailsPage() {
 						description="Valores de incidências e acumulados da avaliação."
 					>
 						<div className="grid gap-6 lg:grid-cols-2">
-							{(
-								[
-									{ label: "Incidências", values: amostra.incidencias },
-									{ label: "Acumulado proposto", values: amostra.acumuladoProposto },
-								] as const
-							).map(({ label, values }) => (
-								<div key={label} className="space-y-2">
-									<p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-										{label}
-									</p>
-									{values.length > 0 ? (
-										<table className="w-full text-sm">
-											<thead>
-												<tr className="border-b border-white/10 text-left text-xs text-slate-500">
-													<th className="pb-1 font-medium">#</th>
-													<th className="pb-1 text-right font-medium">Valor</th>
+							<div className="space-y-2">
+								<p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+									Incidências
+								</p>
+								<table className="w-full text-sm">
+									<thead>
+										<tr className="border-b border-white/10 text-left text-xs text-slate-500">
+											<th className="pb-1 font-medium">Serviço</th>
+											<th className="pb-1 text-right font-medium">Peso</th>
+										</tr>
+									</thead>
+									<tbody>
+										{incidenciaServicos.map((servico, i) => (
+											<tr key={servico} className="border-b border-white/5 last:border-0">
+												<td className="py-1.5 text-slate-300">{servico}</td>
+												<td className="py-1.5 text-right tabular-nums text-slate-100">
+													{amostra.incidencias[i] != null ? `${amostra.incidencias[i]}%` : "—"}
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+
+							<div className="space-y-2">
+								<p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+									Acumulado proposto
+								</p>
+								{amostra.acumuladoProposto.length > 0 ? (
+									<table className="w-full text-sm">
+										<thead>
+											<tr className="border-b border-white/10 text-left text-xs text-slate-500">
+												<th className="pb-1 font-medium">#</th>
+												<th className="pb-1 text-right font-medium">Valor</th>
+											</tr>
+										</thead>
+										<tbody>
+											{amostra.acumuladoProposto.map((v, i) => (
+												// biome-ignore lint/suspicious/noArrayIndexKey: positional values without stable id
+												<tr key={`acum-${i}`} className="border-b border-white/5 last:border-0">
+													<td className="py-1.5 text-slate-500">{i + 1}</td>
+													<td className="py-1.5 text-right tabular-nums text-slate-100">{v}%</td>
 												</tr>
-											</thead>
-											<tbody>
-												{values.map((v, i) => (
-													<tr key={i} className="border-b border-white/5 last:border-0">
-														<td className="py-1.5 text-slate-500">{i + 1}</td>
-														<td className="py-1.5 text-right tabular-nums text-slate-100">
-															{v}%
-														</td>
-													</tr>
-												))}
-											</tbody>
-										</table>
-									) : (
-										<p className="text-sm text-slate-500">—</p>
-									)}
-								</div>
-							))}
+											))}
+										</tbody>
+									</table>
+								) : (
+									<p className="text-sm text-slate-500">—</p>
+								)}
+							</div>
 						</div>
 					</AmostraSection>
 				</CardContent>

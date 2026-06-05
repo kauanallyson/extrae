@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { AvaliadorSelectField } from "@/components/AvaliadorSelectField";
@@ -14,6 +14,7 @@ import {
 } from "./amostraFormSchema";
 import { DecimalArrayField } from "./DecimalArrayField";
 import { FormSection } from "./FormSection";
+import { IncidenciaServicosField } from "./IncidenciaServicosField";
 
 type AmostraFormProps = {
 	form: UseFormReturn<AmostraFormValues>;
@@ -23,23 +24,33 @@ type AmostraFormProps = {
 };
 
 export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFormProps) {
-	const incidencias = useFieldArray({ control: form.control, name: "incidencias" });
 	const acumuladoProposto = useFieldArray({ control: form.control, name: "acumuladoProposto" });
+	const formRef = useRef<HTMLFormElement>(null);
+
+	const scrollToFirstError = () => {
+		requestAnimationFrame(() => {
+			const target = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+			if (!target) return;
+			target.scrollIntoView({ behavior: "smooth", block: "center" });
+			target.focus({ preventScroll: true });
+		});
+	};
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+			<form
+				ref={formRef}
+				onSubmit={form.handleSubmit(onSubmit, scrollToFirstError)}
+				className="space-y-8"
+			>
 				<FormSection title="Avaliador" description="Profissional responsável pela avaliação.">
-					<AvaliadorSelectField
-						control={form.control}
-						name="avaliadorId"
-						disabled={isSubmitting}
-					/>
+					<AvaliadorSelectField control={form.control} name="avaliadorId" disabled={isSubmitting} />
 				</FormSection>
 
 				<FormSection title="Identificação" description="Dados do proponente e contato.">
-					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{(["proponente", "cpf", "cnpj"] as const).map((fieldName) => (
+					<AmostraTextField control={form.control} name="proponente" disabled={isSubmitting} />
+					<div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem_minmax(0,1fr)]">
+						{(["cpf", "cnpj"] as const).map((fieldName) => (
 							<AmostraTextField
 								key={fieldName}
 								control={form.control}
@@ -47,8 +58,6 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 								disabled={isSubmitting}
 							/>
 						))}
-					</div>
-					<div className="mt-4 grid gap-4 sm:grid-cols-[5rem_minmax(0,1fr)]">
 						<FormField
 							control={form.control}
 							name="ddd"
@@ -94,11 +103,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 				{fieldGroups
 					.filter((g) => g.title !== identificationGroupTitle)
 					.map((group) => (
-						<FormSection
-							key={group.title}
-							title={group.title}
-							description={group.description}
-						>
+						<FormSection key={group.title} title={group.title} description={group.description}>
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								{group.fields.map((fieldName) => (
 									<AmostraTextField
@@ -113,21 +118,20 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 					))}
 
 				<FormSection
-					title="Incidências e acumulados"
-					description="Adicione os valores de incidências e acumulados da avaliação."
+					title="Incidências"
+					description="Informe o peso (%) de cada serviço. O total deve somar 100%."
+				>
+					<IncidenciaServicosField control={form.control} disabled={isSubmitting} />
+				</FormSection>
+
+				<FormSection
+					title="Acumulado proposto"
+					description="Adicione os valores de acumulado proposto da avaliação."
 				>
 					<div className="grid gap-6 lg:grid-cols-2">
 						<DecimalArrayField
 							control={form.control}
-							name="incidencias"
-							title="Incidências"
-							disabled={isSubmitting}
-							fieldArray={incidencias}
-						/>
-						<DecimalArrayField
-							control={form.control}
 							name="acumuladoProposto"
-							title="Acumulado proposto"
 							disabled={isSubmitting}
 							fieldArray={acumuladoProposto}
 						/>
