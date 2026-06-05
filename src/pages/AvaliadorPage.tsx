@@ -27,7 +27,11 @@ const avaliadorSchema = z.object({
 	nomeFantasia: z.string().trim().min(1, "Informe o nome fantasia."),
 	cpf: z.string().trim().regex(cpfRegex, "Informe o CPF com máscara: 000.000.000-00."),
 	cnpj: z.string().trim().regex(cnpjRegex, "Informe o CNPJ com máscara: 00.000.000/0000-00."),
-	registroCrea: z.string().trim().min(1, "Informe o registro CREA.").max(25, "Máximo 25 caracteres."),
+	registroCrea: z
+		.string()
+		.trim()
+		.min(1, "Informe o registro CREA.")
+		.max(25, "Máximo 25 caracteres."),
 });
 
 type AvaliadorFormValues = z.infer<typeof avaliadorSchema>;
@@ -116,7 +120,12 @@ function AvaliadorFormDialog({
 	const isPending = mutation.isPending;
 
 	return (
-		<Dialog.Root open={state !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+		<Dialog.Root
+			open={state !== null}
+			onOpenChange={(open) => {
+				if (!open) onClose();
+			}}
+		>
 			<Dialog.Portal>
 				<Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
 				<Dialog.Popup className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/50">
@@ -127,7 +136,9 @@ function AvaliadorFormDialog({
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
-								<label htmlFor="avaliador-nome" className="mb-1 block text-sm text-slate-300">Nome</label>
+								<label htmlFor="avaliador-nome" className="mb-1 block text-sm text-slate-300">
+									Nome
+								</label>
 								<Input
 									id="avaliador-nome"
 									{...form.register("nome")}
@@ -138,7 +149,12 @@ function AvaliadorFormDialog({
 								<FieldError message={form.formState.errors.nome?.message} />
 							</div>
 							<div>
-								<label htmlFor="avaliador-nomeFantasia" className="mb-1 block text-sm text-slate-300">Nome fantasia</label>
+								<label
+									htmlFor="avaliador-nomeFantasia"
+									className="mb-1 block text-sm text-slate-300"
+								>
+									Nome fantasia
+								</label>
 								<Input
 									id="avaliador-nomeFantasia"
 									{...form.register("nomeFantasia")}
@@ -152,7 +168,9 @@ function AvaliadorFormDialog({
 
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
-								<label htmlFor="avaliador-cpf" className="mb-1 block text-sm text-slate-300">CPF</label>
+								<label htmlFor="avaliador-cpf" className="mb-1 block text-sm text-slate-300">
+									CPF
+								</label>
 								<Input
 									id="avaliador-cpf"
 									{...form.register("cpf")}
@@ -163,7 +181,9 @@ function AvaliadorFormDialog({
 								<FieldError message={form.formState.errors.cpf?.message} />
 							</div>
 							<div>
-								<label htmlFor="avaliador-cnpj" className="mb-1 block text-sm text-slate-300">CNPJ</label>
+								<label htmlFor="avaliador-cnpj" className="mb-1 block text-sm text-slate-300">
+									CNPJ
+								</label>
 								<Input
 									id="avaliador-cnpj"
 									{...form.register("cnpj")}
@@ -176,7 +196,9 @@ function AvaliadorFormDialog({
 						</div>
 
 						<div>
-							<label htmlFor="avaliador-registroCrea" className="mb-1 block text-sm text-slate-300">Registro CREA</label>
+							<label htmlFor="avaliador-registroCrea" className="mb-1 block text-sm text-slate-300">
+								Registro CREA
+							</label>
 							<Input
 								id="avaliador-registroCrea"
 								{...form.register("registroCrea")}
@@ -214,8 +236,10 @@ function AvaliadorFormDialog({
 										<LoaderCircleIcon className="animate-spin h-4 w-4" />
 										Salvando...
 									</>
+								) : isEdit ? (
+									"Salvar"
 								) : (
-									isEdit ? "Salvar" : "Criar"
+									"Criar"
 								)}
 							</Button>
 						</div>
@@ -247,7 +271,12 @@ function DeleteAvaliadorDialog({
 	});
 
 	return (
-		<AlertDialog.Root open={avaliador !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+		<AlertDialog.Root
+			open={avaliador !== null}
+			onOpenChange={(open) => {
+				if (!open) onClose();
+			}}
+		>
 			<AlertDialog.Portal>
 				<AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
 				<AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/50">
@@ -257,7 +286,8 @@ function DeleteAvaliadorDialog({
 					<AlertDialog.Description className="mt-2 text-sm text-slate-400">
 						{avaliador && (
 							<>
-								<span className="font-medium text-slate-300">{avaliador.nome}</span> será permanentemente removido. Essa ação não pode ser desfeita.
+								<span className="font-medium text-slate-300">{avaliador.nome}</span> será
+								permanentemente removido. Essa ação não pode ser desfeita.
 							</>
 						)}
 					</AlertDialog.Description>
@@ -295,7 +325,11 @@ export function AvaliadorPage() {
 	const [dialogState, setDialogState] = useState<DialogState | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Avaliador | null>(null);
 
-	const { data: avaliadores, isLoading, error } = useQuery<Avaliador[], Error>({
+	const {
+		data: avaliadores,
+		isLoading,
+		error,
+	} = useQuery<Avaliador[], Error>({
 		queryKey: ["avaliadores"],
 		queryFn: fetchAvaliadores,
 	});
@@ -358,45 +392,44 @@ export function AvaliadorPage() {
 									</tr>
 								</thead>
 								<tbody>
-									{[...avaliadores].sort((a, b) => a.id - b.id).map((avaliador) => (
-										<tr
-											key={avaliador.id}
-											className="border-b border-white/5 last:border-0"
-										>
-											<td className="py-3 pr-4 text-slate-500">{avaliador.id}</td>
-											<td className="py-3 pr-4 font-medium text-slate-100">{avaliador.nome}</td>
-											<td className="py-3 pr-4 text-slate-300">{avaliador.nomeFantasia}</td>
-											<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cpf}</td>
-											<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cnpj}</td>
-											<td className="py-3 pr-4 text-slate-300">{avaliador.registroCrea}</td>
-											<td className="py-3">
-												<div className="flex items-center gap-1">
-													<button
-														type="button"
-														title="Editar"
-														onClick={() => setDialogState({ mode: "edit", avaliador })}
-														className={cn(
-															buttonVariants({ variant: "ghost", size: "icon" }),
-															"h-7 w-7 hover:bg-white/10",
-														)}
-													>
-														<PencilIcon className="h-3.5 w-3.5" />
-													</button>
-													<button
-														type="button"
-														title="Deletar"
-														onClick={() => setDeleteTarget(avaliador)}
-														className={cn(
-															buttonVariants({ variant: "ghost", size: "icon" }),
-															"h-7 w-7 text-red-400 hover:bg-red-950/60 hover:text-red-300",
-														)}
-													>
-														<Trash2Icon className="h-3.5 w-3.5" />
-													</button>
-												</div>
-											</td>
-										</tr>
-									))}
+									{[...avaliadores]
+										.sort((a, b) => a.id - b.id)
+										.map((avaliador) => (
+											<tr key={avaliador.id} className="border-b border-white/5 last:border-0">
+												<td className="py-3 pr-4 text-slate-500">{avaliador.id}</td>
+												<td className="py-3 pr-4 font-medium text-slate-100">{avaliador.nome}</td>
+												<td className="py-3 pr-4 text-slate-300">{avaliador.nomeFantasia}</td>
+												<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cpf}</td>
+												<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cnpj}</td>
+												<td className="py-3 pr-4 text-slate-300">{avaliador.registroCrea}</td>
+												<td className="py-3">
+													<div className="flex items-center gap-1">
+														<button
+															type="button"
+															title="Editar"
+															onClick={() => setDialogState({ mode: "edit", avaliador })}
+															className={cn(
+																buttonVariants({ variant: "ghost", size: "icon" }),
+																"h-7 w-7 hover:bg-white/10",
+															)}
+														>
+															<PencilIcon className="h-3.5 w-3.5" />
+														</button>
+														<button
+															type="button"
+															title="Deletar"
+															onClick={() => setDeleteTarget(avaliador)}
+															className={cn(
+																buttonVariants({ variant: "ghost", size: "icon" }),
+																"h-7 w-7 text-red-400 hover:bg-red-950/60 hover:text-red-300",
+															)}
+														>
+															<Trash2Icon className="h-3.5 w-3.5" />
+														</button>
+													</div>
+												</td>
+											</tr>
+										))}
 								</tbody>
 							</table>
 						</div>
@@ -404,14 +437,8 @@ export function AvaliadorPage() {
 				</CardContent>
 			</Card>
 
-			<AvaliadorFormDialog
-				state={dialogState}
-				onClose={() => setDialogState(null)}
-			/>
-			<DeleteAvaliadorDialog
-				avaliador={deleteTarget}
-				onClose={() => setDeleteTarget(null)}
-			/>
+			<AvaliadorFormDialog state={dialogState} onClose={() => setDialogState(null)} />
+			<DeleteAvaliadorDialog avaliador={deleteTarget} onClose={() => setDeleteTarget(null)} />
 		</Layout>
 	);
 }

@@ -19,7 +19,11 @@ function formatDate(value: string): string {
 
 export function AmostrasPage() {
 	const navigate = useNavigate();
-	const { data: amostras, isLoading, error } = useQuery<Amostra[], Error>({ queryKey: ["amostras"], queryFn: fetchAmostras });
+	const {
+		data: amostras,
+		isLoading,
+		error,
+	} = useQuery<Amostra[], Error>({ queryKey: ["amostras"], queryFn: fetchAmostras });
 
 	if (isLoading) {
 		return (
@@ -53,10 +57,7 @@ export function AmostrasPage() {
 					</div>
 					<Link
 						to="/nova-amostra"
-						className={cn(
-							buttonVariants({ variant: "default", size: "sm" }),
-							"gap-1.5",
-						)}
+						className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5")}
 					>
 						<PlusIcon className="h-3.5 w-3.5" />
 						Nova amostra

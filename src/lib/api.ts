@@ -84,7 +84,10 @@ export async function createAvaliador(input: CreateAvaliadorInput): Promise<Aval
 	return res.json();
 }
 
-export async function updateAvaliador(id: number, input: Partial<CreateAvaliadorInput>): Promise<Avaliador> {
+export async function updateAvaliador(
+	id: number,
+	input: Partial<CreateAvaliadorInput>,
+): Promise<Avaliador> {
 	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
@@ -104,7 +107,6 @@ export async function deleteAvaliador(id: number): Promise<void> {
 		throw new Error(`Erro ao deletar avaliador: ${msg}`);
 	}
 }
-
 
 export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
 	const form = new FormData();

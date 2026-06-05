@@ -1,3 +1,4 @@
+import { type DragEvent, useState } from "react";
 import { cn } from "../lib/utils";
 import { Input } from "./ui/input";
 
@@ -13,6 +14,21 @@ type FileDropZoneProps = {
 	onChange?: (files: FileList | null) => void;
 };
 
+function matchesAccept(file: File, accept: string): boolean {
+	const patterns = accept
+		.split(",")
+		.map((p) => p.trim().toLowerCase())
+		.filter(Boolean);
+	if (patterns.length === 0) return true;
+	const name = file.name.toLowerCase();
+	const type = file.type.toLowerCase();
+	return patterns.some((pattern) => {
+		if (pattern.startsWith(".")) return name.endsWith(pattern);
+		if (pattern.endsWith("/*")) return type.startsWith(pattern.slice(0, -1));
+		return type === pattern;
+	});
+}
+
 export function FileDropZone({
 	hint = "or click to browse",
 	browseText = "Browse",
@@ -24,10 +40,41 @@ export function FileDropZone({
 	ariaInvalid = false,
 	onChange,
 }: FileDropZoneProps) {
+	const [isDragging, setIsDragging] = useState(false);
+
+	const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+		e.preventDefault();
+		setIsDragging(true);
+	};
+
+	const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+		e.preventDefault();
+		setIsDragging(false);
+	};
+
+	const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+		e.preventDefault();
+		setIsDragging(false);
+
+		const dropped = Array.from(e.dataTransfer.files).filter((file) => matchesAccept(file, accept));
+		if (dropped.length === 0) return;
+
+		const transfer = new DataTransfer();
+		for (const file of multiple ? dropped : dropped.slice(0, 1)) {
+			transfer.items.add(file);
+		}
+		onChange?.(transfer.files);
+	};
+
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: drag-drop has no keyboard equivalent; the file input below is the accessible path
 		<div
+			onDragOver={handleDragOver}
+			onDragLeave={handleDragLeave}
+			onDrop={handleDrop}
 			className={cn(
-				"rounded-xl border border-dashed border-slate-600 bg-slate-800",
+				"rounded-xl border border-dashed border-slate-600 bg-slate-800 transition-colors",
+				isDragging && "border-slate-300 bg-slate-700/60",
 				ariaInvalid && "border-red-800/80",
 			)}
 		>

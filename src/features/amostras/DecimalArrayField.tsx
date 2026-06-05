@@ -15,7 +15,7 @@ type DecimalArrayName = "incidencias" | "acumuladoProposto";
 type DecimalArrayFieldProps<TName extends DecimalArrayName> = {
 	control: Control<AmostraFormValues>;
 	name: TName;
-	title: string;
+	title?: string;
 	disabled?: boolean;
 	fieldArray: {
 		fields: { id: string }[];
@@ -39,7 +39,7 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 		<div className="space-y-3">
 			<div className="flex items-center justify-between gap-3">
 				<div>
-					<h3 className="text-sm font-semibold text-slate-100">{title}</h3>
+					{title && <h3 className="text-sm font-semibold text-slate-100">{title}</h3>}
 					<FormDescription className="text-slate-500">
 						Use duas casas decimais, por exemplo 12,34.
 					</FormDescription>

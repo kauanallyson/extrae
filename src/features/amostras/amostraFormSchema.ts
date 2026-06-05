@@ -31,20 +31,11 @@ export const dddRegex = /^\d{2}$/;
 export const phoneRegex = /^\d{4,5}-\d{4}$/;
 const twoDecimalRegex = /^\d+(?:[,.]\d{2})$/;
 
-export const moneyFields = new Set<TextField>([
-	"valorTerreno",
-	"valorImovel",
-	"valorUnitario",
-]);
+export const moneyFields = new Set<TextField>(["valorTerreno", "valorImovel", "valorUnitario"]);
 export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
 export const meterFields = new Set<TextField>(["testada"]);
 export const integerFields = new Set<TextField>(["quartos", "banheiros", "suites", "vagas"]);
-const requiredFields = new Set<TextField>([
-	"cpf",
-	"cnpj",
-	"cep",
-	"dataReferencia",
-]);
+const requiredFields = new Set<TextField>(["cpf", "cnpj", "cep", "dataReferencia"]);
 export const positiveNumberFields = new Set<TextField>([
 	"valorTerreno",
 	"valorImovel",
@@ -103,6 +94,32 @@ export const fieldLabels: Record<TextField, string> = {
 	dataReferencia: "Data de referência",
 };
 
+export const incidenciaServicos = [
+	"Serviços preliminares e gerais",
+	"Infraestrutura",
+	"Supraestrutura",
+	"Paredes e painéis",
+	"Esquadrias",
+	"Vidros e Plásticos",
+	"Coberturas",
+	"Impermeabilizações",
+	"Revestimentos Internos",
+	"Forros",
+	"Revestimentos Externos",
+	"Pintura",
+	"Pisos",
+	"Acabamentos",
+	"Instalações Elétricas e Telefônicas",
+	"Instalações Hidráulicas",
+	"Instalações de Esgoto e Águas Pluviais",
+	"Louças e Metais",
+	"Complementos",
+	"Outros Serviços",
+] as const;
+
+export const INCIDENCIA_SUM_TARGET = 100;
+export const INCIDENCIA_SUM_TOLERANCE = 0.05;
+
 export const identificationGroupTitle = "Identificação";
 
 export const fieldGroups = [
@@ -139,22 +156,12 @@ export const fieldGroups = [
 	{
 		title: "Valores",
 		description: "Valores do terreno, imóvel e unitário.",
-		fields: [
-			"valorTerreno",
-			"valorImovel",
-			"numeroEtapas",
-			"valorUnitario",
-		] satisfies TextField[],
+		fields: ["valorTerreno", "valorImovel", "numeroEtapas", "valorUnitario"] satisfies TextField[],
 	},
 	{
 		title: "Características",
 		description: "Medidas e composição do imóvel.",
-		fields: [
-			"testada",
-			"idadeEstimada",
-			"areaTerreno",
-			"areaConstruida",
-		] satisfies TextField[],
+		fields: ["testada", "idadeEstimada", "areaTerreno", "areaConstruida"] satisfies TextField[],
 	},
 	{
 		title: "Distribuição",
@@ -187,7 +194,7 @@ export const defaultValues = {
 	avaliadorId: "",
 	ddd: "",
 	telefone: "",
-	incidencias: [{ value: "" }],
+	incidencias: incidenciaServicos.map(() => ({ value: "" })),
 	acumuladoProposto: [{ value: "" }],
 	...Object.fromEntries(textFields.map((field) => [field, ""])),
 } as AmostraFormValues;
@@ -205,8 +212,7 @@ export function getPlaceholder(field: TextField) {
 export function getInputMode(field: TextField) {
 	if (integerFields.has(field)) return "numeric";
 	if (positiveNumberFields.has(field)) return "decimal";
-	if (field === "cpf" || field === "cnpj" || field === "cep")
-		return "numeric";
+	if (field === "cpf" || field === "cnpj" || field === "cep") return "numeric";
 	return "text";
 }
 
@@ -228,9 +234,7 @@ function positiveNumberString(field: TextField) {
 			return Number.isFinite(parsed) && parsed >= 0;
 		},
 		{
-			message: requiredFields.has(field)
-				? "Preencha este campo."
-				: "Informe um número positivo.",
+			message: requiredFields.has(field) ? "Preencha este campo." : "Informe um número positivo.",
 		},
 	);
 }
@@ -248,10 +252,7 @@ function textFieldSchema(field: TextField) {
 			.string()
 			.trim()
 			.min(1, "Informe o CNPJ.")
-			.regex(
-				cnpjRegex,
-				"Informe o CNPJ com máscara: 00.000.000/0000-00.",
-			);
+			.regex(cnpjRegex, "Informe o CNPJ com máscara: 00.000.000/0000-00.");
 	}
 	if (field === "cep") {
 		return z
@@ -261,8 +262,7 @@ function textFieldSchema(field: TextField) {
 			.regex(cepRegex, "Informe o CEP com máscara: 00000-000.");
 	}
 	if (positiveNumberFields.has(field)) return positiveNumberString(field);
-	if (requiredFields.has(field))
-		return z.string().trim().min(1, "Preencha este campo.");
+	if (requiredFields.has(field)) return z.string().trim().min(1, "Preencha este campo.");
 	return z.string();
 }
 
@@ -271,14 +271,9 @@ const textFieldShape = Object.fromEntries(
 ) as unknown as Record<TextField, z.ZodType<string>>;
 
 const decimalArrayValueSchema = z.object({
-	value: z
-		.string()
-		.refine(
-			(value) => !value.trim() || twoDecimalRegex.test(value.trim()),
-			{
-				message: "Informe um número positivo com duas casas decimais.",
-			},
-		),
+	value: z.string().refine((value) => !value.trim() || twoDecimalRegex.test(value.trim()), {
+		message: "Informe um número positivo com duas casas decimais.",
+	}),
 });
 
 function hasDecimalArrayValue(values: ArrayValue[]) {
@@ -288,16 +283,26 @@ function hasDecimalArrayValue(values: ArrayValue[]) {
 	});
 }
 
+function sumArrayValues(values: ArrayValue[]) {
+	return values.reduce((acc, item) => {
+		const normalized = item.value.trim().replace(",", ".");
+		const parsed = Number(normalized);
+		return acc + (normalized && Number.isFinite(parsed) ? parsed : 0);
+	}, 0);
+}
+
+function incidenciasSumValid(values: ArrayValue[]) {
+	return Math.abs(sumArrayValues(values) - INCIDENCIA_SUM_TARGET) <= INCIDENCIA_SUM_TOLERANCE;
+}
+
 export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	avaliadorId: z.string().min(1, "Selecione um avaliador."),
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
-	telefone: z
-		.string()
-		.regex(phoneRegex, "Informe o telefone com máscara: 00000-0000."),
+	telefone: z.string().regex(phoneRegex, "Informe o telefone com máscara: 00000-0000."),
 	incidencias: z
 		.array(decimalArrayValueSchema)
-		.min(1)
-		.refine(hasDecimalArrayValue, "Informe ao menos um valor decimal."),
+		.length(incidenciaServicos.length)
+		.refine(incidenciasSumValid, "A soma dos pesos deve totalizar 100%."),
 	acumuladoProposto: z
 		.array(decimalArrayValueSchema)
 		.min(1)
@@ -307,11 +312,7 @@ export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 
 type ErrorNode = Record<string, unknown>;
 
-function assignFieldError(
-	errors: ErrorNode,
-	path: PropertyKey[],
-	message: string,
-) {
+function assignFieldError(errors: ErrorNode, path: PropertyKey[], message: string) {
 	let cursor = errors;
 	for (const segment of path.slice(0, -1)) {
 		const key = String(segment);
@@ -323,9 +324,7 @@ function assignFieldError(
 	cursor[key] = { type: "validation", message } satisfies FieldError;
 }
 
-export const amostraFormResolver: Resolver<AmostraFormValues> = async (
-	values,
-) => {
+export const amostraFormResolver: Resolver<AmostraFormValues> = async (values) => {
 	const result = amostraFormSchema.safeParse(values);
 	if (result.success) return { values: result.data, errors: {} };
 
@@ -339,6 +338,13 @@ export const amostraFormResolver: Resolver<AmostraFormValues> = async (
 
 function parsePositiveNumber(value: string) {
 	return Number(value.trim().replace(",", ".") || 0);
+}
+
+function parseFixedNumberArray(values: ArrayValue[]) {
+	return values.map((item) => {
+		const parsed = Number(item.value.trim().replace(",", "."));
+		return Number.isFinite(parsed) ? parsed : 0;
+	});
 }
 
 function parseNumberArray(values: ArrayValue[]) {
@@ -356,19 +362,30 @@ function formatTelefone(digits: string): string {
 	return digits;
 }
 
+function toDecimalComma(value: number): string {
+	return value.toFixed(2).replace(".", ",");
+}
+
+function numberToCommaString(value: number | null | undefined): string {
+	return value != null ? String(value).replace(".", ",") : "";
+}
+
+function moneyToCommaString(value: number | null | undefined): string {
+	return value != null ? value.toFixed(2).replace(".", ",") : "";
+}
+
 export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormValues {
 	return {
-		avaliadorId: String(amostra.avaliadorId),
+		avaliadorId: amostra.avaliadorId ? String(amostra.avaliadorId) : "",
 		ddd: amostra.ddd,
 		telefone: formatTelefone(amostra.telefone),
-		incidencias:
-			amostra.incidencias.length > 0
-				? amostra.incidencias.map((v) => ({ value: v.toFixed(2) }))
-				: [{ value: "" }],
+		incidencias: incidenciaServicos.map((_, i) => ({
+			value: amostra.incidencias[i] != null ? toDecimalComma(amostra.incidencias[i]) : "",
+		})),
 		acumuladoProposto:
 			amostra.acumuladoProposto.length > 0
 				? amostra.acumuladoProposto.map((v) => ({
-						value: v.toFixed(2),
+						value: toDecimalComma(v),
 					}))
 				: [{ value: "" }],
 		proponente: amostra.proponente,
@@ -383,18 +400,18 @@ export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormVal
 		municipio: amostra.municipio,
 		uf: amostra.uf,
 		empresaResponsavel: amostra.empresaResponsavel,
-		valorTerreno: amostra.valorTerreno != null ? String(amostra.valorTerreno) : "",
+		valorTerreno: moneyToCommaString(amostra.valorTerreno),
 		matricula: amostra.matricula,
 		oficio: amostra.oficio,
 		comarca: amostra.comarca,
 		ufMatricula: amostra.ufMatricula,
-		valorImovel: amostra.valorImovel != null ? String(amostra.valorImovel) : "",
+		valorImovel: moneyToCommaString(amostra.valorImovel),
 		numeroEtapas: amostra.numeroEtapas != null ? String(amostra.numeroEtapas) : "",
-		valorUnitario: amostra.valorUnitario != null ? String(amostra.valorUnitario) : "",
-		testada: amostra.testada != null ? String(amostra.testada) : "",
+		valorUnitario: moneyToCommaString(amostra.valorUnitario),
+		testada: numberToCommaString(amostra.testada),
 		idadeEstimada: amostra.idadeEstimada,
-		areaTerreno: amostra.areaTerreno != null ? String(amostra.areaTerreno) : "",
-		areaConstruida: amostra.areaConstruida != null ? String(amostra.areaConstruida) : "",
+		areaTerreno: numberToCommaString(amostra.areaTerreno),
+		areaConstruida: numberToCommaString(amostra.areaConstruida),
 		quartos: amostra.quartos != null ? String(amostra.quartos) : "",
 		banheiros: amostra.banheiros != null ? String(amostra.banheiros) : "",
 		suites: amostra.suites != null ? String(amostra.suites) : "",
@@ -433,7 +450,7 @@ export function parseFormValues(values: AmostraFormValues): NewAmostraRequest {
 		comarca: values.comarca.trim(),
 		ufMatricula: values.ufMatricula.trim(),
 		valorImovel: parsePositiveNumber(values.valorImovel),
-		incidencias: parseNumberArray(values.incidencias),
+		incidencias: parseFixedNumberArray(values.incidencias),
 		numeroEtapas: parsePositiveNumber(values.numeroEtapas),
 		acumuladoProposto: parseNumberArray(values.acumuladoProposto),
 		valorUnitario: parsePositiveNumber(values.valorUnitario),
