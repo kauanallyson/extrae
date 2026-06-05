@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { CheckCircle2Icon, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,11 @@ type CreateResult = {
 };
 
 export function NewAmostraPage() {
+	const location = useLocation();
+	const prefilled = (location.state as { formValues?: AmostraFormValues } | null)?.formValues;
+
 	const form = useForm<AmostraFormValues>({
-		defaultValues,
+		defaultValues: prefilled ?? defaultValues,
 		resolver: amostraFormResolver,
 	});
 

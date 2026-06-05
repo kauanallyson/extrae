@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { AvaliadorSelectField } from "@/components/AvaliadorSelectField";
 import { FileDropZone } from "../components/FileDropZone";
 import { Layout } from "../components/Layout";
 import { Alert, AlertDescription } from "../components/ui/alert";
@@ -16,10 +15,11 @@ import {
 	FormLabel,
 	FormMessage,
 } from "../components/ui/form";
-import { extrairTextoPdf, gerarAmostraIa } from "../lib/api";
+import { amostraToFormValues } from "@/features/amostras/amostraFormSchema";
+import type { Amostra } from "../lib/api";
+import { gerarAmostraIa } from "../lib/api";
 
 type FormValues = {
-	avaliadorId: string;
 	pdf: FileList | null;
 };
 
@@ -28,7 +28,6 @@ export function ExtrairAmostraPage() {
 
 	const form = useForm<FormValues>({
 		defaultValues: {
-			avaliadorId: "",
 			pdf: null,
 		},
 	});
@@ -39,11 +38,10 @@ export function ExtrairAmostraPage() {
 		mutationFn: async (values: FormValues) => {
 			const pdf = values.pdf?.[0];
 			if (!pdf) throw new Error("Nenhum arquivo PDF selecionado.");
-			const avaliadorId = Number(values.avaliadorId);
 
-			const amostraText = await extrairTextoPdf(pdf);
-			const amostraId = await gerarAmostraIa(avaliadorId, amostraText);
-			navigate(`/amostras/${amostraId}/editar`);
+			const amostraData = await gerarAmostraIa(pdf);
+			const formValues = amostraToFormValues(amostraData as Amostra);
+			navigate("/nova-amostra", { state: { formValues } });
 		},
 	});
 
@@ -99,12 +97,6 @@ export function ExtrairAmostraPage() {
 										<FormMessage id="pdf-message" />
 									</FormItem>
 								)}
-							/>
-
-							<AvaliadorSelectField
-								control={form.control}
-								name="avaliadorId"
-								disabled={isRunning}
 							/>
 
 							<Button
