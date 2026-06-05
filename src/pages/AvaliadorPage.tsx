@@ -253,7 +253,7 @@ function DeleteAvaliadorDialog({
 							</>
 						)}
 					</AlertDialog.Description>
-					{deleteMutation.error && (
+					{deleteMutation.error instanceof Error && (
 						<p className="mt-3 text-sm text-red-400">{getErrorMessage(deleteMutation.error)}</p>
 					)}
 					<div className="mt-5 flex justify-end gap-3">
