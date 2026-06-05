@@ -356,7 +356,7 @@ function formatTelefone(digits: string): string {
 	return digits;
 }
 
-export function amostraToFormValues(amostra: Amostra): AmostraFormValues {
+export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormValues {
 	return {
 		avaliadorId: String(amostra.avaliadorId),
 		ddd: amostra.ddd,

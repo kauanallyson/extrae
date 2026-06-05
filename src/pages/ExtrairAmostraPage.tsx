@@ -16,8 +16,8 @@ import {
 	FormMessage,
 } from "../components/ui/form";
 import { amostraToFormValues } from "@/features/amostras/amostraFormSchema";
-import type { Amostra } from "../lib/api";
 import { gerarAmostraIa } from "../lib/api";
+import type { CreateAmostraInput } from "../lib/api";
 
 type FormValues = {
 	pdf: FileList | null;
@@ -34,13 +34,14 @@ export function ExtrairAmostraPage() {
 
 	const selectedFile = form.watch("pdf");
 
-	const pipeline = useMutation<void, Error, FormValues>({
+	const pipeline = useMutation<CreateAmostraInput, Error, FormValues>({
 		mutationFn: async (values: FormValues) => {
 			const pdf = values.pdf?.[0];
 			if (!pdf) throw new Error("Nenhum arquivo PDF selecionado.");
-
-			const amostraData = await gerarAmostraIa(pdf);
-			const formValues = amostraToFormValues(amostraData as Amostra);
+			return gerarAmostraIa(pdf);
+		},
+		onSuccess: (amostraData) => {
+			const formValues = amostraToFormValues(amostraData);
 			navigate("/nova-amostra", { state: { formValues } });
 		},
 	});

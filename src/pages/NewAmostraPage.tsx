@@ -56,7 +56,7 @@ export function NewAmostraPage() {
 				return { amostra };
 			}
 		},
-		onSuccess: () => form.reset(),
+		onSuccess: () => form.reset(defaultValues),
 	});
 
 	const isSubmitting = createAmostraMutation.isPending;
@@ -115,7 +115,7 @@ export function NewAmostraPage() {
 										type="button"
 										variant="outline"
 										onClick={() => {
-											form.reset();
+											form.reset(defaultValues);
 											resetMutation();
 										}}
 										className={cn("h-10", secondaryButtonClassName)}

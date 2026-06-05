@@ -127,8 +127,9 @@ function AvaliadorFormDialog({
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
-								<label className="mb-1 block text-sm text-slate-300">Nome</label>
+								<label htmlFor="avaliador-nome" className="mb-1 block text-sm text-slate-300">Nome</label>
 								<Input
+									id="avaliador-nome"
 									{...form.register("nome")}
 									className={inputClassName}
 									placeholder="Nome completo"
@@ -137,8 +138,9 @@ function AvaliadorFormDialog({
 								<FieldError message={form.formState.errors.nome?.message} />
 							</div>
 							<div>
-								<label className="mb-1 block text-sm text-slate-300">Nome fantasia</label>
+								<label htmlFor="avaliador-nomeFantasia" className="mb-1 block text-sm text-slate-300">Nome fantasia</label>
 								<Input
+									id="avaliador-nomeFantasia"
 									{...form.register("nomeFantasia")}
 									className={inputClassName}
 									placeholder="Nome fantasia"
@@ -150,8 +152,9 @@ function AvaliadorFormDialog({
 
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
-								<label className="mb-1 block text-sm text-slate-300">CPF</label>
+								<label htmlFor="avaliador-cpf" className="mb-1 block text-sm text-slate-300">CPF</label>
 								<Input
+									id="avaliador-cpf"
 									{...form.register("cpf")}
 									className={inputClassName}
 									placeholder="000.000.000-00"
@@ -160,8 +163,9 @@ function AvaliadorFormDialog({
 								<FieldError message={form.formState.errors.cpf?.message} />
 							</div>
 							<div>
-								<label className="mb-1 block text-sm text-slate-300">CNPJ</label>
+								<label htmlFor="avaliador-cnpj" className="mb-1 block text-sm text-slate-300">CNPJ</label>
 								<Input
+									id="avaliador-cnpj"
 									{...form.register("cnpj")}
 									className={inputClassName}
 									placeholder="00.000.000/0000-00"
@@ -172,8 +176,9 @@ function AvaliadorFormDialog({
 						</div>
 
 						<div>
-							<label className="mb-1 block text-sm text-slate-300">Registro CREA</label>
+							<label htmlFor="avaliador-registroCrea" className="mb-1 block text-sm text-slate-300">Registro CREA</label>
 							<Input
+								id="avaliador-registroCrea"
 								{...form.register("registroCrea")}
 								className={inputClassName}
 								placeholder="Ex: 123456-D/CE"
@@ -231,7 +236,10 @@ function DeleteAvaliadorDialog({
 	const queryClient = useQueryClient();
 
 	const deleteMutation = useMutation({
-		mutationFn: () => deleteAvaliador(avaliador!.id),
+		mutationFn: () => {
+			if (!avaliador?.id) throw new Error("Avaliador inválido.");
+			return deleteAvaliador(avaliador.id);
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["avaliadores"] });
 			onClose();
@@ -268,18 +276,14 @@ function DeleteAvaliadorDialog({
 								</button>
 							}
 						/>
-						<AlertDialog.Close
-							render={
-								<button
-									type="button"
-									className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-									disabled={deleteMutation.isPending}
-									onClick={() => deleteMutation.mutate()}
-								>
-									{deleteMutation.isPending ? "Deletando..." : "Deletar"}
-								</button>
-							}
-						/>
+						<button
+							type="button"
+							className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+							disabled={deleteMutation.isPending}
+							onClick={() => deleteMutation.mutate()}
+						>
+							{deleteMutation.isPending ? "Deletando..." : "Deletar"}
+						</button>
 					</div>
 				</AlertDialog.Popup>
 			</AlertDialog.Portal>
