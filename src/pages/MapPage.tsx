@@ -63,7 +63,7 @@ export function MapPage() {
 		error,
 	} = useQuery<Amostra[], Error>({
 		queryKey: ["amostras"],
-		queryFn: fetchAmostras,
+		queryFn: () => fetchAmostras(),
 	});
 
 	const markers = amostras?.map(getAmostraMarker).filter((marker) => marker !== null) ?? [];

@@ -1,29 +1,98 @@
 import { useQuery } from "@tanstack/react-query";
-import { EyeIcon, LoaderCircleIcon, PencilIcon, PlusIcon } from "lucide-react";
+import {
+	DownloadIcon,
+	EyeIcon,
+	FilterIcon,
+	LoaderCircleIcon,
+	PencilIcon,
+	PlusIcon,
+	XIcon,
+} from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type Amostra, fetchAmostras } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	type Amostra,
+	type AmostrasFilters,
+	downloadAmostrasPlanilha,
+	fetchAmostras,
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const dateFormat = new Intl.DateTimeFormat("pt-BR");
 
+const emptyFilters: AmostrasFilters = {};
+
+const numberInputClass =
+	"[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
+
 function formatDate(value: string): string {
-	if (!value) return "—";
+	if (!value) return "-";
 	const d = new Date(value);
 	return isNaN(d.getTime()) ? value : dateFormat.format(d);
 }
 
+function hasFilters(filters: AmostrasFilters): boolean {
+	return Object.values(filters).some((v) => v?.trim());
+}
+
 export function AmostrasPage() {
 	const navigate = useNavigate();
+
+	const [filters, setFilters] = useState<AmostrasFilters>(emptyFilters);
+	const [appliedFilters, setAppliedFilters] = useState<AmostrasFilters>(emptyFilters);
+	const [exporting, setExporting] = useState(false);
+	const [exportError, setExportError] = useState<string | null>(null);
+
 	const {
 		data: amostras,
 		isLoading,
+		isFetching,
 		error,
-	} = useQuery<Amostra[], Error>({ queryKey: ["amostras"], queryFn: fetchAmostras });
+	} = useQuery<Amostra[], Error>({
+		queryKey: ["amostras", appliedFilters],
+		queryFn: () => fetchAmostras(appliedFilters),
+		keepPreviousData: true,
+	});
+
+	function updateFilter(key: keyof AmostrasFilters, value: string) {
+		setFilters((prev) => ({ ...prev, [key]: value }));
+	}
+
+	function applyFilters(e: FormEvent) {
+		e.preventDefault();
+		setAppliedFilters(filters);
+	}
+
+	function clearFilters() {
+		setFilters(emptyFilters);
+		setAppliedFilters(emptyFilters);
+	}
+
+	async function handleExport() {
+		setExporting(true);
+		setExportError(null);
+		try {
+			const { blobUrl, filename } = await downloadAmostrasPlanilha(appliedFilters);
+			const a = document.createElement("a");
+			a.href = blobUrl;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			URL.revokeObjectURL(blobUrl);
+		} catch (err) {
+			setExportError(err instanceof Error ? err.message : "Erro ao exportar planilha.");
+		} finally {
+			setExporting(false);
+		}
+	}
 
 	if (isLoading) {
 		return (
@@ -45,6 +114,8 @@ export function AmostrasPage() {
 		);
 	}
 
+	const filtersActive = hasFilters(appliedFilters);
+
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
 			<Card className="border-white/10 bg-slate-900 text-slate-100 shadow-2xl shadow-black/30">
@@ -55,18 +126,180 @@ export function AmostrasPage() {
 							{amostras.length}
 						</span>
 					</div>
-					<Link
-						to="/nova-amostra"
-						className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5")}
-					>
-						<PlusIcon className="h-3.5 w-3.5" />
-						Nova amostra
-					</Link>
+					<div className="flex items-center gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							className="gap-1.5"
+							onClick={handleExport}
+							disabled={exporting}
+						>
+							{exporting ? (
+								<LoaderCircleIcon className="h-3.5 w-3.5 animate-spin" />
+							) : (
+								<DownloadIcon className="h-3.5 w-3.5" />
+							)}
+							Exportar planilha
+						</Button>
+						<Link
+							to="/nova-amostra"
+							className={cn(buttonVariants({ variant: "default", size: "sm" }), "gap-1.5")}
+						>
+							<PlusIcon className="h-3.5 w-3.5" />
+							Nova amostra
+						</Link>
+					</div>
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
+					<form onSubmit={applyFilters} className="mb-4">
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-from" className="text-xs text-slate-400">
+									De
+								</Label>
+								<Input
+									id="filter-from"
+									type="date"
+									value={filters.from ?? ""}
+									onChange={(e) => updateFilter("from", e.target.value)}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-to" className="text-xs text-slate-400">
+									Até
+								</Label>
+								<Input
+									id="filter-to"
+									type="date"
+									value={filters.to ?? ""}
+									onChange={(e) => updateFilter("to", e.target.value)}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-municipio" className="text-xs text-slate-400">
+									Município
+								</Label>
+								<Input
+									id="filter-municipio"
+									placeholder="Ex.: SOBRAL"
+									value={filters.municipio ?? ""}
+									onChange={(e) => updateFilter("municipio", e.target.value.toUpperCase())}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-uf" className="text-xs text-slate-400">
+									UF
+								</Label>
+								<Input
+									id="filter-uf"
+									placeholder="Ex.: CE"
+									maxLength={2}
+									value={filters.uf ?? ""}
+									onChange={(e) => updateFilter("uf", e.target.value.toUpperCase())}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-valor-imovel-min" className="text-xs text-slate-400">
+									Valor imóvel mín.
+								</Label>
+								<Input
+									id="filter-valor-imovel-min"
+									type="number"
+									min={0}
+									className={numberInputClass}
+									placeholder="0"
+									value={filters.valorImovelMin ?? ""}
+									onChange={(e) => updateFilter("valorImovelMin", e.target.value)}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-valor-imovel-max" className="text-xs text-slate-400">
+									Valor imóvel máx.
+								</Label>
+								<Input
+									id="filter-valor-imovel-max"
+									type="number"
+									min={0}
+									className={numberInputClass}
+									placeholder="-"
+									value={filters.valorImovelMax ?? ""}
+									onChange={(e) => updateFilter("valorImovelMax", e.target.value)}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-valor-terreno-min" className="text-xs text-slate-400">
+									Valor terreno mín.
+								</Label>
+								<Input
+									id="filter-valor-terreno-min"
+									type="number"
+									min={0}
+									className={numberInputClass}
+									placeholder="0"
+									value={filters.valorTerrenoMin ?? ""}
+									onChange={(e) => updateFilter("valorTerrenoMin", e.target.value)}
+								/>
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="filter-valor-terreno-max" className="text-xs text-slate-400">
+									Valor terreno máx.
+								</Label>
+								<Input
+									id="filter-valor-terreno-max"
+									type="number"
+									min={0}
+									className={numberInputClass}
+									placeholder="-"
+									value={filters.valorTerrenoMax ?? ""}
+									onChange={(e) => updateFilter("valorTerrenoMax", e.target.value)}
+								/>
+							</div>
+						</div>
+
+						<div className="mt-3 flex items-center gap-2">
+							<Button
+								type="submit"
+								variant="default"
+								size="sm"
+								className="gap-1.5"
+								disabled={isFetching}
+							>
+								{isFetching ? (
+									<LoaderCircleIcon className="h-3.5 w-3.5 animate-spin" />
+								) : (
+									<FilterIcon className="h-3.5 w-3.5" />
+								)}
+								Filtrar
+							</Button>
+							{(filtersActive || hasFilters(filters)) && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="gap-1.5"
+									onClick={clearFilters}
+								>
+									<XIcon className="h-3.5 w-3.5" />
+									Limpar
+								</Button>
+							)}
+						</div>
+					</form>
+
+					{exportError && (
+						<Alert variant="destructive" className="mb-4">
+							<AlertDescription>{exportError}</AlertDescription>
+						</Alert>
+					)}
+
 					{amostras.length === 0 ? (
-						<p className="py-12 text-center text-sm text-slate-500">Nenhuma amostra encontrada.</p>
+						<p className="py-12 text-center text-sm text-slate-500">
+							{filtersActive
+								? "Nenhuma amostra para os filtros selecionados."
+								: "Nenhuma amostra encontrada."}
+						</p>
 					) : (
 						<div className="overflow-x-auto">
 							<table className="w-full text-sm">
@@ -76,6 +309,7 @@ export function AmostrasPage() {
 										<th className="pb-2 pr-4 font-medium">Proponente</th>
 										<th className="pb-2 pr-4 font-medium">Município/UF</th>
 										<th className="pb-2 pr-4 text-right font-medium">Valor Imóvel</th>
+										<th className="pb-2 pr-4 text-right font-medium">Valor Terreno</th>
 										<th className="pb-2 pr-4 font-medium">Data Referência</th>
 										<th className="pb-2 font-medium">Ações</th>
 									</tr>
@@ -89,15 +323,18 @@ export function AmostrasPage() {
 										>
 											<td className="py-3 pr-4 text-slate-500">{amostra.id}</td>
 											<td className="py-3 pr-4 font-medium text-slate-100">
-												{amostra.proponente || "—"}
+												{amostra.proponente || "-"}
 											</td>
 											<td className="py-3 pr-4 text-slate-300">
 												{amostra.municipio
 													? `${amostra.municipio}${amostra.uf ? `/${amostra.uf}` : ""}`
-													: "—"}
+													: "-"}
 											</td>
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
-												{amostra.valorImovel != null ? brl.format(amostra.valorImovel) : "—"}
+												{amostra.valorImovel != null ? brl.format(amostra.valorImovel) : "-"}
+											</td>
+											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
+												{amostra.valorTerreno != null ? brl.format(amostra.valorTerreno) : "-"}
 											</td>
 											<td className="py-3 pr-4 text-slate-300">
 												{formatDate(amostra.dataReferencia)}

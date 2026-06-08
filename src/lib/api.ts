@@ -19,7 +19,7 @@ export type Amostra = {
 	cnpj: string;
 	ddd: string;
 	telefone: string;
-	enderecoLiteral: string;
+	endereco: string;
 	coordenadaS: string;
 	coordenadaW: string;
 	complemento: string;
@@ -143,11 +143,62 @@ export async function downloadExcelRae(amostraId: number): Promise<DownloadResul
 	return { blobUrl: URL.createObjectURL(blob), filename };
 }
 
-export async function fetchAmostras(): Promise<Amostra[]> {
-	const res = await fetch(`${BASE_URL}/amostras`);
+// Shared by GET /amostras and GET /amostras/planilha (src/lib/amostras-filters.ts).
+export type AmostrasFilters = {
+	from?: string;
+	to?: string;
+	municipio?: string;
+	uf?: string;
+	valorImovelMin?: string;
+	valorImovelMax?: string;
+	valorTerrenoMin?: string;
+	valorTerrenoMax?: string;
+};
+
+const upperFilterKeys = new Set<keyof AmostrasFilters>(["municipio", "uf"]);
+
+function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(filters)) {
+		let trimmed = value?.trim();
+		if (!trimmed) continue;
+		if (upperFilterKeys.has(key as keyof AmostrasFilters)) trimmed = trimmed.toUpperCase();
+		params.set(key, trimmed);
+	}
+	return params;
+}
+
+async function readErrorMessage(res: Response): Promise<string> {
+	try {
+		const body = await res.json();
+		return body?.message ?? res.statusText;
+	} catch {
+		return (await res.text().catch(() => res.statusText)) || res.statusText;
+	}
+}
+
+export async function downloadAmostrasPlanilha(
+	filters: AmostrasFilters = {},
+): Promise<DownloadResult> {
+	const query = amostrasFilterParams(filters).toString();
+	const res = await fetch(`${BASE_URL}/amostras/planilha${query ? `?${query}` : ""}`);
+
 	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao carregar as amostras: ${msg}`);
+		throw new Error(await readErrorMessage(res));
+	}
+
+	const disposition = res.headers.get("Content-Disposition");
+	const filename = disposition?.split("filename=")[1]?.replace(/"/g, "") || "amostras.xlsx";
+
+	const blob = await res.blob();
+	return { blobUrl: URL.createObjectURL(blob), filename };
+}
+
+export async function fetchAmostras(filters: AmostrasFilters = {}): Promise<Amostra[]> {
+	const query = amostrasFilterParams(filters).toString();
+	const res = await fetch(`${BASE_URL}/amostras${query ? `?${query}` : ""}`);
+	if (!res.ok) {
+		throw new Error(`Erro ao carregar as amostras: ${await readErrorMessage(res)}`);
 	}
 	return res.json();
 }
