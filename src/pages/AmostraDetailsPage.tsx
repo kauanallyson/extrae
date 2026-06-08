@@ -151,7 +151,7 @@ export function AmostraDetailsPage() {
 								{amostra.proponente || `Amostra #${amostra.id}`}
 							</CardTitle>
 							<CardDescription className="mt-1 text-slate-400">
-								{[amostra.enderecoLiteral, amostra.municipio, amostra.uf]
+								{[amostra.endereco, amostra.municipio, amostra.uf]
 									.filter(Boolean)
 									.join(", ") || `Amostra #${amostra.id}`}
 							</CardDescription>
