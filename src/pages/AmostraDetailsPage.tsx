@@ -1,7 +1,7 @@
-import { AlertDialog } from "@base-ui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftIcon, LoaderCircleIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 	meterFields,
 	moneyFields,
 	type TextField,
-} from "@/features/amostras/amostraFormSchema";
+} from "@/features/amostras/fields";
 import {
 	type Amostra,
 	type Avaliador,
@@ -23,9 +23,9 @@ import {
 	fetchAmostra,
 	fetchAvaliadores,
 } from "@/lib/api";
+import { brl } from "@/lib/format";
+import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 function formatValue(field: TextField, value: string | number): string {
 	if (value == null || value === "") return "—";
@@ -85,13 +85,13 @@ export function AmostraDetailsPage() {
 		isLoading,
 		error,
 	} = useQuery<Amostra, Error>({
-		queryKey: ["amostra", amostraId],
+		queryKey: queryKeys.amostra(amostraId),
 		queryFn: () => fetchAmostra(amostraId),
 		enabled: !Number.isNaN(amostraId),
 	});
 
 	const { data: avaliadores } = useQuery<Avaliador[]>({
-		queryKey: ["avaliadores"],
+		queryKey: queryKeys.avaliadores,
 		queryFn: fetchAvaliadores,
 	});
 
@@ -100,7 +100,7 @@ export function AmostraDetailsPage() {
 	const deleteMutation = useMutation({
 		mutationFn: () => deleteAmostra(amostraId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["amostras"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.amostras() });
 			navigate("/amostras");
 		},
 	});
@@ -151,9 +151,8 @@ export function AmostraDetailsPage() {
 								{amostra.proponente || `Amostra #${amostra.id}`}
 							</CardTitle>
 							<CardDescription className="mt-1 text-slate-400">
-								{[amostra.endereco, amostra.municipio, amostra.uf]
-									.filter(Boolean)
-									.join(", ") || `Amostra #${amostra.id}`}
+								{[amostra.endereco, amostra.municipio, amostra.uf].filter(Boolean).join(", ") ||
+									`Amostra #${amostra.id}`}
 							</CardDescription>
 						</div>
 						<div className="flex shrink-0 gap-2">
@@ -167,57 +166,24 @@ export function AmostraDetailsPage() {
 								<PencilIcon />
 								Editar
 							</Link>
-							<AlertDialog.Root>
-								<AlertDialog.Trigger
-									render={
-										<button
-											type="button"
-											className={cn(
-												buttonVariants({ variant: "ghost", size: "icon-sm" }),
-												"text-red-400 hover:bg-red-950/60 hover:text-red-300",
-											)}
-											title="Deletar amostra"
-										>
-											<Trash2Icon />
-										</button>
-									}
-								/>
-								<AlertDialog.Portal>
-									<AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-									<AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/50">
-										<AlertDialog.Title className="text-base font-semibold text-slate-100">
-											Deletar amostra?
-										</AlertDialog.Title>
-										<AlertDialog.Description className="mt-2 text-sm text-slate-400">
-											Essa ação não pode ser desfeita. A amostra será permanentemente removida.
-										</AlertDialog.Description>
-										<div className="mt-5 flex justify-end gap-3">
-											<AlertDialog.Close
-												render={
-													<button
-														type="button"
-														className="rounded-md px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-													>
-														Cancelar
-													</button>
-												}
-											/>
-											<AlertDialog.Close
-												render={
-													<button
-														type="button"
-														className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-														disabled={deleteMutation.isLoading}
-														onClick={() => deleteMutation.mutate()}
-													>
-														{deleteMutation.isLoading ? "Deletando..." : "Deletar"}
-													</button>
-												}
-											/>
-										</div>
-									</AlertDialog.Popup>
-								</AlertDialog.Portal>
-							</AlertDialog.Root>
+							<ConfirmDeleteDialog
+								trigger={
+									<button
+										type="button"
+										className={cn(
+											buttonVariants({ variant: "ghost", size: "icon-sm" }),
+											"text-red-400 hover:bg-red-950/60 hover:text-red-300",
+										)}
+										title="Deletar amostra"
+									>
+										<Trash2Icon />
+									</button>
+								}
+								title="Deletar amostra?"
+								description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
+								pending={deleteMutation.isPending}
+								onConfirm={() => deleteMutation.mutate()}
+							/>
 						</div>
 					</div>
 				</CardHeader>
