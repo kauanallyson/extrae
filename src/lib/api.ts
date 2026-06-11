@@ -93,7 +93,20 @@ async function readErrorMessage(res: Response): Promise<string> {
 
 function contentDispositionFilename(res: Response, fallback: string): string {
 	const disposition = res.headers.get("Content-Disposition");
-	return disposition?.split("filename=")[1]?.replace(/"/g, "") || fallback;
+	if (!disposition) return fallback;
+
+	// RFC 5987 encoded filename (filename*=UTF-8''...) takes precedence
+	const encoded = disposition.match(/filename\*\s*=\s*utf-8''([^;]+)/i);
+	if (encoded) {
+		try {
+			return decodeURIComponent(encoded[1].trim());
+		} catch {
+			// fall back to the plain filename parameter
+		}
+	}
+
+	const plain = disposition.match(/filename\s*=\s*(?:"([^"]*)"|([^;\s]+))/);
+	return plain?.[1] || plain?.[2] || fallback;
 }
 
 async function toDownloadResult(res: Response, fallbackFilename: string): Promise<DownloadResult> {

@@ -79,7 +79,10 @@ export function AvaliadorFormDialog({
 		<Dialog.Root
 			open={state !== null}
 			onOpenChange={(open) => {
-				if (!open) onClose();
+				if (!open) {
+					mutation.reset();
+					onClose();
+				}
 			}}
 		>
 			<Dialog.Portal>

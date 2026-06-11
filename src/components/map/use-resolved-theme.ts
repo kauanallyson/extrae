@@ -24,6 +24,9 @@ export function useResolvedTheme(themeProp?: "light" | "dark"): Theme {
 	useEffect(() => {
 		if (themeProp) return; // Skip detection if theme is provided via prop
 
+		// Re-sync immediately in case the theme changed while detection was paused
+		setDetectedTheme(getDocumentTheme() ?? getSystemTheme());
+
 		// Watch for document class changes (e.g., next-themes toggling dark class)
 		const observer = new MutationObserver(() => {
 			const docTheme = getDocumentTheme();

@@ -10,7 +10,7 @@ import { type AmostraFormValues, defaultValues } from "@/features/amostras/field
 import { amostraFormResolver } from "@/features/amostras/schema";
 import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
 import { createAmostra } from "@/lib/api";
-import { getErrorMessage } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 
 export function NewAmostraPage() {
 	const location = useLocation();
@@ -35,6 +35,7 @@ export function NewAmostraPage() {
 	} = saveMutation;
 	const createdAmostra = saveResult?.amostra;
 	const downloadData = saveResult?.download;
+	const downloadError = saveResult?.downloadError;
 
 	useEffect(() => {
 		if (!createdAmostra) return;
@@ -81,11 +82,20 @@ export function NewAmostraPage() {
 					)}
 
 					{createdAmostra && (
-						<Alert className="mt-6 border-emerald-900 bg-emerald-950/40 text-emerald-300">
-							<AlertDescription className="text-emerald-300">
-								{downloadData
-									? "Amostra criada e planilha RAE baixada com sucesso."
-									: `Amostra ${createdAmostra.id} criada com sucesso.`}
+						<Alert
+							className={cn(
+								"mt-6",
+								downloadError
+									? "border-amber-900 bg-amber-950/40 text-amber-300"
+									: "border-emerald-900 bg-emerald-950/40 text-emerald-300",
+							)}
+						>
+							<AlertDescription className={downloadError ? "text-amber-300" : "text-emerald-300"}>
+								{downloadError
+									? `Amostra ${createdAmostra.id} criada, mas o download da planilha RAE falhou.`
+									: downloadData
+										? "Amostra criada e planilha RAE baixada com sucesso."
+										: `Amostra ${createdAmostra.id} criada com sucesso.`}
 							</AlertDescription>
 						</Alert>
 					)}

@@ -11,7 +11,7 @@ function assignFieldError(errors: ErrorNode, path: PropertyKey[], message: strin
 		cursor = cursor[key] as ErrorNode;
 	}
 
-	const key = String(path.at(-1));
+	const key = path.length > 0 ? String(path.at(-1)) : "root";
 	cursor[key] = { type: "validation", message } satisfies FieldError;
 }
 

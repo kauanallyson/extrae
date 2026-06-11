@@ -27,6 +27,7 @@ export function useGerarRaePreference(storageKey: string) {
 export type SaveAmostraResult = {
 	amostra: Amostra;
 	download?: DownloadResult;
+	downloadError?: Error;
 };
 
 type SaveAmostraVariables = {
@@ -47,7 +48,10 @@ export function useSaveAmostra(
 				return { amostra, download };
 			} catch (err) {
 				console.error("RAE download failed:", err);
-				return { amostra };
+				return {
+					amostra,
+					downloadError: err instanceof Error ? err : new Error(String(err)),
+				};
 			}
 		},
 		onSuccess: (result) => {

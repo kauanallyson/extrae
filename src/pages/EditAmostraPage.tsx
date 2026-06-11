@@ -48,6 +48,7 @@ export function EditAmostraPage() {
 	const saveMutation = useSaveAmostra((input) => updateAmostra(amostraId, input));
 	const isSubmitting = saveMutation.isPending;
 	const downloadData = saveMutation.data?.download;
+	const downloadError = saveMutation.data?.downloadError;
 
 	const deleteMutation = useMutation({
 		mutationFn: () => deleteAmostra(amostraId),
@@ -126,6 +127,14 @@ export function EditAmostraPage() {
 							title="Deletar amostra?"
 							description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
 							pending={deleteMutation.isPending}
+							closeOnConfirm={false}
+							error={
+								deleteMutation.error != null && (
+									<p className="mt-3 text-sm text-red-400">
+										{getErrorMessage(deleteMutation.error)}
+									</p>
+								)
+							}
 							onConfirm={() => deleteMutation.mutate()}
 						/>
 					</div>
@@ -161,11 +170,20 @@ export function EditAmostraPage() {
 					)}
 
 					{saveMutation.isSuccess && (
-						<Alert className="mt-6 border-emerald-900 bg-emerald-950/40 text-emerald-300">
-							<AlertDescription className="text-emerald-300">
-								{downloadData
-									? "Amostra salva e planilha RAE baixada com sucesso."
-									: "Amostra salva com sucesso."}
+						<Alert
+							className={cn(
+								"mt-6",
+								downloadError
+									? "border-amber-900 bg-amber-950/40 text-amber-300"
+									: "border-emerald-900 bg-emerald-950/40 text-emerald-300",
+							)}
+						>
+							<AlertDescription className={downloadError ? "text-amber-300" : "text-emerald-300"}>
+								{downloadError
+									? "Amostra salva, mas o download da planilha RAE falhou."
+									: downloadData
+										? "Amostra salva e planilha RAE baixada com sucesso."
+										: "Amostra salva com sucesso."}
 							</AlertDescription>
 						</Alert>
 					)}

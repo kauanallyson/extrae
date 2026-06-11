@@ -25,7 +25,7 @@ import {
 } from "@/lib/api";
 import { brl } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 
 function formatValue(field: TextField, value: string | number): string {
 	if (value == null || value === "") return "—";
@@ -182,6 +182,14 @@ export function AmostraDetailsPage() {
 								title="Deletar amostra?"
 								description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
 								pending={deleteMutation.isPending}
+								closeOnConfirm={false}
+								error={
+									deleteMutation.error != null && (
+										<p className="mt-3 text-sm text-red-400">
+											{getErrorMessage(deleteMutation.error)}
+										</p>
+									)
+								}
 								onConfirm={() => deleteMutation.mutate()}
 							/>
 						</div>
