@@ -3,12 +3,9 @@ import type { Control, FieldPath } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { fieldInputClassName, secondaryButtonClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
-import {
-	type AmostraFormValues,
-	fieldInputClassName,
-	secondaryButtonClassName,
-} from "./amostraFormSchema";
+import type { AmostraFormValues } from "./fields";
 
 type DecimalArrayName = "incidencias" | "acumuladoProposto";
 

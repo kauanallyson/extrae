@@ -2,12 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { amostraToFormValues } from "@/features/amostras/amostraFormSchema";
-import { FileDropZone } from "../components/FileDropZone";
-import { Layout } from "../components/Layout";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { FileDropZone } from "@/components/FileDropZone";
+import { Layout } from "@/components/Layout";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Form,
 	FormDescription,
@@ -15,9 +14,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "../components/ui/form";
-import type { CreateAmostraInput } from "../lib/api";
-import { gerarAmostraIa } from "../lib/api";
+} from "@/components/ui/form";
+import { amostraToFormValues } from "@/features/amostras/transforms";
+import { type CreateAmostraInput, gerarAmostraIa } from "@/lib/api";
 
 type FormValues = {
 	pdf: FileList | null;

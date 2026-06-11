@@ -62,86 +62,7 @@ export type CreateAmostraInput = Omit<Amostra, "id" | "createdAt" | "updatedAt">
 
 export type CreateAvaliadorInput = Omit<Avaliador, "id">;
 
-export async function fetchAvaliadores(): Promise<Avaliador[]> {
-	const res = await fetch(`${BASE_URL}/avaliadores`);
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao buscar avaliadores: ${msg}`);
-	}
-	return res.json();
-}
-
-export async function createAvaliador(input: CreateAvaliadorInput): Promise<Avaliador> {
-	const res = await fetch(`${BASE_URL}/avaliadores`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(input),
-	});
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao criar avaliador: ${msg}`);
-	}
-	return res.json();
-}
-
-export async function updateAvaliador(
-	id: number,
-	input: Partial<CreateAvaliadorInput>,
-): Promise<Avaliador> {
-	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
-		method: "PUT",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(input),
-	});
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao atualizar avaliador: ${msg}`);
-	}
-	return res.json();
-}
-
-export async function deleteAvaliador(id: number): Promise<void> {
-	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, { method: "DELETE" });
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao deletar avaliador: ${msg}`);
-	}
-}
-
-export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
-	const form = new FormData();
-	form.append("pdf", pdf);
-
-	const res = await fetch(`${BASE_URL}/amostras/ia`, {
-		method: "POST",
-		body: form,
-	});
-
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Geração da amostra: ${msg}`);
-	}
-
-	return res.json() as Promise<CreateAmostraInput>;
-}
-
 export type DownloadResult = { blobUrl: string; filename: string };
-
-export async function downloadExcelRae(amostraId: number): Promise<DownloadResult> {
-	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`);
-
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Etapa 3 - Download do Excel: ${msg}`);
-	}
-
-	const disposition = res.headers.get("Content-Disposition");
-	const filename =
-		disposition?.split("filename=")[1]?.replace(/"/g, "") || `dados-rae-${amostraId}.xlsx`;
-
-	const blob = await res.blob();
-	return { blobUrl: URL.createObjectURL(blob), filename };
-}
 
 // Shared by GET /amostras and GET /amostras/planilha (src/lib/amostras-filters.ts).
 export type AmostrasFilters = {
@@ -154,6 +75,45 @@ export type AmostrasFilters = {
 	valorTerrenoMin?: string;
 	valorTerrenoMax?: string;
 };
+
+async function assertOk(res: Response, errorPrefix: string): Promise<void> {
+	if (res.ok) return;
+	const msg = await res.text().catch(() => res.statusText);
+	throw new Error(`${errorPrefix}: ${msg}`);
+}
+
+async function readErrorMessage(res: Response): Promise<string> {
+	try {
+		const body = await res.json();
+		return body?.message ?? res.statusText;
+	} catch {
+		return (await res.text().catch(() => res.statusText)) || res.statusText;
+	}
+}
+
+function contentDispositionFilename(res: Response, fallback: string): string {
+	const disposition = res.headers.get("Content-Disposition");
+	if (!disposition) return fallback;
+
+	// RFC 5987 encoded filename (filename*=UTF-8''...) takes precedence
+	const encoded = disposition.match(/filename\*\s*=\s*utf-8''([^;]+)/i);
+	if (encoded) {
+		try {
+			return decodeURIComponent(encoded[1].trim());
+		} catch {
+			// fall back to the plain filename parameter
+		}
+	}
+
+	const plain = disposition.match(/filename\s*=\s*(?:"([^"]*)"|([^;\s]+))/);
+	return plain?.[1] || plain?.[2] || fallback;
+}
+
+async function toDownloadResult(res: Response, fallbackFilename: string): Promise<DownloadResult> {
+	const filename = contentDispositionFilename(res, fallbackFilename);
+	const blob = await res.blob();
+	return { blobUrl: URL.createObjectURL(blob), filename };
+}
 
 const upperFilterKeys = new Set<keyof AmostrasFilters>(["municipio", "uf"]);
 
@@ -168,13 +128,56 @@ function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
 	return params;
 }
 
-async function readErrorMessage(res: Response): Promise<string> {
-	try {
-		const body = await res.json();
-		return body?.message ?? res.statusText;
-	} catch {
-		return (await res.text().catch(() => res.statusText)) || res.statusText;
-	}
+export async function fetchAvaliadores(): Promise<Avaliador[]> {
+	const res = await fetch(`${BASE_URL}/avaliadores`);
+	await assertOk(res, "Erro ao buscar avaliadores");
+	return res.json();
+}
+
+export async function createAvaliador(input: CreateAvaliadorInput): Promise<Avaliador> {
+	const res = await fetch(`${BASE_URL}/avaliadores`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	await assertOk(res, "Erro ao criar avaliador");
+	return res.json();
+}
+
+export async function updateAvaliador(
+	id: number,
+	input: Partial<CreateAvaliadorInput>,
+): Promise<Avaliador> {
+	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	await assertOk(res, "Erro ao atualizar avaliador");
+	return res.json();
+}
+
+export async function deleteAvaliador(id: number): Promise<void> {
+	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, { method: "DELETE" });
+	await assertOk(res, "Erro ao deletar avaliador");
+}
+
+export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
+	const form = new FormData();
+	form.append("pdf", pdf);
+
+	const res = await fetch(`${BASE_URL}/amostras/ia`, {
+		method: "POST",
+		body: form,
+	});
+	await assertOk(res, "Geração da amostra");
+	return res.json() as Promise<CreateAmostraInput>;
+}
+
+export async function downloadExcelRae(amostraId: number): Promise<DownloadResult> {
+	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`);
+	await assertOk(res, "Etapa 3 - Download do Excel");
+	return toDownloadResult(res, `dados-rae-${amostraId}.xlsx`);
 }
 
 export async function downloadAmostrasPlanilha(
@@ -186,12 +189,7 @@ export async function downloadAmostrasPlanilha(
 	if (!res.ok) {
 		throw new Error(await readErrorMessage(res));
 	}
-
-	const disposition = res.headers.get("Content-Disposition");
-	const filename = disposition?.split("filename=")[1]?.replace(/"/g, "") || "amostras.xlsx";
-
-	const blob = await res.blob();
-	return { blobUrl: URL.createObjectURL(blob), filename };
+	return toDownloadResult(res, "amostras.xlsx");
 }
 
 export async function fetchAmostras(filters: AmostrasFilters = {}): Promise<Amostra[]> {
@@ -209,21 +207,13 @@ export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostr
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(amostra),
 	});
-
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao criar a amostra: ${msg}`);
-	}
-
+	await assertOk(res, "Erro ao criar a amostra");
 	return res.json();
 }
 
 export async function fetchAmostra(id: number): Promise<Amostra> {
 	const res = await fetch(`${BASE_URL}/amostras/${id}`);
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao carregar amostra: ${msg}`);
-	}
+	await assertOk(res, "Erro ao carregar amostra");
 	return res.json();
 }
 
@@ -233,17 +223,11 @@ export async function updateAmostra(id: number, amostra: CreateAmostraInput): Pr
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(amostra),
 	});
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao atualizar amostra: ${msg}`);
-	}
+	await assertOk(res, "Erro ao atualizar amostra");
 	return res.json();
 }
 
 export async function deleteAmostra(id: number): Promise<void> {
 	const res = await fetch(`${BASE_URL}/amostras/${id}`, { method: "DELETE" });
-	if (!res.ok) {
-		const msg = await res.text().catch(() => res.statusText);
-		throw new Error(`Erro ao deletar amostra: ${msg}`);
-	}
+	await assertOk(res, "Erro ao deletar amostra");
 }

@@ -1,18 +1,18 @@
 import type { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import {
 	type AmostraFormValues,
 	areaFields,
-	fieldInputClassName,
 	fieldLabels,
 	getInputMode,
 	getPlaceholder,
 	meterFields,
 	moneyFields,
 	type TextField,
-} from "./amostraFormSchema";
+} from "./fields";
 
 type AmostraTextFieldProps = {
 	control: Control<AmostraFormValues>;

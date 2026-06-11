@@ -1,49 +1,27 @@
-import { AlertDialog } from "@base-ui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftIcon, CheckCircle2Icon, LoaderCircleIcon, Trash2Icon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowLeftIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { AmostraForm } from "@/features/amostras/AmostraForm";
-import {
-	type AmostraFormValues,
-	amostraFormResolver,
-	amostraToFormValues,
-	defaultValues,
-	parseFormValues,
-	secondaryButtonClassName,
-} from "@/features/amostras/amostraFormSchema";
-import {
-	type Amostra,
-	deleteAmostra,
-	downloadExcelRae,
-	fetchAmostra,
-	updateAmostra,
-} from "@/lib/api";
+import { AmostraFormFooter } from "@/features/amostras/AmostraFormFooter";
+import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
+import { amostraFormResolver } from "@/features/amostras/schema";
+import { amostraToFormValues } from "@/features/amostras/transforms";
+import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
+import { type Amostra, deleteAmostra, fetchAmostra, updateAmostra } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";
-
-const GERAR_RAE_STORAGE_KEY = "editar-amostra-gerar-rae";
-
-function getStoredGerarRae() {
-	if (typeof window === "undefined") return true;
-	return window.localStorage.getItem(GERAR_RAE_STORAGE_KEY) !== "false";
-}
-
-type UpdateResult = {
-	amostra: Amostra;
-	download?: { blobUrl: string; filename: string };
-};
 
 export function EditAmostraPage() {
 	const navigate = useNavigate();
 	const { id } = useParams<{ id: string }>();
 	const amostraId = Number(id);
-	const downloadRef = useRef<HTMLAnchorElement>(null);
 	const queryClient = useQueryClient();
 
 	const {
@@ -51,7 +29,7 @@ export function EditAmostraPage() {
 		isLoading,
 		error: loadError,
 	} = useQuery<Amostra, Error>({
-		queryKey: ["amostra", amostraId],
+		queryKey: queryKeys.amostra(amostraId),
 		queryFn: () => fetchAmostra(amostraId),
 		enabled: !Number.isNaN(amostraId),
 	});
@@ -65,44 +43,20 @@ export function EditAmostraPage() {
 		if (amostra) form.reset(amostraToFormValues(amostra));
 	}, [amostra, form]);
 
-	const [gerarRae, setGerarRae] = useState(getStoredGerarRae);
+	const [gerarRae, setGerarRae] = useGerarRaePreference("editar-amostra-gerar-rae");
 
-	const updateMutation = useMutation<
-		UpdateResult,
-		Error,
-		{ values: AmostraFormValues; gerarRae: boolean }
-	>({
-		mutationFn: async ({ values, gerarRae: shouldGenerate }) => {
-			const parsed = parseFormValues(values);
-			const updated = await updateAmostra(amostraId, parsed);
-			if (!shouldGenerate) return { amostra: updated };
-			try {
-				const download = await downloadExcelRae(amostraId);
-				return { amostra: updated, download };
-			} catch (err) {
-				console.error("RAE download failed:", err);
-				return { amostra: updated };
-			}
-		},
-	});
-
-	const downloadData = updateMutation.data?.download;
-
-	useEffect(() => {
-		if (!downloadData) return;
-		downloadRef.current?.click();
-		return () => URL.revokeObjectURL(downloadData.blobUrl);
-	}, [downloadData]);
+	const saveMutation = useSaveAmostra((input) => updateAmostra(amostraId, input));
+	const isSubmitting = saveMutation.isPending;
+	const downloadData = saveMutation.data?.download;
+	const downloadError = saveMutation.data?.downloadError;
 
 	const deleteMutation = useMutation({
 		mutationFn: () => deleteAmostra(amostraId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["amostras"] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.amostras() });
 			navigate("/amostras");
 		},
 	});
-
-	const isSubmitting = updateMutation.isPending;
 
 	if (isLoading) {
 		return (
@@ -157,57 +111,32 @@ export function EditAmostraPage() {
 								Verifique e corrija os dados extraídos pelo sistema antes de salvar.
 							</CardDescription>
 						</div>
-						<AlertDialog.Root>
-							<AlertDialog.Trigger
-								render={
-									<button
-										type="button"
-										className={cn(
-											buttonVariants({ variant: "ghost", size: "icon-sm" }),
-											"text-red-400 hover:bg-red-950/60 hover:text-red-300",
-										)}
-										title="Deletar amostra"
-									>
-										<Trash2Icon />
-									</button>
-								}
-							/>
-							<AlertDialog.Portal>
-								<AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-								<AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/50">
-									<AlertDialog.Title className="text-base font-semibold text-slate-100">
-										Deletar amostra?
-									</AlertDialog.Title>
-									<AlertDialog.Description className="mt-2 text-sm text-slate-400">
-										Essa ação não pode ser desfeita. A amostra será permanentemente removida.
-									</AlertDialog.Description>
-									<div className="mt-5 flex justify-end gap-3">
-										<AlertDialog.Close
-											render={
-												<button
-													type="button"
-													className="rounded-md px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-												>
-													Cancelar
-												</button>
-											}
-										/>
-										<AlertDialog.Close
-											render={
-												<button
-													type="button"
-													className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-													disabled={deleteMutation.isLoading}
-													onClick={() => deleteMutation.mutate()}
-												>
-													{deleteMutation.isLoading ? "Deletando..." : "Deletar"}
-												</button>
-											}
-										/>
-									</div>
-								</AlertDialog.Popup>
-							</AlertDialog.Portal>
-						</AlertDialog.Root>
+						<ConfirmDeleteDialog
+							trigger={
+								<button
+									type="button"
+									className={cn(
+										buttonVariants({ variant: "ghost", size: "icon-sm" }),
+										"text-red-400 hover:bg-red-950/60 hover:text-red-300",
+									)}
+									title="Deletar amostra"
+								>
+									<Trash2Icon />
+								</button>
+							}
+							title="Deletar amostra?"
+							description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
+							pending={deleteMutation.isPending}
+							closeOnConfirm={false}
+							error={
+								deleteMutation.error != null && (
+									<p className="mt-3 text-sm text-red-400">
+										{getErrorMessage(deleteMutation.error)}
+									</p>
+								)
+							}
+							onConfirm={() => deleteMutation.mutate()}
+						/>
 					</div>
 				</CardHeader>
 
@@ -215,89 +144,48 @@ export function EditAmostraPage() {
 					<AmostraForm
 						form={form}
 						isSubmitting={isSubmitting}
-						onSubmit={(values) => updateMutation.mutate({ values, gerarRae })}
+						onSubmit={(values) => saveMutation.mutate({ values, gerarRae })}
 						footer={
-							<div className="flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-								<div className="flex items-center gap-3 rounded-md border border-slate-600 bg-slate-800 px-3 py-3">
-									<Checkbox
-										id="gerar-rae"
-										checked={gerarRae}
-										disabled={isSubmitting}
-										onCheckedChange={(checked) => {
-											const val = checked === true;
-											setGerarRae(val);
-											window.localStorage.setItem(GERAR_RAE_STORAGE_KEY, String(val));
-										}}
-										className="border-slate-500 bg-slate-700 text-slate-900 data-checked:border-slate-100 data-checked:bg-slate-100"
-									/>
-									<label htmlFor="gerar-rae" className="cursor-pointer text-sm text-slate-100">
-										Gerar planilha RAE após salvar
-									</label>
-								</div>
-
-								<div className="flex gap-3 sm:justify-end">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => {
-											if (amostra) form.reset(amostraToFormValues(amostra));
-											updateMutation.reset();
-										}}
-										disabled={isSubmitting}
-										className={cn("h-10", secondaryButtonClassName)}
-									>
-										Restaurar
-									</Button>
-									<Button
-										type="submit"
-										disabled={isSubmitting}
-										className="h-10 bg-slate-100 text-slate-900 hover:bg-slate-200"
-									>
-										{isSubmitting ? (
-											<>
-												<LoaderCircleIcon className="animate-spin" />
-												Salvando...
-											</>
-										) : (
-											<>
-												<CheckCircle2Icon />
-												Salvar dados
-											</>
-										)}
-									</Button>
-								</div>
-							</div>
+							<AmostraFormFooter
+								checkboxId="gerar-rae"
+								gerarRae={gerarRae}
+								onGerarRaeChange={setGerarRae}
+								isSubmitting={isSubmitting}
+								resetLabel="Restaurar"
+								resetDisabled={isSubmitting}
+								onReset={() => {
+									if (amostra) form.reset(amostraToFormValues(amostra));
+									saveMutation.reset();
+								}}
+							/>
 						}
 					/>
 
-					{updateMutation.error && (
+					{saveMutation.error && (
 						<Alert variant="destructive" className="mt-6 border-red-900 bg-red-950/40">
 							<AlertDescription className="text-red-300">
-								{getErrorMessage(updateMutation.error)}
+								{getErrorMessage(saveMutation.error)}
 							</AlertDescription>
 						</Alert>
 					)}
 
-					{updateMutation.isSuccess && (
-						<Alert className="mt-6 border-emerald-900 bg-emerald-950/40 text-emerald-300">
-							<AlertDescription className="text-emerald-300">
-								{downloadData
-									? "Amostra salva e planilha RAE baixada com sucesso."
-									: "Amostra salva com sucesso."}
-							</AlertDescription>
-						</Alert>
-					)}
-
-					{downloadData && (
-						<a
-							ref={downloadRef}
-							href={downloadData.blobUrl}
-							download={downloadData.filename}
-							className="hidden"
-							tabIndex={-1}
+					{saveMutation.isSuccess && (
+						<Alert
+							className={cn(
+								"mt-6",
+								downloadError
+									? "border-amber-900 bg-amber-950/40 text-amber-300"
+									: "border-emerald-900 bg-emerald-950/40 text-emerald-300",
+							)}
 						>
-							Baixar {downloadData.filename}
-						</a>
+							<AlertDescription className={downloadError ? "text-amber-300" : "text-emerald-300"}>
+								{downloadError
+									? "Amostra salva, mas o download da planilha RAE falhou."
+									: downloadData
+										? "Amostra salva e planilha RAE baixada com sucesso."
+										: "Amostra salva com sucesso."}
+							</AlertDescription>
+						</Alert>
 					)}
 				</CardContent>
 			</Card>

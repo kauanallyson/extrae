@@ -22,21 +22,15 @@ import {
 	downloadAmostrasPlanilha,
 	fetchAmostras,
 } from "@/lib/api";
+import { triggerDownload } from "@/lib/download";
+import { brl, formatDate } from "@/lib/format";
+import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const dateFormat = new Intl.DateTimeFormat("pt-BR");
 
 const emptyFilters: AmostrasFilters = {};
 
 const numberInputClass =
 	"[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
-
-function formatDate(value: string): string {
-	if (!value) return "-";
-	const d = new Date(value);
-	return isNaN(d.getTime()) ? value : dateFormat.format(d);
-}
 
 function hasFilters(filters: AmostrasFilters): boolean {
 	return Object.values(filters).some((v) => v?.trim());
@@ -56,7 +50,7 @@ export function AmostrasPage() {
 		isFetching,
 		error,
 	} = useQuery<Amostra[], Error>({
-		queryKey: ["amostras", appliedFilters],
+		queryKey: queryKeys.amostras(appliedFilters),
 		queryFn: () => fetchAmostras(appliedFilters),
 		keepPreviousData: true,
 	});
@@ -79,14 +73,7 @@ export function AmostrasPage() {
 		setExporting(true);
 		setExportError(null);
 		try {
-			const { blobUrl, filename } = await downloadAmostrasPlanilha(appliedFilters);
-			const a = document.createElement("a");
-			a.href = blobUrl;
-			a.download = filename;
-			document.body.appendChild(a);
-			a.click();
-			a.remove();
-			URL.revokeObjectURL(blobUrl);
+			triggerDownload(await downloadAmostrasPlanilha(appliedFilters));
 		} catch (err) {
 			setExportError(err instanceof Error ? err.message : "Erro ao exportar planilha.");
 		} finally {
