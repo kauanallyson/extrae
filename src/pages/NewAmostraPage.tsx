@@ -1,35 +1,16 @@
-import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2Icon, LoaderCircleIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { AmostraForm } from "@/features/amostras/AmostraForm";
-import {
-	type AmostraFormValues,
-	amostraFormResolver,
-	defaultValues,
-	parseFormValues,
-	secondaryButtonClassName,
-} from "@/features/amostras/amostraFormSchema";
-import { type Amostra, createAmostra, downloadExcelRae } from "@/lib/api";
-import { cn, getErrorMessage } from "@/lib/utils";
-
-const GERAR_RAE_STORAGE_KEY = "nova-amostra-gerar-rae";
-
-function getStoredGerarRae() {
-	if (typeof window === "undefined") return true;
-	return window.localStorage.getItem(GERAR_RAE_STORAGE_KEY) !== "false";
-}
-
-type CreateResult = {
-	amostra: Amostra;
-	download?: { blobUrl: string; filename: string };
-};
+import { AmostraFormFooter } from "@/features/amostras/AmostraFormFooter";
+import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
+import { amostraFormResolver } from "@/features/amostras/schema";
+import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
+import { createAmostra } from "@/lib/api";
+import { getErrorMessage } from "@/lib/utils";
 
 export function NewAmostraPage() {
 	const location = useLocation();
@@ -40,43 +21,20 @@ export function NewAmostraPage() {
 		resolver: amostraFormResolver,
 	});
 
-	const [gerarRae, setGerarRae] = useState(getStoredGerarRae);
-	const downloadRef = useRef<HTMLAnchorElement>(null);
+	const [gerarRae, setGerarRae] = useGerarRaePreference("nova-amostra-gerar-rae");
 
-	const createAmostraMutation = useMutation<
-		CreateResult,
-		unknown,
-		{ values: AmostraFormValues; gerarRae: boolean }
-	>({
-		mutationFn: async ({ values, gerarRae: shouldGenerate }) => {
-			const parsed = parseFormValues(values);
-			const amostra = await createAmostra(parsed);
-			if (!shouldGenerate) return { amostra };
-			try {
-				const download = await downloadExcelRae(amostra.id);
-				return { amostra, download };
-			} catch (err) {
-				console.error("RAE download failed:", err);
-				return { amostra };
-			}
-		},
+	const saveMutation = useSaveAmostra(createAmostra, {
 		onSuccess: () => form.reset(defaultValues),
 	});
 
-	const isSubmitting = createAmostraMutation.isPending;
 	const {
-		error: createAmostraError,
-		data: createResult,
+		error: saveError,
+		data: saveResult,
 		reset: resetMutation,
-	} = createAmostraMutation;
-	const createdAmostra = createResult?.amostra;
-	const downloadData = createResult?.download;
-
-	useEffect(() => {
-		if (!downloadData) return;
-		downloadRef.current?.click();
-		return () => URL.revokeObjectURL(downloadData.blobUrl);
-	}, [downloadData]);
+		isPending: isSubmitting,
+	} = saveMutation;
+	const createdAmostra = saveResult?.amostra;
+	const downloadData = saveResult?.download;
 
 	useEffect(() => {
 		if (!createdAmostra) return;
@@ -98,64 +56,26 @@ export function NewAmostraPage() {
 					<AmostraForm
 						form={form}
 						isSubmitting={isSubmitting}
-						onSubmit={(values) => createAmostraMutation.mutate({ values, gerarRae })}
+						onSubmit={(values) => saveMutation.mutate({ values, gerarRae })}
 						footer={
-							<div className="flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-								<div className="flex items-center gap-3 rounded-md border border-slate-600 bg-slate-800 px-3 py-3">
-									<Checkbox
-										id="gerar-rae-nova"
-										checked={gerarRae}
-										disabled={isSubmitting}
-										onCheckedChange={(checked) => {
-											const val = checked === true;
-											setGerarRae(val);
-											window.localStorage.setItem(GERAR_RAE_STORAGE_KEY, String(val));
-										}}
-										className="border-slate-500 bg-slate-700 text-slate-900 data-checked:border-slate-100 data-checked:bg-slate-100"
-									/>
-									<label htmlFor="gerar-rae-nova" className="cursor-pointer text-sm text-slate-100">
-										Gerar planilha RAE após salvar
-									</label>
-								</div>
-
-								<div className="flex gap-3 sm:justify-end">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => {
-											form.reset(defaultValues);
-											resetMutation();
-										}}
-										className={cn("h-10", secondaryButtonClassName)}
-									>
-										Limpar
-									</Button>
-									<Button
-										type="submit"
-										disabled={isSubmitting}
-										className="h-10 bg-slate-100 text-slate-900 hover:bg-slate-200"
-									>
-										{isSubmitting ? (
-											<>
-												<LoaderCircleIcon className="animate-spin" />
-												Salvando...
-											</>
-										) : (
-											<>
-												<CheckCircle2Icon />
-												Salvar dados
-											</>
-										)}
-									</Button>
-								</div>
-							</div>
+							<AmostraFormFooter
+								checkboxId="gerar-rae-nova"
+								gerarRae={gerarRae}
+								onGerarRaeChange={setGerarRae}
+								isSubmitting={isSubmitting}
+								resetLabel="Limpar"
+								onReset={() => {
+									form.reset(defaultValues);
+									resetMutation();
+								}}
+							/>
 						}
 					/>
 
-					{createAmostraError != null && (
+					{saveError != null && (
 						<Alert variant="destructive" className="mt-6 border-red-900 bg-red-950/40">
 							<AlertDescription className="text-red-300">
-								{getErrorMessage(createAmostraError)}
+								{getErrorMessage(saveError)}
 							</AlertDescription>
 						</Alert>
 					)}
@@ -168,18 +88,6 @@ export function NewAmostraPage() {
 									: `Amostra ${createdAmostra.id} criada com sucesso.`}
 							</AlertDescription>
 						</Alert>
-					)}
-
-					{downloadData && (
-						<a
-							ref={downloadRef}
-							href={downloadData.blobUrl}
-							download={downloadData.filename}
-							className="hidden"
-							tabIndex={-1}
-						>
-							Baixar {downloadData.filename}
-						</a>
 					)}
 				</CardContent>
 			</Card>
