@@ -48,7 +48,7 @@
 	},
 	"overrides": [
 		{
-			"includes": ["src/components/ui/**"],
+			"includes": ["src/components/ui/**", "src/components/map/**"],
 			"linter": {
 				"rules": {
 					"correctness": {
