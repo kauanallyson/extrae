@@ -1,19 +1,15 @@
 import { type ReactNode, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
-import { AvaliadorSelectField } from "@/components/AvaliadorSelectField";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { AvaliadorSelectField } from "@/features/avaliadores/AvaliadorSelectField";
+import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import { AmostraTextField } from "./AmostraTextField";
-import {
-	type AmostraFormValues,
-	fieldGroups,
-	fieldInputClassName,
-	identificationGroupTitle,
-} from "./amostraFormSchema";
 import { DecimalArrayField } from "./DecimalArrayField";
 import { FormSection } from "./FormSection";
+import { type AmostraFormValues, fieldGroups, identificationGroupTitle } from "./fields";
 import { IncidenciaServicosField } from "./IncidenciaServicosField";
 
 type AmostraFormProps = {

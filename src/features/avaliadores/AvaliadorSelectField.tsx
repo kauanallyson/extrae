@@ -9,6 +9,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { type Avaliador, fetchAvaliadores } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
 type AvaliadorSelectFieldProps<TFieldValues extends FieldValues> = {
@@ -29,7 +30,7 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 		isLoading: avaliadoresLoading,
 		isError: avaliadoresIsError,
 	} = useQuery<Avaliador[]>({
-		queryKey: ["avaliadores"],
+		queryKey: queryKeys.avaliadores,
 		queryFn: fetchAvaliadores,
 	});
 
