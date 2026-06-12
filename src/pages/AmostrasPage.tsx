@@ -288,17 +288,16 @@ export function AmostrasPage() {
 								: "Nenhuma amostra encontrada."}
 						</p>
 					) : (
-						<div className="overflow-x-auto">
+						<div className="overflow-x-auto p-2">
 							<table className="w-full text-sm">
 								<thead>
 									<tr className="border-b border-white/10 text-left text-xs text-slate-500">
-										<th className="pb-2 pr-4 font-medium">#</th>
-										<th className="pb-2 pr-4 font-medium">Proponente</th>
+										<th className="pb-2 pl-3 pr-4 font-medium">Proponente</th>
 										<th className="pb-2 pr-4 font-medium">Município/UF</th>
 										<th className="pb-2 pr-4 text-right font-medium">Valor Imóvel</th>
 										<th className="pb-2 pr-4 text-right font-medium">Valor Terreno</th>
 										<th className="pb-2 pr-4 font-medium">Data Referência</th>
-										<th className="pb-2 font-medium">Ações</th>
+										<th className="pb-2 pr-3 font-medium">Ações</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -308,8 +307,7 @@ export function AmostrasPage() {
 											onClick={() => navigate(`/amostras/${amostra.id}`)}
 											className="cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/5"
 										>
-											<td className="py-3 pr-4 text-slate-500">{amostra.id}</td>
-											<td className="py-3 pr-4 font-medium text-slate-100">
+											<td className="rounded-l-lg py-3 pl-3 pr-4 font-medium text-slate-100">
 												{amostra.proponente || "-"}
 											</td>
 											<td className="py-3 pr-4 text-slate-300">
@@ -326,7 +324,7 @@ export function AmostrasPage() {
 											<td className="py-3 pr-4 text-slate-300">
 												{formatDate(amostra.dataReferencia)}
 											</td>
-											<td className="py-3">
+											<td className="rounded-r-lg py-3 pr-3">
 												<div className="flex items-center gap-1">
 													<Link
 														to={`/amostras/${amostra.id}`}

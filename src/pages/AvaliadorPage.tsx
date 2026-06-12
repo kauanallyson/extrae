@@ -83,17 +83,16 @@ export function AvaliadorPage() {
 					{avaliadores.length === 0 ? (
 						<p className="py-12 text-center text-sm text-slate-500">Nenhum avaliador cadastrado.</p>
 					) : (
-						<div className="overflow-x-auto">
+						<div className="overflow-x-auto p-2">
 							<table className="w-full text-sm">
 								<thead>
 									<tr className="border-b border-white/10 text-left text-xs text-slate-500">
-										<th className="pb-2 pr-4 font-medium">#</th>
-										<th className="pb-2 pr-4 font-medium">Nome</th>
+										<th className="pb-2 pl-3 pr-4 font-medium">Nome</th>
 										<th className="pb-2 pr-4 font-medium">Nome fantasia</th>
 										<th className="pb-2 pr-4 font-medium">CPF</th>
 										<th className="pb-2 pr-4 font-medium">CNPJ</th>
 										<th className="pb-2 pr-4 font-medium">CREA</th>
-										<th className="pb-2 font-medium">Ações</th>
+										<th className="pb-2 pr-3 font-medium">Ações</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -101,13 +100,12 @@ export function AvaliadorPage() {
 										.sort((a, b) => a.id - b.id)
 										.map((avaliador) => (
 											<tr key={avaliador.id} className="border-b border-white/5 last:border-0">
-												<td className="py-3 pr-4 text-slate-500">{avaliador.id}</td>
-												<td className="py-3 pr-4 font-medium text-slate-100">{avaliador.nome}</td>
+												<td className="rounded-l-lg py-3 pl-3 pr-4 font-medium text-slate-100">{avaliador.nome}</td>
 												<td className="py-3 pr-4 text-slate-300">{avaliador.nomeFantasia}</td>
 												<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cpf}</td>
 												<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cnpj}</td>
 												<td className="py-3 pr-4 text-slate-300">{avaliador.registroCrea}</td>
-												<td className="py-3">
+												<td className="rounded-r-lg py-3 pr-3">
 													<div className="flex items-center gap-1">
 														<button
 															type="button"
