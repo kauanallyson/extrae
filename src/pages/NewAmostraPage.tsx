@@ -1,27 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AmostraForm } from "@/features/amostras/AmostraForm";
 import { AmostraFormFooter } from "@/features/amostras/AmostraFormFooter";
 import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
+import { PreencherComIaButton } from "@/features/amostras/PreencherComIaButton";
 import { amostraFormResolver } from "@/features/amostras/schema";
 import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
 import { createAmostra } from "@/lib/api";
 import { cn, getErrorMessage } from "@/lib/utils";
 
 export function NewAmostraPage() {
-	const location = useLocation();
-	const prefilled = (location.state as { formValues?: AmostraFormValues } | null)?.formValues;
-
 	const form = useForm<AmostraFormValues>({
-		defaultValues: prefilled ?? defaultValues,
+		defaultValues,
 		resolver: amostraFormResolver,
 	});
 
 	const [gerarRae, setGerarRae] = useGerarRaePreference("nova-amostra-gerar-rae");
+	const [iaError, setIaError] = useState<string | null>(null);
 
 	const saveMutation = useSaveAmostra(createAmostra, {
 		onSuccess: () => form.reset(defaultValues),
@@ -46,11 +44,22 @@ export function NewAmostraPage() {
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
 			<Card className="border-white/10 bg-slate-900 text-slate-100 shadow-2xl shadow-black/30">
-				<CardHeader className="px-6 pt-6">
-					<CardTitle className="text-3xl text-slate-50">Nova Amostra</CardTitle>
-					<CardDescription className="text-slate-400">
-						Preencha os dados da amostra de imóvel para cadastro.
-					</CardDescription>
+				<CardHeader className="flex flex-col gap-4 px-6 pt-6 sm:flex-row sm:items-start sm:justify-between">
+					<div className="space-y-1.5">
+						<CardTitle className="text-3xl text-slate-50">Nova Amostra</CardTitle>
+						<CardDescription className="text-slate-400">
+							Preencha os dados da amostra de imóvel para cadastro.
+						</CardDescription>
+					</div>
+					<PreencherComIaButton
+						disabled={isSubmitting}
+						onStart={() => setIaError(null)}
+						onFill={(values) => {
+							setIaError(null);
+							form.reset(values);
+						}}
+						onError={(message) => setIaError(message)}
+					/>
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
@@ -72,6 +81,12 @@ export function NewAmostraPage() {
 							/>
 						}
 					/>
+
+					{iaError != null && (
+						<Alert variant="destructive" className="mt-6 border-red-900 bg-red-950/40">
+							<AlertDescription className="text-red-300">{iaError}</AlertDescription>
+						</Alert>
+					)}
 
 					{saveError != null && (
 						<Alert variant="destructive" className="mt-6 border-red-900 bg-red-950/40">

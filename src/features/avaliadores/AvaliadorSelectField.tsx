@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Control, FieldValues, Path } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormMessage } from "@/components/ui/form";
 import {
 	Select,
 	SelectContent,
@@ -44,9 +44,6 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 			rules={{ required: "Selecione um avaliador." }}
 			render={({ field, fieldState }) => (
 				<FormItem>
-					<FormLabel htmlFor="avaliador-trigger" className="text-slate-200">
-						Avaliador
-					</FormLabel>
 					<Select
 						value={field.value || undefined}
 						disabled={avaliadoresLoading || disabled}
@@ -55,7 +52,7 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 						<SelectTrigger
 							id="avaliador-trigger"
 							className={cn(
-								"h-10 min-h-10 w-full rounded-md border-slate-600 bg-slate-800 px-2.5 py-1 text-slate-100 hover:text-slate-100 data-placeholder:text-slate-500 data-[size=default]:h-10 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400",
+								"h-10 min-h-10 w-full rounded-md border-slate-600 bg-slate-800 px-2.5 py-1 text-slate-100 hover:text-white data-placeholder:text-slate-500 data-[size=default]:h-10 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400",
 								triggerClassName,
 							)}
 							aria-invalid={fieldState.invalid}
@@ -73,7 +70,10 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 								{field.value ? getAvaliadorNome(field.value) : null}
 							</SelectValue>
 						</SelectTrigger>
-						<SelectContent className="border border-slate-600 bg-slate-800 text-slate-100">
+						<SelectContent
+							alignItemWithTrigger={false}
+							className="dark border border-slate-600 bg-slate-800 text-slate-100"
+						>
 							{avaliadores?.map((avaliador) => (
 								<SelectItem
 									key={avaliador.id}

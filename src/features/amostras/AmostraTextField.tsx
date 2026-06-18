@@ -1,8 +1,13 @@
 import type { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { fieldInputClassName } from "@/lib/formStyles";
-import { cn } from "@/lib/utils";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+	InputGroupText,
+} from "@/components/ui/input-group";
+import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
 import {
 	type AmostraFormValues,
 	areaFields,
@@ -23,6 +28,8 @@ type AmostraTextFieldProps = {
 export function AmostraTextField({ control, name, disabled = false }: AmostraTextFieldProps) {
 	const prefix = moneyFields.has(name) ? "R$" : null;
 	const suffix = areaFields.has(name) ? "m²" : meterFields.has(name) ? "m" : null;
+	const hasAffix = prefix != null || suffix != null;
+
 	return (
 		<FormField
 			control={control}
@@ -30,27 +37,38 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 			render={({ field, fieldState }) => (
 				<FormItem>
 					<FormLabel className="text-slate-200">{fieldLabels[name]}</FormLabel>
-					<div className="relative">
-						{prefix && (
-							<span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-slate-400">
-								{prefix}
-							</span>
-						)}
+					{hasAffix ? (
+						<InputGroup className={inputGroupClassName}>
+							{prefix && (
+								<InputGroupAddon>
+									<InputGroupText className="text-slate-400">{prefix}</InputGroupText>
+								</InputGroupAddon>
+							)}
+							<InputGroupInput
+								{...field}
+								inputMode={getInputMode(name)}
+								placeholder={getPlaceholder(name)}
+								aria-invalid={fieldState.invalid}
+								disabled={disabled}
+								className="text-slate-100 placeholder:text-slate-500"
+							/>
+							{suffix && (
+								<InputGroupAddon align="inline-end">
+									<InputGroupText className="text-slate-400">{suffix}</InputGroupText>
+								</InputGroupAddon>
+							)}
+						</InputGroup>
+					) : (
 						<Input
 							{...field}
-							type={name === "dataReferencia" ? "date" : "text"}
+							type="text"
 							inputMode={getInputMode(name)}
 							placeholder={getPlaceholder(name)}
 							aria-invalid={fieldState.invalid}
 							disabled={disabled}
-							className={cn(fieldInputClassName, prefix && "pl-10", suffix && "pr-10")}
+							className={fieldInputClassName}
 						/>
-						{suffix && (
-							<span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
-								{suffix}
-							</span>
-						)}
-					</div>
+					)}
 					<FormMessage />
 				</FormItem>
 			)}

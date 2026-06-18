@@ -3,19 +3,13 @@ import { AmostraDetailsPage } from "./pages/AmostraDetailsPage";
 import { AmostrasPage } from "./pages/AmostrasPage";
 import { AvaliadorPage } from "./pages/AvaliadorPage";
 import { EditAmostraPage } from "./pages/EditAmostraPage";
-import { ExtrairAmostraPage } from "./pages/ExtrairAmostraPage";
 import { HomePage } from "./pages/HomePage";
-import { MapPage } from "./pages/MapPage";
 import { NewAmostraPage } from "./pages/NewAmostraPage";
 
 const router = createBrowserRouter([
 	{
 		path: "/",
 		element: <HomePage />,
-	},
-	{
-		path: "/extrair-amostra",
-		element: <ExtrairAmostraPage />,
 	},
 	{
 		path: "/nova-amostra",
@@ -36,10 +30,6 @@ const router = createBrowserRouter([
 	{
 		path: "/avaliadores",
 		element: <AvaliadorPage />,
-	},
-	{
-		path: "/mapa",
-		element: <MapPage />,
 	},
 ]);
 
