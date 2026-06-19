@@ -51,6 +51,7 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 					>
 						<SelectTrigger
 							id="avaliador-trigger"
+							aria-label="Selecione um avaliador"
 							className={cn(
 								"h-10 min-h-10 w-full rounded-md border-slate-600 bg-slate-800 px-2.5 py-1 text-slate-100 hover:text-white data-placeholder:text-slate-500 data-[size=default]:h-10 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400",
 								triggerClassName,

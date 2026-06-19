@@ -22,7 +22,10 @@ export function NewAmostraPage() {
 	const [iaError, setIaError] = useState<string | null>(null);
 
 	const saveMutation = useSaveAmostra(createAmostra, {
-		onSuccess: () => form.reset(defaultValues),
+		onSuccess: () => {
+			form.reset(defaultValues);
+			setIaError(null);
+		},
 	});
 
 	const {
@@ -77,6 +80,7 @@ export function NewAmostraPage() {
 								onReset={() => {
 									form.reset(defaultValues);
 									resetMutation();
+									setIaError(null);
 								}}
 							/>
 						}
