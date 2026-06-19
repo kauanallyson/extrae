@@ -1,4 +1,3 @@
-import { MapIcon } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Logo } from "./Logo";
@@ -6,7 +5,7 @@ import { buttonVariants } from "./ui/button";
 
 const textRoutes = [
 	{ to: "/amostras", label: "Amostras" },
-	{ to: "/extrair-amostra", label: "Extrair amostra" },
+	{ to: "/nova-amostra", label: "Nova amostra" },
 	{ to: "/avaliadores", label: "Avaliadores" },
 ];
 
@@ -34,22 +33,6 @@ export function Navbar() {
 							{route.label}
 						</NavLink>
 					))}
-
-					<div className="mx-2 h-4 w-px bg-white/20" />
-
-					<NavLink
-						to="/mapa"
-						title="Mapa de amostras"
-						aria-label="Mapa de amostras"
-						className={({ isActive }) =>
-							cn(
-								buttonVariants({ variant: isActive ? "default" : "ghost", size: "icon" }),
-								"hover:bg-white hover:text-slate-950 dark:hover:bg-white dark:hover:text-slate-950",
-							)
-						}
-					>
-						<MapIcon className="h-4 w-4" aria-hidden="true" />
-					</NavLink>
 				</nav>
 			</div>
 		</header>

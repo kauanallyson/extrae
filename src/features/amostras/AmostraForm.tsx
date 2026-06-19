@@ -1,4 +1,4 @@
-import { type ReactNode, useRef } from "react";
+import { type KeyboardEvent, type ReactNode, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -7,6 +7,7 @@ import { AvaliadorSelectField } from "@/features/avaliadores/AvaliadorSelectFiel
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import { AmostraTextField } from "./AmostraTextField";
+import { DataReferenciaField } from "./DataReferenciaField";
 import { DecimalArrayField } from "./DecimalArrayField";
 import { FormSection } from "./FormSection";
 import { type AmostraFormValues, fieldGroups, identificationGroupTitle } from "./fields";
@@ -23,6 +24,15 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 	const acumuladoProposto = useFieldArray({ control: form.control, name: "acumuladoProposto" });
 	const formRef = useRef<HTMLFormElement>(null);
 
+	// Enter inside a text input must not submit the whole form; only the
+	// Salvar button should trigger submission. Textareas keep newline behavior.
+	const preventEnterSubmit = (event: KeyboardEvent<HTMLFormElement>) => {
+		const target = event.target as HTMLElement;
+		if (event.key === "Enter" && target.tagName === "INPUT") {
+			event.preventDefault();
+		}
+	};
+
 	const scrollToFirstError = () => {
 		requestAnimationFrame(() => {
 			const target = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
@@ -37,6 +47,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 			<form
 				ref={formRef}
 				onSubmit={form.handleSubmit(onSubmit, scrollToFirstError)}
+				onKeyDown={preventEnterSubmit}
 				className="space-y-8"
 			>
 				<FormSection title="Avaliador" description="Profissional responsável pela avaliação.">
@@ -101,14 +112,22 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 					.map((group) => (
 						<FormSection key={group.title} title={group.title} description={group.description}>
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-								{group.fields.map((fieldName) => (
-									<AmostraTextField
-										key={fieldName}
-										control={form.control}
-										name={fieldName}
-										disabled={isSubmitting}
-									/>
-								))}
+								{group.fields.map((fieldName) =>
+									fieldName === "dataReferencia" ? (
+										<DataReferenciaField
+											key={fieldName}
+											control={form.control}
+											disabled={isSubmitting}
+										/>
+									) : (
+										<AmostraTextField
+											key={fieldName}
+											control={form.control}
+											name={fieldName}
+											disabled={isSubmitting}
+										/>
+									),
+								)}
 							</div>
 						</FormSection>
 					))}

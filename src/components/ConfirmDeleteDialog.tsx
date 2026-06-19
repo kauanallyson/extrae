@@ -1,5 +1,17 @@
-import { AlertDialog } from "@base-ui/react";
+import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog";
 import type { ReactElement, ReactNode } from "react";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { secondaryButtonClassName } from "@/lib/formStyles";
 
 type ConfirmDeleteDialogProps = {
 	title: string;
@@ -32,45 +44,35 @@ export function ConfirmDeleteDialog({
 	onOpenChange,
 }: ConfirmDeleteDialogProps) {
 	const confirmButton = (
-		<button
-			type="button"
-			className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+		<AlertDialogAction
 			disabled={pending}
 			onClick={onConfirm}
+			className="bg-red-700 text-white hover:bg-red-600"
 		>
 			{pending ? pendingLabel : confirmLabel}
-		</button>
+		</AlertDialogAction>
 	);
 
 	return (
-		<AlertDialog.Root open={open} onOpenChange={onOpenChange}>
-			{trigger && <AlertDialog.Trigger render={trigger} />}
-			<AlertDialog.Portal>
-				<AlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-				<AlertDialog.Popup className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/50">
-					<AlertDialog.Title className="text-base font-semibold text-slate-100">
-						{title}
-					</AlertDialog.Title>
-					<AlertDialog.Description className="mt-2 text-sm text-slate-400">
-						{description}
-					</AlertDialog.Description>
-					{error}
-					<div className="mt-5 flex justify-end gap-3">
-						<AlertDialog.Close
-							render={
-								<button
-									type="button"
-									className="rounded-md px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-									disabled={pending}
-								>
-									Cancelar
-								</button>
-							}
-						/>
-						{closeOnConfirm ? <AlertDialog.Close render={confirmButton} /> : confirmButton}
-					</div>
-				</AlertDialog.Popup>
-			</AlertDialog.Portal>
-		</AlertDialog.Root>
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			{trigger && <AlertDialogTrigger render={trigger} />}
+			<AlertDialogContent className="dark border-white/10 bg-slate-900 text-slate-100">
+				<AlertDialogHeader>
+					<AlertDialogTitle className="text-slate-100">{title}</AlertDialogTitle>
+					<AlertDialogDescription className="text-slate-400">{description}</AlertDialogDescription>
+				</AlertDialogHeader>
+				{error}
+				<AlertDialogFooter>
+					<AlertDialogCancel disabled={pending} className={secondaryButtonClassName}>
+						Cancelar
+					</AlertDialogCancel>
+					{closeOnConfirm ? (
+						<AlertDialogPrimitive.Close disabled={pending} render={confirmButton} />
+					) : (
+						confirmButton
+					)}
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	);
 }
