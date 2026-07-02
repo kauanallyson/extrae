@@ -3,9 +3,9 @@ import { ArrowLeftIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AmostraForm } from "@/features/amostras/AmostraForm";
@@ -43,12 +43,14 @@ export function EditAmostraPage() {
 		if (amostra) form.reset(amostraToFormValues(amostra));
 	}, [amostra, form]);
 
+	useEffect(() => {
+		if (loadError) toast.error(getErrorMessage(loadError));
+	}, [loadError]);
+
 	const [gerarRae, setGerarRae] = useGerarRaePreference("editar-amostra-gerar-rae");
 
 	const saveMutation = useSaveAmostra((input) => updateAmostra(amostraId, input));
 	const isSubmitting = saveMutation.isPending;
-	const downloadData = saveMutation.data?.download;
-	const downloadError = saveMutation.data?.downloadError;
 
 	const deleteMutation = useMutation({
 		mutationFn: () => deleteAmostra(amostraId),
@@ -56,6 +58,7 @@ export function EditAmostraPage() {
 			queryClient.invalidateQueries({ queryKey: queryKeys.amostras() });
 			navigate("/amostras");
 		},
+		onError: (error) => toast.error(getErrorMessage(error)),
 	});
 
 	if (isLoading) {
@@ -72,11 +75,9 @@ export function EditAmostraPage() {
 	if (loadError || Number.isNaN(amostraId)) {
 		return (
 			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<Alert variant="destructive" className="border-red-900 bg-red-950/40">
-					<AlertDescription className="text-red-300">
-						{loadError ? getErrorMessage(loadError) : "ID de amostra inválido."}
-					</AlertDescription>
-				</Alert>
+				<p className="py-8 text-center text-sm text-slate-500">
+					{Number.isNaN(amostraId) ? "ID de amostra inválido." : "Erro ao carregar amostra."}
+				</p>
 			</Layout>
 		);
 	}
@@ -84,9 +85,7 @@ export function EditAmostraPage() {
 	if (!isLoading && !amostra) {
 		return (
 			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<Alert variant="destructive" className="border-red-900 bg-red-950/40">
-					<AlertDescription className="text-red-300">Amostra não encontrada.</AlertDescription>
-				</Alert>
+				<p className="py-8 text-center text-sm text-slate-500">Amostra não encontrada.</p>
 			</Layout>
 		);
 	}
@@ -127,14 +126,6 @@ export function EditAmostraPage() {
 							title="Deletar amostra?"
 							description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
 							pending={deleteMutation.isPending}
-							closeOnConfirm={false}
-							error={
-								deleteMutation.error != null && (
-									<p className="mt-3 text-sm text-red-400">
-										{getErrorMessage(deleteMutation.error)}
-									</p>
-								)
-							}
 							onConfirm={() => deleteMutation.mutate()}
 						/>
 					</div>
@@ -161,32 +152,6 @@ export function EditAmostraPage() {
 						}
 					/>
 
-					{saveMutation.error && (
-						<Alert variant="destructive" className="mt-6 border-red-900 bg-red-950/40">
-							<AlertDescription className="text-red-300">
-								{getErrorMessage(saveMutation.error)}
-							</AlertDescription>
-						</Alert>
-					)}
-
-					{saveMutation.isSuccess && (
-						<Alert
-							className={cn(
-								"mt-6",
-								downloadError
-									? "border-amber-900 bg-amber-950/40 text-amber-300"
-									: "border-emerald-900 bg-emerald-950/40 text-emerald-300",
-							)}
-						>
-							<AlertDescription className={downloadError ? "text-amber-300" : "text-emerald-300"}>
-								{downloadError
-									? "Amostra salva, mas o download da planilha RAE falhou."
-									: downloadData
-										? "Amostra salva e planilha RAE baixada com sucesso."
-										: "Amostra salva com sucesso."}
-							</AlertDescription>
-						</Alert>
-					)}
 				</CardContent>
 			</Card>
 		</Layout>

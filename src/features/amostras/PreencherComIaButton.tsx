@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { BotIcon, LoaderCircleIcon } from "lucide-react";
 import { useId, useRef } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { gerarAmostraIa } from "@/lib/api";
@@ -11,14 +12,12 @@ import { amostraToFormValues } from "./transforms";
 
 type PreencherComIaButtonProps = {
 	onFill: (values: AmostraFormValues) => void;
-	onError?: (message: string) => void;
 	onStart?: () => void;
 	disabled?: boolean;
 };
 
 export function PreencherComIaButton({
 	onFill,
-	onError,
 	onStart,
 	disabled,
 }: PreencherComIaButtonProps) {
@@ -28,7 +27,7 @@ export function PreencherComIaButton({
 	const mutation = useMutation({
 		mutationFn: (pdf: File) => gerarAmostraIa(pdf),
 		onSuccess: (amostra) => onFill(amostraToFormValues(amostra)),
-		onError: (error) => onError?.(getErrorMessage(error)),
+		onError: (error) => toast.error(getErrorMessage(error)),
 	});
 
 	const isRunning = mutation.isPending;

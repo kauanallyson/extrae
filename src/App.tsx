@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
 import { AmostraDetailsPage } from "./pages/AmostraDetailsPage";
 import { AmostrasPage } from "./pages/AmostrasPage";
 import { AvaliadorPage } from "./pages/AvaliadorPage";
@@ -34,5 +35,10 @@ const router = createBrowserRouter([
 ]);
 
 export function App() {
-	return <RouterProvider router={router} />;
+	return (
+		<>
+			<RouterProvider router={router} />
+			<Toaster />
+		</>
+	);
 }

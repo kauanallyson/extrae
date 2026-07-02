@@ -95,7 +95,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 										{...field}
 										type="text"
 										inputMode="tel"
-										placeholder="00000-0000"
+										placeholder="000000000"
 										aria-invalid={fieldState.invalid}
 										disabled={isSubmitting}
 										className={fieldInputClassName}

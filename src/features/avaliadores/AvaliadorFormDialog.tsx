@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -71,6 +72,7 @@ export function AvaliadorFormDialog({
 			queryClient.invalidateQueries({ queryKey: queryKeys.avaliadores });
 			onClose();
 		},
+		onError: (error) => toast.error(getErrorMessage(error)),
 	});
 
 	const isPending = mutation.isPending;
@@ -171,10 +173,6 @@ export function AvaliadorFormDialog({
 							/>
 							<FieldError message={form.formState.errors.registroCrea?.message} />
 						</div>
-
-						{mutation.error && (
-							<p className="text-sm text-red-400">{getErrorMessage(mutation.error)}</p>
-						)}
 
 						<div className="flex justify-end gap-3 pt-2">
 							<Dialog.Close
