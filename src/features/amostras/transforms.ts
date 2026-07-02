@@ -21,10 +21,7 @@ function parseNumberArray(values: ArrayValue[]) {
 }
 
 function formatTelefone(digits: string): string {
-	const d = digits.replace(/\D/g, "");
-	if (d.length === 9) return `${d.slice(0, 5)}-${d.slice(5)}`;
-	if (d.length === 8) return `${d.slice(0, 4)}-${d.slice(4)}`;
-	return digits;
+	return digits.replace(/\D/g, "");
 }
 
 function toDecimalComma(value: number): string {
