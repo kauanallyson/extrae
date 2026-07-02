@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
 	type Amostra,
 	type CreateAmostraInput,
@@ -7,6 +8,7 @@ import {
 	downloadExcelRae,
 } from "@/lib/api";
 import { triggerDownload } from "@/lib/download";
+import { getErrorMessage } from "@/lib/utils";
 import type { AmostraFormValues } from "./fields";
 import { parseFormValues } from "./transforms";
 
@@ -56,7 +58,17 @@ export function useSaveAmostra(
 		},
 		onSuccess: (result) => {
 			if (result.download) triggerDownload(result.download);
+			if (result.downloadError) {
+				toast.warning(`Amostra ${result.amostra.id} salva, mas o download da planilha RAE falhou.`);
+			} else if (result.download) {
+				toast.success("Amostra salva e planilha RAE baixada com sucesso.");
+			} else {
+				toast.success(`Amostra ${result.amostra.id} salva com sucesso.`);
+			}
 			options?.onSuccess?.(result);
+		},
+		onError: (error) => {
+			toast.error(getErrorMessage(error));
 		},
 	});
 }

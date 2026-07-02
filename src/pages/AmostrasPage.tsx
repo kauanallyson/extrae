@@ -8,10 +8,10 @@ import {
 	PlusIcon,
 	XIcon,
 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,6 @@ export function AmostrasPage() {
 	const [filters, setFilters] = useState<AmostrasFilters>(emptyFilters);
 	const [appliedFilters, setAppliedFilters] = useState<AmostrasFilters>(emptyFilters);
 	const [exporting, setExporting] = useState(false);
-	const [exportError, setExportError] = useState<string | null>(null);
 
 	const {
 		data: amostras,
@@ -54,6 +53,10 @@ export function AmostrasPage() {
 		queryFn: () => fetchAmostras(appliedFilters),
 		keepPreviousData: true,
 	});
+
+	useEffect(() => {
+		if (error) toast.error(error.message ?? "Erro ao carregar amostras.");
+	}, [error]);
 
 	function updateFilter(key: keyof AmostrasFilters, value: string) {
 		setFilters((prev) => ({ ...prev, [key]: value }));
@@ -71,11 +74,10 @@ export function AmostrasPage() {
 
 	async function handleExport() {
 		setExporting(true);
-		setExportError(null);
 		try {
 			triggerDownload(await downloadAmostrasPlanilha(appliedFilters));
 		} catch (err) {
-			setExportError(err instanceof Error ? err.message : "Erro ao exportar planilha.");
+			toast.error(err instanceof Error ? err.message : "Erro ao exportar planilha.");
 		} finally {
 			setExporting(false);
 		}
@@ -94,9 +96,7 @@ export function AmostrasPage() {
 	if (error || !amostras) {
 		return (
 			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<Alert variant="destructive">
-					<AlertDescription>{error?.message ?? "Erro ao carregar amostras."}</AlertDescription>
-				</Alert>
+				<p className="py-8 text-center text-sm text-slate-500">Erro ao carregar amostras.</p>
 			</Layout>
 		);
 	}
@@ -274,12 +274,6 @@ export function AmostrasPage() {
 							)}
 						</div>
 					</form>
-
-					{exportError && (
-						<Alert variant="destructive" className="mb-4">
-							<AlertDescription>{exportError}</AlertDescription>
-						</Alert>
-					)}
 
 					{amostras.length === 0 ? (
 						<p className="py-12 text-center text-sm text-slate-500">

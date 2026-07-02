@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -37,7 +37,12 @@ export function AvaliadorPage() {
 			queryClient.invalidateQueries({ queryKey: queryKeys.avaliadores });
 			setDeleteTarget(null);
 		},
+		onError: (error) => toast.error(getErrorMessage(error)),
 	});
+
+	useEffect(() => {
+		if (error) toast.error(error.message ?? "Erro ao carregar avaliadores.");
+	}, [error]);
 
 	if (isLoading) {
 		return (
@@ -52,9 +57,7 @@ export function AvaliadorPage() {
 	if (error || !avaliadores) {
 		return (
 			<Layout contentClassName="block max-w-4xl py-8 sm:py-10">
-				<Alert variant="destructive">
-					<AlertDescription>{error?.message ?? "Erro ao carregar avaliadores."}</AlertDescription>
-				</Alert>
+				<p className="py-8 text-center text-sm text-slate-500">Erro ao carregar avaliadores.</p>
 			</Layout>
 		);
 	}
@@ -157,12 +160,6 @@ export function AvaliadorPage() {
 				}
 				pending={deleteMutation.isPending}
 				onConfirm={() => deleteMutation.mutate()}
-				closeOnConfirm={false}
-				error={
-					deleteMutation.error instanceof Error ? (
-						<p className="mt-3 text-sm text-red-400">{getErrorMessage(deleteMutation.error)}</p>
-					) : undefined
-				}
 			/>
 		</Layout>
 	);

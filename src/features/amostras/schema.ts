@@ -98,7 +98,7 @@ function incidenciasSumValid(values: ArrayValue[]) {
 export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	avaliadorId: z.string().min(1, "Selecione um avaliador."),
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
-	telefone: z.string().regex(phoneRegex, "Informe o telefone com máscara: 00000-0000."),
+	telefone: z.string().regex(phoneRegex, "Informe 8 ou 9 dígitos do telefone, sem traços."),
 	incidencias: z
 		.array(decimalArrayValueSchema)
 		.length(incidenciaServicos.length)
