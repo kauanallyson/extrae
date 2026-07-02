@@ -103,7 +103,9 @@ export function AvaliadorPage() {
 										.sort((a, b) => a.id - b.id)
 										.map((avaliador) => (
 											<tr key={avaliador.id} className="border-b border-white/5 last:border-0">
-												<td className="rounded-l-lg py-3 pl-3 pr-4 font-medium text-slate-100">{avaliador.nome}</td>
+												<td className="rounded-l-lg py-3 pl-3 pr-4 font-medium text-slate-100">
+													{avaliador.nome}
+												</td>
 												<td className="py-3 pr-4 text-slate-300">{avaliador.nomeFantasia}</td>
 												<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cpf}</td>
 												<td className="py-3 pr-4 text-slate-300 tabular-nums">{avaliador.cnpj}</td>

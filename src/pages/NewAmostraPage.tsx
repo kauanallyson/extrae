@@ -23,10 +23,7 @@ export function NewAmostraPage() {
 		},
 	});
 
-	const {
-		reset: resetMutation,
-		isPending: isSubmitting,
-	} = saveMutation;
+	const { reset: resetMutation, isPending: isSubmitting } = saveMutation;
 
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
@@ -38,10 +35,7 @@ export function NewAmostraPage() {
 							Preencha os dados da amostra de imóvel para cadastro.
 						</CardDescription>
 					</div>
-					<PreencherComIaButton
-						disabled={isSubmitting}
-						onFill={(values) => form.reset(values)}
-					/>
+					<PreencherComIaButton disabled={isSubmitting} onFill={(values) => form.reset(values)} />
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
@@ -63,7 +57,6 @@ export function NewAmostraPage() {
 							/>
 						}
 					/>
-
 				</CardContent>
 			</Card>
 		</Layout>

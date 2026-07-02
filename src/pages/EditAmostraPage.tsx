@@ -151,7 +151,6 @@ export function EditAmostraPage() {
 							/>
 						}
 					/>
-
 				</CardContent>
 			</Card>
 		</Layout>

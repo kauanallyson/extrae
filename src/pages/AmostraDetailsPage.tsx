@@ -36,11 +36,11 @@ function formatValue(field: TextField, value: string | number): string {
 	return String(value) || "—";
 }
 
-function DetailItem({ label, value }: { label: string; value: string }) {
+function DetailItem({ label, value }: { label: string; value: string | null | undefined }) {
 	return (
 		<div className="space-y-1">
 			<p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-			<p className="text-sm text-slate-100">{value}</p>
+			<p className="text-sm text-slate-100">{value || "—"}</p>
 		</div>
 	);
 }
@@ -251,7 +251,7 @@ export function AmostraDetailsPage() {
 											<tr key={servico} className="border-b border-white/5 last:border-0">
 												<td className="py-1.5 text-slate-300">{servico}</td>
 												<td className="py-1.5 text-right tabular-nums text-slate-100">
-													{amostra.incidencias[i] != null ? `${amostra.incidencias[i]}%` : "—"}
+													{amostra.incidencias?.[i] != null ? `${amostra.incidencias[i]}%` : "—"}
 												</td>
 											</tr>
 										))}
@@ -263,7 +263,7 @@ export function AmostraDetailsPage() {
 								<p className="text-xs font-medium uppercase tracking-wide text-slate-500">
 									Acumulado proposto
 								</p>
-								{amostra.acumuladoProposto.length > 0 ? (
+								{amostra.acumuladoProposto && amostra.acumuladoProposto.length > 0 ? (
 									<table className="w-full text-sm">
 										<thead>
 											<tr className="border-b border-white/10 text-left text-xs text-slate-500">

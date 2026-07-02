@@ -16,11 +16,7 @@ type PreencherComIaButtonProps = {
 	disabled?: boolean;
 };
 
-export function PreencherComIaButton({
-	onFill,
-	onStart,
-	disabled,
-}: PreencherComIaButtonProps) {
+export function PreencherComIaButton({ onFill, onStart, disabled }: PreencherComIaButtonProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const inputId = useId();
 
