@@ -8,6 +8,7 @@ import {
 	InputGroupText,
 } from "@/components/ui/input-group";
 import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
+import { maskCep } from "@/lib/validators";
 import {
 	type AmostraFormValues,
 	areaFields,
@@ -66,6 +67,11 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 							placeholder={getPlaceholder(name)}
 							aria-invalid={fieldState.invalid}
 							disabled={disabled}
+							onChange={
+								name === "cep"
+									? (event) => field.onChange(maskCep(event.target.value))
+									: field.onChange
+							}
 							className={fieldInputClassName}
 						/>
 					)}

@@ -24,7 +24,7 @@ export const moneyFields = new Set<TextField>(["valorTerreno", "valorImovel", "v
 export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
 export const meterFields = new Set<TextField>(["testada"]);
 export const integerFields = new Set<TextField>(["quartos", "banheiros", "suites", "vagas"]);
-export const requiredFields = new Set<TextField>(["cpf", "cnpj", "cep", "dataReferencia"]);
+export const requiredFields = new Set<TextField>(["cpf", "cep", "dataReferencia"]);
 export const positiveNumberFields = new Set<TextField>([
 	"valorTerreno",
 	"valorImovel",
@@ -186,7 +186,7 @@ export const defaultValues = {
 export function getPlaceholder(field: TextField) {
 	if (field === "cpf") return "000.000.000-00";
 	if (field === "cnpj") return "00.000.000/0000-00";
-	if (field === "cep") return "00000-000";
+	if (field === "cep") return "00.000-000";
 	if (field === "uf" || field === "ufMatricula") return "CE";
 	if (field === "coordenadaS") return "5°22'18.3\"S";
 	if (field === "coordenadaW") return "39°29'34.4\"W";

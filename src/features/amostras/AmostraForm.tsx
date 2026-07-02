@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { AvaliadorSelectField } from "@/features/avaliadores/AvaliadorSelectField";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
+import { maskTelefone } from "@/lib/validators";
 import { AmostraTextField } from "./AmostraTextField";
 import { DataReferenciaField } from "./DataReferenciaField";
 import { DecimalArrayField } from "./DecimalArrayField";
@@ -95,9 +96,11 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 										{...field}
 										type="text"
 										inputMode="tel"
-										placeholder="000000000"
+										placeholder="00000-000"
+										maxLength={10}
 										aria-invalid={fieldState.invalid}
 										disabled={isSubmitting}
+										onChange={(event) => field.onChange(maskTelefone(event.target.value))}
 										className={fieldInputClassName}
 									/>
 									<FormMessage />

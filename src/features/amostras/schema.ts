@@ -51,15 +51,16 @@ function textFieldSchema(field: TextField) {
 		return z
 			.string()
 			.trim()
-			.min(1, "Informe o CNPJ.")
-			.regex(cnpjRegex, "Informe o CNPJ com máscara: 00.000.000/0000-00.");
+			.refine((value) => !value || cnpjRegex.test(value), {
+				message: "Informe o CNPJ com máscara: 00.000.000/0000-00.",
+			});
 	}
 	if (field === "cep") {
 		return z
 			.string()
 			.trim()
 			.min(1, "Informe o CEP.")
-			.regex(cepRegex, "Informe o CEP com máscara: 00000-000.");
+			.regex(cepRegex, "Informe o CEP com máscara: 00.000-000.");
 	}
 	if (positiveNumberFields.has(field)) return positiveNumberString(field);
 	if (requiredFields.has(field)) return z.string().trim().min(1, "Preencha este campo.");
@@ -98,7 +99,7 @@ function incidenciasSumValid(values: ArrayValue[]) {
 export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	avaliadorId: z.string().min(1, "Selecione um avaliador."),
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
-	telefone: z.string().regex(phoneRegex, "Informe 8 ou 9 dígitos do telefone, sem traços."),
+	telefone: z.string().regex(phoneRegex, "Informe 8 ou 9 dígitos do telefone."),
 	incidencias: z
 		.array(decimalArrayValueSchema)
 		.length(incidenciaServicos.length)

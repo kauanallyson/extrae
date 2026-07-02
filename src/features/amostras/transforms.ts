@@ -1,9 +1,6 @@
 import type { CreateAmostraInput } from "@/lib/api";
+import { maskCep, maskTelefone } from "@/lib/validators";
 import { type AmostraFormValues, type ArrayValue, incidenciaServicos } from "./fields";
-
-function parsePositiveNumber(value: string) {
-	return Number(value.trim().replace(",", ".") || 0);
-}
 
 function parseFixedNumberArray(values: ArrayValue[]) {
 	return values.map((item) => {
@@ -20,8 +17,31 @@ function parseNumberArray(values: ArrayValue[]) {
 		.filter((item) => Number.isFinite(item));
 }
 
-function formatTelefone(digits: string): string {
-	return digits.replace(/\D/g, "");
+function str(value: string | null | undefined): string {
+	return value ?? "";
+}
+
+function nullableText(value: string): string | null {
+	return value.trim() || null;
+}
+
+function nullableDigits(value: string): string | null {
+	return value.replace(/\D/g, "") || null;
+}
+
+function nullableNumber(value: string): number | null {
+	const trimmed = value.trim().replace(",", ".");
+	if (!trimmed) return null;
+	const parsed = Number(trimmed);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function nullableArray<T>(values: T[]): T[] | null {
+	return values.length > 0 ? values : null;
+}
+
+function formatTelefone(digits: string | null | undefined): string {
+	return maskTelefone(str(digits));
 }
 
 function toDecimalComma(value: number): string {
@@ -37,100 +57,102 @@ function moneyToCommaString(value: number | null | undefined): string {
 }
 
 export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormValues {
+	const incidencias = amostra.incidencias ?? [];
+	const acumuladoProposto = amostra.acumuladoProposto ?? [];
 	return {
 		avaliadorId: amostra.avaliadorId ? String(amostra.avaliadorId) : "",
-		ddd: amostra.ddd,
+		ddd: str(amostra.ddd),
 		telefone: formatTelefone(amostra.telefone),
 		incidencias: incidenciaServicos.map((_, i) => ({
-			value: amostra.incidencias[i] != null ? toDecimalComma(amostra.incidencias[i]) : "",
+			value: incidencias[i] != null ? toDecimalComma(incidencias[i]) : "",
 		})),
 		acumuladoProposto:
-			amostra.acumuladoProposto.length > 0
-				? amostra.acumuladoProposto.map((v) => ({
+			acumuladoProposto.length > 0
+				? acumuladoProposto.map((v) => ({
 						value: toDecimalComma(v),
 					}))
 				: [{ value: "" }],
-		proponente: amostra.proponente,
-		cpf: amostra.cpf,
-		cnpj: amostra.cnpj,
-		endereco: amostra.endereco,
-		coordenadaS: amostra.coordenadaS,
-		coordenadaW: amostra.coordenadaW,
-		complemento: amostra.complemento,
-		bairro: amostra.bairro,
-		cep: amostra.cep,
-		municipio: amostra.municipio,
-		uf: amostra.uf,
-		empresaResponsavel: amostra.empresaResponsavel,
+		proponente: str(amostra.proponente),
+		cpf: str(amostra.cpf),
+		cnpj: str(amostra.cnpj),
+		endereco: str(amostra.endereco),
+		coordenadaS: str(amostra.coordenadaS),
+		coordenadaW: str(amostra.coordenadaW),
+		complemento: str(amostra.complemento),
+		bairro: str(amostra.bairro),
+		cep: maskCep(str(amostra.cep)),
+		municipio: str(amostra.municipio),
+		uf: str(amostra.uf),
+		empresaResponsavel: str(amostra.empresaResponsavel),
 		valorTerreno: moneyToCommaString(amostra.valorTerreno),
-		matricula: amostra.matricula,
-		oficio: amostra.oficio,
-		comarca: amostra.comarca,
-		ufMatricula: amostra.ufMatricula,
+		matricula: str(amostra.matricula),
+		oficio: str(amostra.oficio),
+		comarca: str(amostra.comarca),
+		ufMatricula: str(amostra.ufMatricula),
 		valorImovel: moneyToCommaString(amostra.valorImovel),
 		numeroEtapas: amostra.numeroEtapas != null ? String(amostra.numeroEtapas) : "",
 		valorUnitario: moneyToCommaString(amostra.valorUnitario),
 		testada: numberToCommaString(amostra.testada),
-		idadeEstimada: amostra.idadeEstimada,
+		idadeEstimada: str(amostra.idadeEstimada),
 		areaTerreno: numberToCommaString(amostra.areaTerreno),
 		areaConstruida: numberToCommaString(amostra.areaConstruida),
 		quartos: amostra.quartos != null ? String(amostra.quartos) : "",
 		banheiros: amostra.banheiros != null ? String(amostra.banheiros) : "",
 		suites: amostra.suites != null ? String(amostra.suites) : "",
 		vagas: amostra.vagas != null ? String(amostra.vagas) : "",
-		padraoAcabamento: amostra.padraoAcabamento,
-		estadoConservacao: amostra.estadoConservacao,
-		infraestrutura: amostra.infraestrutura,
-		servicosPublicos: amostra.servicosPublicos,
-		usosPredominantes: amostra.usosPredominantes,
-		viaAcesso: amostra.viaAcesso,
-		regiaoContexto: amostra.regiaoContexto,
-		dataReferencia: amostra.dataReferencia,
+		padraoAcabamento: str(amostra.padraoAcabamento),
+		estadoConservacao: str(amostra.estadoConservacao),
+		infraestrutura: str(amostra.infraestrutura),
+		servicosPublicos: str(amostra.servicosPublicos),
+		usosPredominantes: str(amostra.usosPredominantes),
+		viaAcesso: str(amostra.viaAcesso),
+		regiaoContexto: str(amostra.regiaoContexto),
+		dataReferencia: str(amostra.dataReferencia),
 	};
 }
 
 export function parseFormValues(values: AmostraFormValues): CreateAmostraInput {
 	return {
 		avaliadorId: Number(values.avaliadorId),
-		proponente: values.proponente.trim(),
-		cpf: values.cpf.trim(),
-		cnpj: values.cnpj.trim(),
-		ddd: values.ddd.replace(/\D/g, ""),
-		telefone: values.telefone.replace(/\D/g, ""),
-		endereco: values.endereco.trim(),
-		coordenadaS: values.coordenadaS.trim(),
-		coordenadaW: values.coordenadaW.trim(),
-		complemento: values.complemento.trim(),
-		bairro: values.bairro.trim(),
-		cep: values.cep.trim(),
-		municipio: values.municipio.trim(),
-		uf: values.uf.trim(),
-		empresaResponsavel: values.empresaResponsavel.trim(),
-		valorTerreno: parsePositiveNumber(values.valorTerreno),
-		matricula: values.matricula.trim(),
-		oficio: values.oficio.trim(),
-		comarca: values.comarca.trim(),
-		ufMatricula: values.ufMatricula.trim(),
-		valorImovel: parsePositiveNumber(values.valorImovel),
-		incidencias: parseFixedNumberArray(values.incidencias),
-		numeroEtapas: parsePositiveNumber(values.numeroEtapas),
-		acumuladoProposto: parseNumberArray(values.acumuladoProposto),
-		valorUnitario: parsePositiveNumber(values.valorUnitario),
-		testada: parsePositiveNumber(values.testada),
-		idadeEstimada: values.idadeEstimada.trim(),
-		areaTerreno: parsePositiveNumber(values.areaTerreno),
-		areaConstruida: parsePositiveNumber(values.areaConstruida),
-		quartos: parsePositiveNumber(values.quartos),
-		banheiros: parsePositiveNumber(values.banheiros),
-		suites: parsePositiveNumber(values.suites),
-		vagas: parsePositiveNumber(values.vagas),
-		padraoAcabamento: values.padraoAcabamento.trim(),
-		estadoConservacao: values.estadoConservacao.trim(),
-		infraestrutura: values.infraestrutura.trim(),
-		servicosPublicos: values.servicosPublicos.trim(),
-		usosPredominantes: values.usosPredominantes.trim(),
-		viaAcesso: values.viaAcesso.trim(),
-		regiaoContexto: values.regiaoContexto.trim(),
-		dataReferencia: values.dataReferencia,
+		proponente: nullableText(values.proponente),
+		cpf: nullableText(values.cpf),
+		cnpj: nullableText(values.cnpj),
+		ddd: nullableDigits(values.ddd),
+		telefone: nullableDigits(values.telefone),
+		endereco: nullableText(values.endereco),
+		coordenadaS: nullableText(values.coordenadaS),
+		coordenadaW: nullableText(values.coordenadaW),
+		complemento: nullableText(values.complemento),
+		bairro: nullableText(values.bairro),
+		cep: nullableText(values.cep),
+		municipio: nullableText(values.municipio),
+		uf: nullableText(values.uf),
+		empresaResponsavel: nullableText(values.empresaResponsavel),
+		valorTerreno: nullableNumber(values.valorTerreno),
+		matricula: nullableText(values.matricula),
+		oficio: nullableText(values.oficio),
+		comarca: nullableText(values.comarca),
+		ufMatricula: nullableText(values.ufMatricula),
+		valorImovel: nullableNumber(values.valorImovel),
+		incidencias: nullableArray(parseFixedNumberArray(values.incidencias)),
+		numeroEtapas: nullableNumber(values.numeroEtapas),
+		acumuladoProposto: nullableArray(parseNumberArray(values.acumuladoProposto)),
+		valorUnitario: nullableNumber(values.valorUnitario),
+		testada: nullableNumber(values.testada),
+		idadeEstimada: nullableText(values.idadeEstimada),
+		areaTerreno: nullableNumber(values.areaTerreno),
+		areaConstruida: nullableNumber(values.areaConstruida),
+		quartos: nullableNumber(values.quartos),
+		banheiros: nullableNumber(values.banheiros),
+		suites: nullableNumber(values.suites),
+		vagas: nullableNumber(values.vagas),
+		padraoAcabamento: nullableText(values.padraoAcabamento),
+		estadoConservacao: nullableText(values.estadoConservacao),
+		infraestrutura: nullableText(values.infraestrutura),
+		servicosPublicos: nullableText(values.servicosPublicos),
+		usosPredominantes: nullableText(values.usosPredominantes),
+		viaAcesso: nullableText(values.viaAcesso),
+		regiaoContexto: nullableText(values.regiaoContexto),
+		dataReferencia: nullableText(values.dataReferencia),
 	};
 }
