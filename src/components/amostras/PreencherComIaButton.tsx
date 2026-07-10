@@ -4,11 +4,11 @@ import { useId, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { AmostraFormValues } from "@/features/amostras/fields";
+import { amostraToFormValues } from "@/features/amostras/transforms";
 import { gerarAmostraIa } from "@/lib/api";
 import { secondaryButtonClassName } from "@/lib/formStyles";
 import { cn, getErrorMessage } from "@/lib/utils";
-import type { AmostraFormValues } from "./fields";
-import { amostraToFormValues } from "./transforms";
 
 type PreencherComIaButtonProps = {
 	onFill: (values: AmostraFormValues) => void;

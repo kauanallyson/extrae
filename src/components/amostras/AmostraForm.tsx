@@ -1,9 +1,14 @@
 import { type KeyboardEvent, type ReactNode, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
+import { AvaliadorSelectField } from "@/components/avaliadores/AvaliadorSelectField";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AvaliadorSelectField } from "@/features/avaliadores/AvaliadorSelectField";
+import {
+	type AmostraFormValues,
+	fieldGroups,
+	identificationGroupTitle,
+} from "@/features/amostras/fields";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import { maskTelefone } from "@/lib/validators";
@@ -11,7 +16,6 @@ import { AmostraTextField } from "./AmostraTextField";
 import { DataReferenciaField } from "./DataReferenciaField";
 import { DecimalArrayField } from "./DecimalArrayField";
 import { FormSection } from "./FormSection";
-import { type AmostraFormValues, fieldGroups, identificationGroupTitle } from "./fields";
 import { IncidenciaServicosField } from "./IncidenciaServicosField";
 
 type AmostraFormProps = {

@@ -2,14 +2,14 @@ import type { Control, FieldPath } from "react-hook-form";
 import { useFormState, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { fieldInputClassName } from "@/lib/formStyles";
-import { cn } from "@/lib/utils";
 import {
 	type AmostraFormValues,
 	INCIDENCIA_SUM_TARGET,
 	INCIDENCIA_SUM_TOLERANCE,
 	incidenciaServicos,
-} from "./fields";
+} from "@/features/amostras/fields";
+import { fieldInputClassName } from "@/lib/formStyles";
+import { cn } from "@/lib/utils";
 
 type IncidenciaServicosFieldProps = {
 	control: Control<AmostraFormValues>;

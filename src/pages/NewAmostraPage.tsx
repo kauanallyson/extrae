@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
+import { AmostraForm } from "@/components/amostras/AmostraForm";
+import { AmostraFormFooter } from "@/components/amostras/AmostraFormFooter";
+import { PreencherComIaButton } from "@/components/amostras/PreencherComIaButton";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AmostraForm } from "@/features/amostras/AmostraForm";
-import { AmostraFormFooter } from "@/features/amostras/AmostraFormFooter";
 import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
-import { PreencherComIaButton } from "@/features/amostras/PreencherComIaButton";
 import { amostraFormResolver } from "@/features/amostras/schema";
 import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
 import { createAmostra } from "@/lib/api";

@@ -7,6 +7,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+	type AvaliadorFormValues,
+	avaliadorFormResolver,
+	defaultAvaliadorValues,
+} from "@/features/avaliadores/schema";
+import {
 	type Avaliador,
 	type CreateAvaliadorInput,
 	createAvaliador,
@@ -15,7 +20,6 @@ import {
 import { fieldInputClassName } from "@/lib/formStyles";
 import { queryKeys } from "@/lib/queryKeys";
 import { getErrorMessage } from "@/lib/utils";
-import { type AvaliadorFormValues, avaliadorFormResolver, defaultAvaliadorValues } from "./schema";
 
 export type AvaliadorDialogState = { mode: "create" } | { mode: "edit"; avaliador: Avaliador };
 

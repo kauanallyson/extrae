@@ -7,8 +7,6 @@ import {
 	InputGroupInput,
 	InputGroupText,
 } from "@/components/ui/input-group";
-import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
-import { maskCep } from "@/lib/validators";
 import {
 	type AmostraFormValues,
 	areaFields,
@@ -18,13 +16,24 @@ import {
 	meterFields,
 	moneyFields,
 	type TextField,
-} from "./fields";
+} from "@/features/amostras/fields";
+import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
+import { maskCep, maskDecimalDuasCasas, normalizeCoordenadaDms } from "@/lib/validators";
 
 type AmostraTextFieldProps = {
 	control: Control<AmostraFormValues>;
 	name: TextField;
 	disabled?: boolean;
 };
+
+const coordenadaFields = new Set<TextField>(["coordenadaS", "coordenadaW"]);
+
+function transformValue(name: TextField, value: string): string {
+	if (name === "cep") return maskCep(value);
+	if (coordenadaFields.has(name)) return normalizeCoordenadaDms(value);
+	if (areaFields.has(name)) return maskDecimalDuasCasas(value);
+	return value;
+}
 
 export function AmostraTextField({ control, name, disabled = false }: AmostraTextFieldProps) {
 	const prefix = moneyFields.has(name) ? "R$" : null;
@@ -51,6 +60,7 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 								placeholder={getPlaceholder(name)}
 								aria-invalid={fieldState.invalid}
 								disabled={disabled}
+								onChange={(event) => field.onChange(transformValue(name, event.target.value))}
 								className="text-slate-100 placeholder:text-slate-500"
 							/>
 							{suffix && (
@@ -67,11 +77,7 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 							placeholder={getPlaceholder(name)}
 							aria-invalid={fieldState.invalid}
 							disabled={disabled}
-							onChange={
-								name === "cep"
-									? (event) => field.onChange(maskCep(event.target.value))
-									: field.onChange
-							}
+							onChange={(event) => field.onChange(transformValue(name, event.target.value))}
 							className={fieldInputClassName}
 						/>
 					)}

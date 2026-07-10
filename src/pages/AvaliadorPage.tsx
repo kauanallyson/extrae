@@ -2,14 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+	type AvaliadorDialogState,
+	AvaliadorFormDialog,
+} from "@/components/avaliadores/AvaliadorFormDialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	type AvaliadorDialogState,
-	AvaliadorFormDialog,
-} from "@/features/avaliadores/AvaliadorFormDialog";
 import { type Avaliador, deleteAvaliador, fetchAvaliadores } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";

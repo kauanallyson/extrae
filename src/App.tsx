@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AmostraDetailsPage } from "./pages/AmostraDetailsPage";
+import { AmostraSimilaresPage } from "./pages/AmostraSimilaresPage";
 import { AmostrasPage } from "./pages/AmostrasPage";
 import { AvaliadorPage } from "./pages/AvaliadorPage";
 import { EditAmostraPage } from "./pages/EditAmostraPage";
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
 	{
 		path: "/amostras",
 		element: <AmostrasPage />,
+	},
+	{
+		path: "/amostras/similares",
+		element: <AmostraSimilaresPage />,
 	},
 	{
 		path: "/amostras/:id",

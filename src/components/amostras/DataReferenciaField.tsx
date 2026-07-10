@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { type AmostraFormValues, fieldLabels } from "@/features/amostras/fields";
 import { secondaryButtonClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
-import { type AmostraFormValues, fieldLabels } from "./fields";
 
 const ISO_DATE = "yyyy-MM-dd";
 

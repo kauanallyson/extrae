@@ -188,8 +188,8 @@ export function getPlaceholder(field: TextField) {
 	if (field === "cnpj") return "00.000.000/0000-00";
 	if (field === "cep") return "00.000-000";
 	if (field === "uf" || field === "ufMatricula") return "CE";
-	if (field === "coordenadaS") return "5°22'18.3\"S";
-	if (field === "coordenadaW") return "39°29'34.4\"W";
+	if (field === "coordenadaS") return "05º39'05,497\"";
+	if (field === "coordenadaW") return "40º31'12,209\"";
 	return undefined;
 }
 
