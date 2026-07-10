@@ -5,7 +5,6 @@ import { buttonVariants } from "./ui/button";
 
 const textRoutes = [
 	{ to: "/amostras", label: "Amostras" },
-	{ to: "/nova-amostra", label: "Nova amostra" },
 	{ to: "/amostras/similares", label: "Similares" },
 	{ to: "/avaliadores", label: "Avaliadores" },
 ];
