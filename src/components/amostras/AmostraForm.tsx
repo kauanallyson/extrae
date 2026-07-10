@@ -6,12 +6,14 @@ import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/
 import { Input } from "@/components/ui/input";
 import {
 	type AmostraFormValues,
+	enumFieldOptions,
 	fieldGroups,
 	identificationGroupTitle,
 } from "@/features/amostras/fields";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import { maskTelefone } from "@/lib/validators";
+import { AmostraSelectField } from "./AmostraSelectField";
 import { AmostraTextField } from "./AmostraTextField";
 import { DataReferenciaField } from "./DataReferenciaField";
 import { DecimalArrayField } from "./DecimalArrayField";
@@ -119,22 +121,37 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 					.map((group) => (
 						<FormSection key={group.title} title={group.title} description={group.description}>
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-								{group.fields.map((fieldName) =>
-									fieldName === "dataReferencia" ? (
-										<DataReferenciaField
-											key={fieldName}
-											control={form.control}
-											disabled={isSubmitting}
-										/>
-									) : (
+								{group.fields.map((fieldName) => {
+									const enumOptions = enumFieldOptions[fieldName];
+									if (fieldName === "dataReferencia") {
+										return (
+											<DataReferenciaField
+												key={fieldName}
+												control={form.control}
+												disabled={isSubmitting}
+											/>
+										);
+									}
+									if (enumOptions) {
+										return (
+											<AmostraSelectField
+												key={fieldName}
+												control={form.control}
+												name={fieldName}
+												options={enumOptions}
+												disabled={isSubmitting}
+											/>
+										);
+									}
+									return (
 										<AmostraTextField
 											key={fieldName}
 											control={form.control}
 											name={fieldName}
 											disabled={isSubmitting}
 										/>
-									),
-								)}
+									);
+								})}
 							</div>
 						</FormSection>
 					))}

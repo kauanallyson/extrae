@@ -30,14 +30,16 @@ import {
 } from "@/features/similares/fields";
 import { type AmostraSimilaresResult, ApiError, fetchAmostrasSimilares } from "@/lib/api";
 import { brl } from "@/lib/format";
-import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
+import {
+	fieldInputClassName,
+	inputGroupClassName,
+	selectContentClassName,
+	selectItemClassName,
+	selectTriggerClassName,
+} from "@/lib/formStyles";
 import { cn, getErrorMessage } from "@/lib/utils";
 import { maskDataReferencia, maskDecimalDuasCasas, normalizeCoordenadaDms } from "@/lib/validators";
 
-const selectTriggerClassName =
-	"h-10 min-h-10 w-full rounded-md border-slate-600 bg-slate-800 px-2.5 py-1 text-slate-100 hover:text-white data-placeholder:text-slate-500 data-[size=default]:h-10 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400";
-const selectContentClassName = "dark border border-slate-600 bg-slate-800 text-slate-100";
-const selectItemClassName = "focus:bg-slate-700 focus:text-slate-50";
 const numberInputClassName =
 	"[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
 

@@ -25,6 +25,30 @@ export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
 export const meterFields = new Set<TextField>(["testada"]);
 export const integerFields = new Set<TextField>(["quartos", "banheiros", "suites", "vagas"]);
 export const requiredFields = new Set<TextField>(["cpf", "cep", "dataReferencia"]);
+
+export const padraoAcabamentoOptions = [
+	"Mínimo",
+	"Baixo",
+	"Normal (c/ aspectos de baixo)",
+	"Normal (forte predominância)",
+	"Normal (c/ aspectos de alto)",
+	"Alto (por predominância)",
+	"Alto (superior, luxo)",
+] as const;
+
+export const estadoConservacaoOptions = [
+	"Em construção ou na planta",
+	"Bom (aparência de novo)",
+	"Bom (aparência de usado)",
+	"Regular (reparos simples)",
+	"Regular (reparos importantes)",
+	"Ruim",
+] as const;
+
+export const enumFieldOptions: Partial<Record<TextField, readonly string[]>> = {
+	padraoAcabamento: padraoAcabamentoOptions,
+	estadoConservacao: estadoConservacaoOptions,
+};
 export const positiveNumberFields = new Set<TextField>([
 	"valorTerreno",
 	"valorImovel",
