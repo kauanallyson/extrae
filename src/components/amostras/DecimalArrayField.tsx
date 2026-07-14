@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import type { AmostraFormValues } from "@/features/amostras/fields";
 import { fieldInputClassName, secondaryButtonClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
+import { maskCentsDecimal } from "@/lib/validators";
 
 type DecimalArrayName = "incidencias" | "acumuladoProposto";
 
@@ -38,7 +39,7 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 				<div>
 					{title && <h3 className="text-sm font-semibold text-slate-100">{title}</h3>}
 					<FormDescription className="text-slate-500">
-						Use duas casas decimais, por exemplo 12,34.
+						Use até duas casas decimais, por exemplo 12,34.
 					</FormDescription>
 				</div>
 				<Button
@@ -66,10 +67,10 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 										name={field.name}
 										ref={field.ref}
 										onBlur={field.onBlur}
-										onChange={field.onChange}
+										onChange={(event) => field.onChange(maskCentsDecimal(event.target.value))}
 										value={typeof field.value === "string" ? field.value : ""}
 										type="text"
-										inputMode="decimal"
+										inputMode="numeric"
 										placeholder="0,00"
 										aria-invalid={fieldState.invalid}
 										disabled={disabled}

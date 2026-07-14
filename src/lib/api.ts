@@ -64,42 +64,11 @@ export type CreateAvaliadorInput = Omit<Avaliador, "id">;
 
 export type DownloadResult = { blobUrl: string; filename: string };
 
-export type AmostraSimilaresCriterios = {
-	coordenadaS: string;
-	coordenadaW: string;
-	areaTerreno?: number | null;
-	areaConstruida?: number | null;
-	padraoAcabamento?: string | null;
-	estadoConservacao?: string | null;
-	dataReferencia?: string | null;
+export type AmostrasPage = {
+	data: Amostra[];
+	nextCursor: number | null;
 };
 
-export type AmostraSimilar = {
-	amostra: Amostra;
-	score: number;
-	distanciaKm: number;
-};
-
-export type AmostraSimilaresEstimativa = {
-	valorImovel: number | null;
-	valorTerreno: number | null;
-};
-
-export type AmostraSimilaresResult = {
-	similares: AmostraSimilar[];
-	estimativa: AmostraSimilaresEstimativa | null;
-};
-
-export class ApiError extends Error {
-	status: number;
-
-	constructor(status: number, message: string) {
-		super(message);
-		this.status = status;
-	}
-}
-
-// Shared by GET /amostras and GET /amostras/planilha (src/lib/amostras-filters.ts).
 export type AmostrasFilters = {
 	from?: string;
 	to?: string;
@@ -111,12 +80,6 @@ export type AmostrasFilters = {
 	valorTerrenoMax?: string;
 };
 
-async function assertOk(res: Response, errorPrefix: string): Promise<void> {
-	if (res.ok) return;
-	const msg = await res.text().catch(() => res.statusText);
-	throw new Error(`${errorPrefix}: ${msg}`);
-}
-
 async function readErrorMessage(res: Response): Promise<string> {
 	try {
 		const body = await res.json();
@@ -124,6 +87,11 @@ async function readErrorMessage(res: Response): Promise<string> {
 	} catch {
 		return (await res.text().catch(() => res.statusText)) || res.statusText;
 	}
+}
+
+async function assertOk(res: Response, errorPrefix: string): Promise<void> {
+	if (res.ok) return;
+	throw new Error(`${errorPrefix}: ${await readErrorMessage(res)}`);
 }
 
 function contentDispositionFilename(res: Response, fallback: string): string {
@@ -227,9 +195,16 @@ export async function downloadAmostrasPlanilha(
 	return toDownloadResult(res, "amostras.xlsx");
 }
 
-export async function fetchAmostras(filters: AmostrasFilters = {}): Promise<Amostra[]> {
-	const query = amostrasFilterParams(filters).toString();
-	const res = await fetch(`${BASE_URL}/amostras${query ? `?${query}` : ""}`);
+export async function fetchAmostras(params: {
+	cursor?: number;
+	limit?: number;
+} = {}): Promise<AmostrasPage> {
+	const query = new URLSearchParams();
+	if (params.cursor != null) query.set("cursor", String(params.cursor));
+	if (params.limit != null) query.set("limit", String(params.limit));
+	const qs = query.toString();
+
+	const res = await fetch(`${BASE_URL}/amostras${qs ? `?${qs}` : ""}`);
 	if (!res.ok) {
 		throw new Error(`Erro ao carregar as amostras: ${await readErrorMessage(res)}`);
 	}
@@ -249,26 +224,6 @@ export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostr
 export async function fetchAmostra(id: number): Promise<Amostra> {
 	const res = await fetch(`${BASE_URL}/amostras/${id}`);
 	await assertOk(res, "Erro ao carregar amostra");
-	return res.json();
-}
-
-export async function fetchAmostrasSimilares(
-	criterios: AmostraSimilaresCriterios,
-	options: { raioKm?: number; limit?: number } = {},
-): Promise<AmostraSimilaresResult> {
-	const params = new URLSearchParams();
-	if (options.raioKm != null) params.set("raioKm", String(options.raioKm));
-	if (options.limit != null) params.set("limit", String(options.limit));
-	const query = params.toString();
-
-	const res = await fetch(`${BASE_URL}/amostras/similares${query ? `?${query}` : ""}`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(criterios),
-	});
-	if (!res.ok) {
-		throw new ApiError(res.status, await readErrorMessage(res));
-	}
 	return res.json();
 }
 
