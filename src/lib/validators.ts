@@ -36,15 +36,20 @@ export function normalizeCoordenadaDms(value: string): string {
 		.replace(/[“”]/g, '"');
 }
 
-export function maskDecimalDuasCasas(value: string): string {
-	let digitsAndComma = value.replace(/[^\d,]/g, "");
+export function maskCentsDecimal(value: string): string {
+	const digits = value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+	if (!digits) return "";
+	const padded = digits.padStart(3, "0");
+	const decDigits = padded.slice(-2);
+	const intDigits = padded.slice(0, -2).replace(/^0+(?=\d)/, "") || "0";
+	const groupedInt = intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+	return `${groupedInt},${decDigits}`;
+}
 
-	const firstComma = digitsAndComma.indexOf(",");
-	if (firstComma === -1) return digitsAndComma;
+export function unmaskCentsDecimal(value: string): string {
+	return value.replace(/\./g, "").replace(",", ".");
+}
 
-	const intPart = digitsAndComma.slice(0, firstComma);
-	const decPart = digitsAndComma.slice(firstComma + 1).replace(/,/g, "");
-	digitsAndComma = `${intPart},${decPart.slice(0, 2)}`;
-
-	return digitsAndComma;
+export function unmaskCentsToInteger(value: string): string {
+	return value.replace(/\D/g, "");
 }

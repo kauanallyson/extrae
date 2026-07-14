@@ -55,7 +55,7 @@ export function EditAmostraPage() {
 	const deleteMutation = useMutation({
 		mutationFn: () => deleteAmostra(amostraId),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.amostras() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.amostras });
 			navigate("/amostras");
 		},
 		onError: (error) => toast.error(getErrorMessage(error)),

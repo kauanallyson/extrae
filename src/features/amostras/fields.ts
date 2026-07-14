@@ -24,6 +24,14 @@ export const moneyFields = new Set<TextField>(["valorTerreno", "valorImovel", "v
 export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
 export const meterFields = new Set<TextField>(["testada"]);
 export const integerFields = new Set<TextField>(["quartos", "banheiros", "suites", "vagas"]);
+export const roundedDecimalFields = new Set<TextField>([
+	"valorTerreno",
+	"valorImovel",
+	"valorUnitario",
+	"testada",
+	"areaTerreno",
+	"areaConstruida",
+]);
 export const requiredFields = new Set<TextField>(["cpf", "cep", "dataReferencia"]);
 
 export const padraoAcabamentoOptions = [
@@ -125,8 +133,8 @@ export const incidenciaServicos = [
 	"Outros Serviços",
 ] as const;
 
-export const INCIDENCIA_SUM_TARGET = 100;
-export const INCIDENCIA_SUM_TOLERANCE = 0.05;
+export const INCIDENCIA_SUM_TARGET = 10000;
+export const INCIDENCIA_SUM_TOLERANCE = 5;
 
 export const identificationGroupTitle = "Identificação";
 
@@ -218,7 +226,7 @@ export function getPlaceholder(field: TextField) {
 }
 
 export function getInputMode(field: TextField) {
-	if (integerFields.has(field)) return "numeric";
+	if (integerFields.has(field) || roundedDecimalFields.has(field)) return "numeric";
 	if (positiveNumberFields.has(field)) return "decimal";
 	if (field === "cpf" || field === "cnpj" || field === "cep") return "numeric";
 	return "text";

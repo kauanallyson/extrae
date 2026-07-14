@@ -1,17 +1,23 @@
 import type { CreateAmostraInput } from "@/lib/api";
-import { maskCep, maskTelefone } from "@/lib/validators";
+import {
+	maskCep,
+	maskCentsDecimal,
+	maskTelefone,
+	unmaskCentsDecimal,
+	unmaskCentsToInteger,
+} from "@/lib/validators";
 import { type AmostraFormValues, type ArrayValue, incidenciaServicos } from "./fields";
 
 function parseFixedNumberArray(values: ArrayValue[]) {
 	return values.map((item) => {
-		const parsed = Number(item.value.trim().replace(",", "."));
-		return Number.isFinite(parsed) ? parsed : 0;
+		const digits = unmaskCentsToInteger(item.value.trim());
+		return digits ? Number(digits) : 0;
 	});
 }
 
 function parseNumberArray(values: ArrayValue[]) {
 	return values
-		.map((item) => item.value.trim().replace(",", "."))
+		.map((item) => unmaskCentsToInteger(item.value.trim()))
 		.filter(Boolean)
 		.map(Number)
 		.filter((item) => Number.isFinite(item));
@@ -30,10 +36,10 @@ function nullableDigits(value: string): string | null {
 }
 
 function nullableNumber(value: string): number | null {
-	const trimmed = value.trim().replace(",", ".");
+	const trimmed = unmaskCentsDecimal(value.trim());
 	if (!trimmed) return null;
 	const parsed = Number(trimmed);
-	return Number.isFinite(parsed) ? parsed : null;
+	return Number.isFinite(parsed) ? Math.round(parsed) : null;
 }
 
 function nullableArray<T>(values: T[]): T[] | null {
@@ -44,16 +50,12 @@ function formatTelefone(digits: string | null | undefined): string {
 	return maskTelefone(str(digits));
 }
 
-function toDecimalComma(value: number): string {
-	return value.toFixed(2).replace(".", ",");
+function maskedIntToString(value: number | null | undefined): string {
+	return value != null ? maskCentsDecimal(String(Math.trunc(value) * 100)) : "";
 }
 
-function numberToCommaString(value: number | null | undefined): string {
-	return value != null ? String(value).replace(".", ",") : "";
-}
-
-function moneyToCommaString(value: number | null | undefined): string {
-	return value != null ? value.toFixed(2).replace(".", ",") : "";
+function maskedArrayValue(value: number | null | undefined): string {
+	return value != null ? maskCentsDecimal(String(Math.trunc(value))) : "";
 }
 
 export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormValues {
@@ -64,12 +66,12 @@ export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormVal
 		ddd: str(amostra.ddd),
 		telefone: formatTelefone(amostra.telefone),
 		incidencias: incidenciaServicos.map((_, i) => ({
-			value: incidencias[i] != null ? toDecimalComma(incidencias[i]) : "",
+			value: maskedArrayValue(incidencias[i]),
 		})),
 		acumuladoProposto:
 			acumuladoProposto.length > 0
 				? acumuladoProposto.map((v) => ({
-						value: toDecimalComma(v),
+						value: maskedArrayValue(v),
 					}))
 				: [{ value: "" }],
 		proponente: str(amostra.proponente),
@@ -84,18 +86,18 @@ export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormVal
 		municipio: str(amostra.municipio),
 		uf: str(amostra.uf),
 		empresaResponsavel: str(amostra.empresaResponsavel),
-		valorTerreno: moneyToCommaString(amostra.valorTerreno),
+		valorTerreno: maskedIntToString(amostra.valorTerreno),
 		matricula: str(amostra.matricula),
 		oficio: str(amostra.oficio),
 		comarca: str(amostra.comarca),
 		ufMatricula: str(amostra.ufMatricula),
-		valorImovel: moneyToCommaString(amostra.valorImovel),
+		valorImovel: maskedIntToString(amostra.valorImovel),
 		numeroEtapas: amostra.numeroEtapas != null ? String(amostra.numeroEtapas) : "",
-		valorUnitario: moneyToCommaString(amostra.valorUnitario),
-		testada: numberToCommaString(amostra.testada),
+		valorUnitario: maskedIntToString(amostra.valorUnitario),
+		testada: maskedIntToString(amostra.testada),
 		idadeEstimada: str(amostra.idadeEstimada),
-		areaTerreno: numberToCommaString(amostra.areaTerreno),
-		areaConstruida: numberToCommaString(amostra.areaConstruida),
+		areaTerreno: maskedIntToString(amostra.areaTerreno),
+		areaConstruida: maskedIntToString(amostra.areaConstruida),
 		quartos: amostra.quartos != null ? String(amostra.quartos) : "",
 		banheiros: amostra.banheiros != null ? String(amostra.banheiros) : "",
 		suites: amostra.suites != null ? String(amostra.suites) : "",

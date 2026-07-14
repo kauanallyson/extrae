@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { cepRegex, cnpjRegex, cpfRegex, dddRegex, phoneRegex } from "@/lib/validators";
+import {
+	cepRegex,
+	cnpjRegex,
+	cpfRegex,
+	dddRegex,
+	phoneRegex,
+	unmaskCentsDecimal,
+	unmaskCentsToInteger,
+} from "@/lib/validators";
 import { createZodResolver } from "@/lib/zodResolver";
 import {
 	type AmostraFormValues,
@@ -14,14 +22,15 @@ import {
 	textFields,
 } from "./fields";
 
-const twoDecimalRegex = /^\d+(?:[,.]\d{2})$/;
+const integerRegex = /^\d+$/;
 
 function positiveNumberString(field: TextField) {
 	if (integerFields.has(field)) {
 		return z.string().refine(
 			(value) => {
-				if (!value.trim()) return true;
-				const parsed = Number(value);
+				const trimmed = value.trim();
+				if (!trimmed) return true;
+				const parsed = Number(trimmed);
 				return Number.isInteger(parsed) && parsed >= 0;
 			},
 			{ message: "Informe um número inteiro." },
@@ -30,7 +39,7 @@ function positiveNumberString(field: TextField) {
 	return z.string().refine(
 		(value) => {
 			if (!value.trim()) return !requiredFields.has(field);
-			const parsed = Number(value.replace(",", "."));
+			const parsed = Number(unmaskCentsDecimal(value.trim()));
 			return Number.isFinite(parsed) && parsed >= 0;
 		},
 		{
@@ -71,24 +80,25 @@ const textFieldShape = Object.fromEntries(
 	textFields.map((field) => [field, textFieldSchema(field)]),
 ) as unknown as Record<TextField, z.ZodType<string>>;
 
-const decimalArrayValueSchema = z.object({
-	value: z.string().refine((value) => !value.trim() || twoDecimalRegex.test(value.trim()), {
-		message: "Informe um número positivo com duas casas decimais.",
-	}),
+const integerArrayValueSchema = z.object({
+	value: z.string().refine(
+		(value) => {
+			const trimmed = value.trim();
+			if (!trimmed) return true;
+			return integerRegex.test(unmaskCentsToInteger(trimmed));
+		},
+		{ message: "Informe um valor percentual válido." },
+	),
 });
 
-function hasDecimalArrayValue(values: ArrayValue[]) {
-	return values.some((item) => {
-		const value = item.value.trim();
-		return value !== "" && twoDecimalRegex.test(value);
-	});
+function hasIntegerArrayValue(values: ArrayValue[]) {
+	return values.some((item) => unmaskCentsToInteger(item.value.trim()) !== "");
 }
 
 function sumArrayValues(values: ArrayValue[]) {
 	return values.reduce((acc, item) => {
-		const normalized = item.value.trim().replace(",", ".");
-		const parsed = Number(normalized);
-		return acc + (normalized && Number.isFinite(parsed) ? parsed : 0);
+		const digits = unmaskCentsToInteger(item.value.trim());
+		return acc + (digits ? Number(digits) : 0);
 	}, 0);
 }
 
@@ -101,13 +111,13 @@ export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
 	telefone: z.string().regex(phoneRegex, "Informe 8 ou 9 dígitos do telefone."),
 	incidencias: z
-		.array(decimalArrayValueSchema)
+		.array(integerArrayValueSchema)
 		.length(incidenciaServicos.length)
 		.refine(incidenciasSumValid, "A soma dos pesos deve totalizar 100%."),
 	acumuladoProposto: z
-		.array(decimalArrayValueSchema)
+		.array(integerArrayValueSchema)
 		.min(1)
-		.refine(hasDecimalArrayValue, "Informe ao menos um valor decimal."),
+		.refine(hasIntegerArrayValue, "Informe ao menos um valor inteiro."),
 	...textFieldShape,
 });
 
