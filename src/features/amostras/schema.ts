@@ -69,7 +69,7 @@ function textFieldSchema(field: TextField) {
 			.string()
 			.trim()
 			.min(1, "Informe o CEP.")
-			.regex(cepRegex, "Informe o CEP com máscara: 00.000-000.");
+			.regex(cepRegex, "Informe o CEP com máscara: 00000-000.");
 	}
 	if (positiveNumberFields.has(field)) return positiveNumberString(field);
 	if (requiredFields.has(field)) return z.string().trim().min(1, "Preencha este campo.");

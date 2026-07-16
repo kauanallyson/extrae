@@ -1,6 +1,27 @@
+import { clearToken, getToken } from "@/lib/auth";
+
 const BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ??
 	(import.meta.env.PROD ? "https://extrae.duckdns.org" : "/api");
+
+function authHeaders(): HeadersInit {
+	const token = getToken();
+	return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function handleUnauthorized(res: Response): void {
+	if (res.status !== 401) return;
+	clearToken();
+	window.location.href = "/login";
+}
+
+export type AuthUser = {
+	id: number;
+	nome: string;
+	email: string;
+};
+
+export type LoginInput = { email: string; senha: string };
 
 export type Avaliador = {
 	id: number;
@@ -91,6 +112,7 @@ async function readErrorMessage(res: Response): Promise<string> {
 
 async function assertOk(res: Response, errorPrefix: string): Promise<void> {
 	if (res.ok) return;
+	handleUnauthorized(res);
 	throw new Error(`${errorPrefix}: ${await readErrorMessage(res)}`);
 }
 
@@ -131,8 +153,24 @@ function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
 	return params;
 }
 
+export async function login(input: LoginInput): Promise<{ token: string }> {
+	const res = await fetch(`${BASE_URL}/auth/login`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(input),
+	});
+	await assertOk(res, "Erro ao entrar");
+	return res.json();
+}
+
+export async function me(): Promise<AuthUser> {
+	const res = await fetch(`${BASE_URL}/auth/me`, { headers: authHeaders() });
+	await assertOk(res, "Erro ao validar sessão");
+	return res.json();
+}
+
 export async function fetchAvaliadores(): Promise<Avaliador[]> {
-	const res = await fetch(`${BASE_URL}/avaliadores`);
+	const res = await fetch(`${BASE_URL}/avaliadores`, { headers: authHeaders() });
 	await assertOk(res, "Erro ao buscar avaliadores");
 	return res.json();
 }
@@ -140,7 +178,7 @@ export async function fetchAvaliadores(): Promise<Avaliador[]> {
 export async function createAvaliador(input: CreateAvaliadorInput): Promise<Avaliador> {
 	const res = await fetch(`${BASE_URL}/avaliadores`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...authHeaders() },
 		body: JSON.stringify(input),
 	});
 	await assertOk(res, "Erro ao criar avaliador");
@@ -153,7 +191,7 @@ export async function updateAvaliador(
 ): Promise<Avaliador> {
 	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...authHeaders() },
 		body: JSON.stringify(input),
 	});
 	await assertOk(res, "Erro ao atualizar avaliador");
@@ -161,7 +199,10 @@ export async function updateAvaliador(
 }
 
 export async function deleteAvaliador(id: number): Promise<void> {
-	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, { method: "DELETE" });
+	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
+		method: "DELETE",
+		headers: authHeaders(),
+	});
 	await assertOk(res, "Erro ao deletar avaliador");
 }
 
@@ -171,6 +212,7 @@ export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
 
 	const res = await fetch(`${BASE_URL}/amostras/ia`, {
 		method: "POST",
+		headers: authHeaders(),
 		body: form,
 	});
 	await assertOk(res, "Geração da amostra");
@@ -178,7 +220,7 @@ export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
 }
 
 export async function downloadExcelRae(amostraId: number): Promise<DownloadResult> {
-	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`);
+	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`, { headers: authHeaders() });
 	await assertOk(res, "Etapa 3 - Download do Excel");
 	return toDownloadResult(res, `dados-rae-${amostraId}.xlsx`);
 }
@@ -187,25 +229,28 @@ export async function downloadAmostrasPlanilha(
 	filters: AmostrasFilters = {},
 ): Promise<DownloadResult> {
 	const query = amostrasFilterParams(filters).toString();
-	const res = await fetch(`${BASE_URL}/amostras/planilha${query ? `?${query}` : ""}`);
+	const res = await fetch(`${BASE_URL}/amostras/planilha${query ? `?${query}` : ""}`, {
+		headers: authHeaders(),
+	});
 
 	if (!res.ok) {
+		handleUnauthorized(res);
 		throw new Error(await readErrorMessage(res));
 	}
 	return toDownloadResult(res, "amostras.xlsx");
 }
 
-export async function fetchAmostras(params: {
-	cursor?: number;
-	limit?: number;
-} = {}): Promise<AmostrasPage> {
+export async function fetchAmostras(
+	params: { cursor?: number; limit?: number } = {},
+): Promise<AmostrasPage> {
 	const query = new URLSearchParams();
 	if (params.cursor != null) query.set("cursor", String(params.cursor));
 	if (params.limit != null) query.set("limit", String(params.limit));
 	const qs = query.toString();
 
-	const res = await fetch(`${BASE_URL}/amostras${qs ? `?${qs}` : ""}`);
+	const res = await fetch(`${BASE_URL}/amostras${qs ? `?${qs}` : ""}`, { headers: authHeaders() });
 	if (!res.ok) {
+		handleUnauthorized(res);
 		throw new Error(`Erro ao carregar as amostras: ${await readErrorMessage(res)}`);
 	}
 	return res.json();
@@ -214,7 +259,7 @@ export async function fetchAmostras(params: {
 export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostra> {
 	const res = await fetch(`${BASE_URL}/amostras/`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...authHeaders() },
 		body: JSON.stringify(amostra),
 	});
 	await assertOk(res, "Erro ao criar a amostra");
@@ -222,7 +267,7 @@ export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostr
 }
 
 export async function fetchAmostra(id: number): Promise<Amostra> {
-	const res = await fetch(`${BASE_URL}/amostras/${id}`);
+	const res = await fetch(`${BASE_URL}/amostras/${id}`, { headers: authHeaders() });
 	await assertOk(res, "Erro ao carregar amostra");
 	return res.json();
 }
@@ -230,7 +275,7 @@ export async function fetchAmostra(id: number): Promise<Amostra> {
 export async function updateAmostra(id: number, amostra: CreateAmostraInput): Promise<Amostra> {
 	const res = await fetch(`${BASE_URL}/amostras/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...authHeaders() },
 		body: JSON.stringify(amostra),
 	});
 	await assertOk(res, "Erro ao atualizar amostra");
@@ -238,6 +283,9 @@ export async function updateAmostra(id: number, amostra: CreateAmostraInput): Pr
 }
 
 export async function deleteAmostra(id: number): Promise<void> {
-	const res = await fetch(`${BASE_URL}/amostras/${id}`, { method: "DELETE" });
+	const res = await fetch(`${BASE_URL}/amostras/${id}`, {
+		method: "DELETE",
+		headers: authHeaders(),
+	});
 	await assertOk(res, "Erro ao deletar amostra");
 }
