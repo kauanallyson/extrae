@@ -165,7 +165,9 @@ export async function deleteAvaliador(id: number): Promise<void> {
 	await assertOk(res, "Erro ao deletar avaliador");
 }
 
-export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
+export type AmostraIaResult = CreateAmostraInput & { camposNaoEncontrados: string[] };
+
+export async function gerarAmostraIa(pdf: File): Promise<AmostraIaResult> {
 	const form = new FormData();
 	form.append("pdf", pdf);
 
@@ -174,7 +176,7 @@ export async function gerarAmostraIa(pdf: File): Promise<CreateAmostraInput> {
 		body: form,
 	});
 	await assertOk(res, "Geração da amostra");
-	return res.json() as Promise<CreateAmostraInput>;
+	return res.json() as Promise<AmostraIaResult>;
 }
 
 export async function downloadExcelRae(amostraId: number): Promise<DownloadResult> {
@@ -195,10 +197,9 @@ export async function downloadAmostrasPlanilha(
 	return toDownloadResult(res, "amostras.xlsx");
 }
 
-export async function fetchAmostras(params: {
-	cursor?: number;
-	limit?: number;
-} = {}): Promise<AmostrasPage> {
+export async function fetchAmostras(
+	params: { cursor?: number; limit?: number } = {},
+): Promise<AmostrasPage> {
 	const query = new URLSearchParams();
 	if (params.cursor != null) query.set("cursor", String(params.cursor));
 	if (params.limit != null) query.set("limit", String(params.limit));

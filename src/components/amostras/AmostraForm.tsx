@@ -25,9 +25,16 @@ type AmostraFormProps = {
 	isSubmitting: boolean;
 	onSubmit: (values: AmostraFormValues) => void;
 	footer: ReactNode;
+	camposNaoEncontrados?: Set<string>;
 };
 
-export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFormProps) {
+export function AmostraForm({
+	form,
+	isSubmitting,
+	onSubmit,
+	footer,
+	camposNaoEncontrados = new Set(),
+}: AmostraFormProps) {
 	const acumuladoProposto = useFieldArray({ control: form.control, name: "acumuladoProposto" });
 	const formRef = useRef<HTMLFormElement>(null);
 
@@ -62,7 +69,12 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 				</FormSection>
 
 				<FormSection title="Identificação" description="Dados do proponente e contato.">
-					<AmostraTextField control={form.control} name="proponente" disabled={isSubmitting} />
+					<AmostraTextField
+						control={form.control}
+						name="proponente"
+						disabled={isSubmitting}
+						missing={camposNaoEncontrados.has("proponente")}
+					/>
 					<div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem_minmax(0,1fr)]">
 						{(["cpf", "cnpj"] as const).map((fieldName) => (
 							<AmostraTextField
@@ -70,6 +82,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 								control={form.control}
 								name={fieldName}
 								disabled={isSubmitting}
+								missing={camposNaoEncontrados.has(fieldName)}
 							/>
 						))}
 						<FormField
@@ -77,7 +90,14 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 							name="ddd"
 							render={({ field, fieldState }) => (
 								<FormItem>
-									<FormLabel className="text-slate-200">DDD</FormLabel>
+									<FormLabel className="text-slate-200">
+										DDD
+										{camposNaoEncontrados.has("ddd") && (
+											<span className="ml-2 text-xs font-normal text-amber-400">
+												Não identificado
+											</span>
+										)}
+									</FormLabel>
 									<Input
 										{...field}
 										type="text"
@@ -86,7 +106,12 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 										placeholder="00"
 										aria-invalid={fieldState.invalid}
 										disabled={isSubmitting}
-										className={cn(fieldInputClassName, "text-center")}
+										className={cn(
+											fieldInputClassName,
+											"text-center",
+											camposNaoEncontrados.has("ddd") &&
+												"border-amber-500/70 focus-visible:border-amber-400",
+										)}
 									/>
 									<FormMessage />
 								</FormItem>
@@ -97,7 +122,14 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 							name="telefone"
 							render={({ field, fieldState }) => (
 								<FormItem>
-									<FormLabel className="text-slate-200">Telefone</FormLabel>
+									<FormLabel className="text-slate-200">
+										Telefone
+										{camposNaoEncontrados.has("telefone") && (
+											<span className="ml-2 text-xs font-normal text-amber-400">
+												Não identificado
+											</span>
+										)}
+									</FormLabel>
 									<Input
 										{...field}
 										type="text"
@@ -107,7 +139,11 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 										aria-invalid={fieldState.invalid}
 										disabled={isSubmitting}
 										onChange={(event) => field.onChange(maskTelefone(event.target.value))}
-										className={fieldInputClassName}
+										className={cn(
+											fieldInputClassName,
+											camposNaoEncontrados.has("telefone") &&
+												"border-amber-500/70 focus-visible:border-amber-400",
+										)}
 									/>
 									<FormMessage />
 								</FormItem>
@@ -129,6 +165,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 												key={fieldName}
 												control={form.control}
 												disabled={isSubmitting}
+												missing={camposNaoEncontrados.has(fieldName)}
 											/>
 										);
 									}
@@ -140,6 +177,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 												name={fieldName}
 												options={enumOptions}
 												disabled={isSubmitting}
+												missing={camposNaoEncontrados.has(fieldName)}
 											/>
 										);
 									}
@@ -149,6 +187,7 @@ export function AmostraForm({ form, isSubmitting, onSubmit, footer }: AmostraFor
 											control={form.control}
 											name={fieldName}
 											disabled={isSubmitting}
+											missing={camposNaoEncontrados.has(fieldName)}
 										/>
 									);
 								})}

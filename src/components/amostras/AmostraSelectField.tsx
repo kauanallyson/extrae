@@ -8,13 +8,19 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { type AmostraFormValues, fieldLabels, type TextField } from "@/features/amostras/fields";
-import { selectContentClassName, selectItemClassName, selectTriggerClassName } from "@/lib/formStyles";
+import {
+	selectContentClassName,
+	selectItemClassName,
+	selectTriggerClassName,
+} from "@/lib/formStyles";
+import { cn } from "@/lib/utils";
 
 type AmostraSelectFieldProps = {
 	control: Control<AmostraFormValues>;
 	name: TextField;
 	options: readonly string[];
 	disabled?: boolean;
+	missing?: boolean;
 };
 
 export function AmostraSelectField({
@@ -22,6 +28,7 @@ export function AmostraSelectField({
 	name,
 	options,
 	disabled = false,
+	missing = false,
 }: AmostraSelectFieldProps) {
 	return (
 		<FormField
@@ -29,13 +36,18 @@ export function AmostraSelectField({
 			name={name}
 			render={({ field }) => (
 				<FormItem>
-					<FormLabel className="text-slate-200">{fieldLabels[name]}</FormLabel>
+					<FormLabel className="text-slate-200">
+						{fieldLabels[name]}
+						{missing && (
+							<span className="ml-2 text-xs font-normal text-amber-400">Não identificado</span>
+						)}
+					</FormLabel>
 					<Select
 						value={field.value || undefined}
 						onValueChange={(value) => field.onChange(value ?? "")}
 						disabled={disabled}
 					>
-						<SelectTrigger className={selectTriggerClassName}>
+						<SelectTrigger className={cn(selectTriggerClassName, missing && "border-amber-500/70")}>
 							<SelectValue placeholder="Não informado" />
 						</SelectTrigger>
 						<SelectContent alignItemWithTrigger={false} className={selectContentClassName}>

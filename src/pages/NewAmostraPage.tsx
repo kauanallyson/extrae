@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AmostraForm } from "@/components/amostras/AmostraForm";
 import { AmostraFormFooter } from "@/components/amostras/AmostraFormFooter";
@@ -16,10 +17,12 @@ export function NewAmostraPage() {
 	});
 
 	const [gerarRae, setGerarRae] = useGerarRaePreference("nova-amostra-gerar-rae");
+	const [camposNaoEncontrados, setCamposNaoEncontrados] = useState<Set<string>>(new Set());
 
 	const saveMutation = useSaveAmostra(createAmostra, {
 		onSuccess: () => {
 			form.reset(defaultValues);
+			setCamposNaoEncontrados(new Set());
 		},
 	});
 
@@ -35,7 +38,13 @@ export function NewAmostraPage() {
 							Preencha os dados da amostra de imóvel para cadastro.
 						</CardDescription>
 					</div>
-					<PreencherComIaButton disabled={isSubmitting} onFill={(values) => form.reset(values)} />
+					<PreencherComIaButton
+						disabled={isSubmitting}
+						onFill={(values, campos) => {
+							form.reset(values);
+							setCamposNaoEncontrados(new Set(campos));
+						}}
+					/>
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
@@ -43,6 +52,7 @@ export function NewAmostraPage() {
 						form={form}
 						isSubmitting={isSubmitting}
 						onSubmit={(values) => saveMutation.mutate({ values, gerarRae })}
+						camposNaoEncontrados={camposNaoEncontrados}
 						footer={
 							<AmostraFormFooter
 								checkboxId="gerar-rae-nova"
@@ -53,6 +63,7 @@ export function NewAmostraPage() {
 								onReset={() => {
 									form.reset(defaultValues);
 									resetMutation();
+									setCamposNaoEncontrados(new Set());
 								}}
 							/>
 						}
