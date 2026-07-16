@@ -218,7 +218,7 @@ export const defaultValues = {
 export function getPlaceholder(field: TextField) {
 	if (field === "cpf") return "000.000.000-00";
 	if (field === "cnpj") return "00.000.000/0000-00";
-	if (field === "cep") return "00.000-000";
+	if (field === "cep") return "00000-000";
 	if (field === "uf" || field === "ufMatricula") return "CE";
 	if (field === "coordenadaS") return "05º39'05,497\"";
 	if (field === "coordenadaW") return "40º31'12,209\"";
