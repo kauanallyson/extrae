@@ -18,12 +18,14 @@ import {
 	type TextField,
 } from "@/features/amostras/fields";
 import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
-import { maskCep, maskCentsDecimal, normalizeCoordenadaDms } from "@/lib/validators";
+import { cn } from "@/lib/utils";
+import { maskCentsDecimal, maskCep, normalizeCoordenadaDms } from "@/lib/validators";
 
 type AmostraTextFieldProps = {
 	control: Control<AmostraFormValues>;
 	name: TextField;
 	disabled?: boolean;
+	missing?: boolean;
 };
 
 const coordenadaFields = new Set<TextField>(["coordenadaS", "coordenadaW"]);
@@ -36,7 +38,12 @@ function transformValue(name: TextField, value: string): string {
 	return value;
 }
 
-export function AmostraTextField({ control, name, disabled = false }: AmostraTextFieldProps) {
+export function AmostraTextField({
+	control,
+	name,
+	disabled = false,
+	missing = false,
+}: AmostraTextFieldProps) {
 	const prefix = moneyFields.has(name) ? "R$" : null;
 	const suffix = areaFields.has(name) ? "m²" : meterFields.has(name) ? "m" : null;
 	const hasAffix = prefix != null || suffix != null;
@@ -47,9 +54,20 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 			name={name}
 			render={({ field, fieldState }) => (
 				<FormItem>
-					<FormLabel className="text-slate-200">{fieldLabels[name]}</FormLabel>
+					<FormLabel className="text-slate-200">
+						{fieldLabels[name]}
+						{missing && (
+							<span className="ml-2 text-xs font-normal text-amber-400">Não identificado</span>
+						)}
+					</FormLabel>
 					{hasAffix ? (
-						<InputGroup className={inputGroupClassName}>
+						<InputGroup
+							className={cn(
+								inputGroupClassName,
+								missing &&
+									"border-amber-500/70 has-[[data-slot=input-group-control]:focus-visible]:border-amber-400",
+							)}
+						>
 							{prefix && (
 								<InputGroupAddon>
 									<InputGroupText className="text-slate-400">{prefix}</InputGroupText>
@@ -79,7 +97,10 @@ export function AmostraTextField({ control, name, disabled = false }: AmostraTex
 							aria-invalid={fieldState.invalid}
 							disabled={disabled}
 							onChange={(event) => field.onChange(transformValue(name, event.target.value))}
-							className={fieldInputClassName}
+							className={cn(
+								fieldInputClassName,
+								missing && "border-amber-500/70 focus-visible:border-amber-400",
+							)}
 						/>
 					)}
 					<FormMessage />

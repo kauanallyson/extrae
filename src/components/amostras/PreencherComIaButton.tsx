@@ -11,7 +11,7 @@ import { secondaryButtonClassName } from "@/lib/formStyles";
 import { cn, getErrorMessage } from "@/lib/utils";
 
 type PreencherComIaButtonProps = {
-	onFill: (values: AmostraFormValues) => void;
+	onFill: (values: AmostraFormValues, camposNaoEncontrados: string[]) => void;
 	onStart?: () => void;
 	disabled?: boolean;
 };
@@ -22,7 +22,14 @@ export function PreencherComIaButton({ onFill, onStart, disabled }: PreencherCom
 
 	const mutation = useMutation({
 		mutationFn: (pdf: File) => gerarAmostraIa(pdf),
-		onSuccess: (amostra) => onFill(amostraToFormValues(amostra)),
+		onSuccess: (amostra) => {
+			onFill(amostraToFormValues(amostra), amostra.camposNaoEncontrados);
+			if (amostra.camposNaoEncontrados.length > 0) {
+				toast.warning(
+					`A IA não conseguiu identificar ${amostra.camposNaoEncontrados.length} campo(s). Revise os campos destacados.`,
+				);
+			}
+		},
 		onError: (error) => toast.error(getErrorMessage(error)),
 	});
 

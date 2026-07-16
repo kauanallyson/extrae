@@ -22,9 +22,14 @@ function parseIsoDate(value: string): Date | undefined {
 type DataReferenciaFieldProps = {
 	control: Control<AmostraFormValues>;
 	disabled?: boolean;
+	missing?: boolean;
 };
 
-export function DataReferenciaField({ control, disabled = false }: DataReferenciaFieldProps) {
+export function DataReferenciaField({
+	control,
+	disabled = false,
+	missing = false,
+}: DataReferenciaFieldProps) {
 	const [open, setOpen] = useState(false);
 	const endMonth = new Date(new Date().getFullYear() + 1, 11);
 
@@ -36,7 +41,12 @@ export function DataReferenciaField({ control, disabled = false }: DataReferenci
 				const selected = parseIsoDate(field.value);
 				return (
 					<FormItem className="flex flex-col">
-						<FormLabel className="text-slate-200">{fieldLabels.dataReferencia}</FormLabel>
+						<FormLabel className="text-slate-200">
+							{fieldLabels.dataReferencia}
+							{missing && (
+								<span className="ml-2 text-xs font-normal text-amber-400">Não identificado</span>
+							)}
+						</FormLabel>
 						<Popover open={open} onOpenChange={setOpen}>
 							<PopoverTrigger
 								render={
@@ -49,6 +59,7 @@ export function DataReferenciaField({ control, disabled = false }: DataReferenci
 											"h-10 w-full justify-between font-normal",
 											secondaryButtonClassName,
 											!selected && "text-slate-500",
+											missing && "border-amber-500/70",
 										)}
 									>
 										{selected
