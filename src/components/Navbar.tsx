@@ -1,9 +1,10 @@
 import { LogOutIcon } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "../lib/utils";
 import { Logo } from "./Logo";
-import { buttonVariants } from "./ui/button";
 
 const textRoutes = [
 	{ to: "/amostras", label: "Amostras" },
@@ -42,7 +43,9 @@ export function Navbar() {
 
 					{user && (
 						<div className="flex items-center gap-2 border-l border-white/10 pl-3">
-							<span className="text-sm text-slate-400">{user.nome}</span>
+							<Avatar>
+								<AvatarFallback>{user.nome.at(0) ?? "?"}</AvatarFallback>
+							</Avatar>
 							<button
 								type="button"
 								title="Sair"
