@@ -44,7 +44,7 @@ export function Navbar() {
 					{user && (
 						<div className="flex items-center gap-2 border-l border-white/10 pl-3">
 							<Avatar>
-								<AvatarFallback>{user.nome.at(0) ?? "?"}</AvatarFallback>
+								<AvatarFallback className={"bg-slate-800"}>{user.nome.at(0) ?? "?"}</AvatarFallback>
 							</Avatar>
 							<button
 								type="button"
