@@ -3,6 +3,10 @@
 		{
 			"source": "/api/:path*",
 			"destination": "https://extrae.duckdns.org/:path*"
+		},
+		{
+			"source": "/((?!api/).*)",
+			"destination": "/index.html"
 		}
 	]
 }
