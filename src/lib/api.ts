@@ -74,6 +74,7 @@ export type Amostra = {
 	usosPredominantes: string | null;
 	viaAcesso: string | null;
 	regiaoContexto: string | null;
+	equacaoSISDEA: string | null;
 	dataReferencia: string | null;
 	createdAt: string;
 	updatedAt: string;

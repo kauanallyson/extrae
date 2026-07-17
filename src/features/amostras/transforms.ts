@@ -99,6 +99,7 @@ export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormVal
 		usosPredominantes: str(amostra.usosPredominantes),
 		viaAcesso: str(amostra.viaAcesso),
 		regiaoContexto: str(amostra.regiaoContexto),
+		equacaoSISDEA: str(amostra.equacaoSISDEA),
 		dataReferencia: str(amostra.dataReferencia),
 	};
 }
@@ -145,6 +146,7 @@ export function parseFormValues(values: AmostraFormValues): CreateAmostraInput {
 		usosPredominantes: nullableText(values.usosPredominantes),
 		viaAcesso: nullableText(values.viaAcesso),
 		regiaoContexto: nullableText(values.regiaoContexto),
+		equacaoSISDEA: nullableText(values.equacaoSISDEA),
 		dataReferencia: nullableText(values.dataReferencia),
 	};
 }

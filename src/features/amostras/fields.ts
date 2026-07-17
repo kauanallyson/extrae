@@ -33,6 +33,7 @@ export const roundedDecimalFields = new Set<TextField>([
 	"areaConstruida",
 ]);
 export const requiredFields = new Set<TextField>(["cpf", "cep", "dataReferencia"]);
+export const textareaFields = new Set<TextField>(["equacaoSISDEA"]);
 
 export const padraoAcabamentoOptions = [
 	"Mínimo",
@@ -107,6 +108,7 @@ export const fieldLabels: Record<TextField, string> = {
 	usosPredominantes: "Usos predominantes",
 	viaAcesso: "Via de acesso",
 	regiaoContexto: "Região no contexto urbano",
+	equacaoSISDEA: "Equação SISDEA",
 	dataReferencia: "Data de referência",
 };
 
@@ -195,6 +197,7 @@ export const fieldGroups = [
 			"usosPredominantes",
 			"viaAcesso",
 			"regiaoContexto",
+			"equacaoSISDEA",
 		] satisfies TextField[],
 	},
 	{

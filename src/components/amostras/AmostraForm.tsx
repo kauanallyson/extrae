@@ -9,11 +9,13 @@ import {
 	enumFieldOptions,
 	fieldGroups,
 	identificationGroupTitle,
+	textareaFields,
 } from "@/features/amostras/fields";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import { maskTelefone } from "@/lib/validators";
 import { AmostraSelectField } from "./AmostraSelectField";
+import { AmostraTextareaField } from "./AmostraTextareaField";
 import { AmostraTextField } from "./AmostraTextField";
 import { DataReferenciaField } from "./DataReferenciaField";
 import { DecimalArrayField } from "./DecimalArrayField";
@@ -179,6 +181,18 @@ export function AmostraForm({
 												disabled={isSubmitting}
 												missing={camposNaoEncontrados.has(fieldName)}
 											/>
+										);
+									}
+									if (textareaFields.has(fieldName)) {
+										return (
+											<div key={fieldName} className="sm:col-span-2 lg:col-span-3">
+												<AmostraTextareaField
+													control={form.control}
+													name={fieldName}
+													disabled={isSubmitting}
+													missing={camposNaoEncontrados.has(fieldName)}
+												/>
+											</div>
 										);
 									}
 									return (

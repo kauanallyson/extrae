@@ -15,6 +15,7 @@ import {
 	incidenciaServicos,
 	meterFields,
 	moneyFields,
+	textareaFields,
 	type TextField,
 } from "@/features/amostras/fields";
 import {
@@ -36,11 +37,23 @@ function formatValue(field: TextField, value: string | number): string {
 	return String(value) || "—";
 }
 
-function DetailItem({ label, value }: { label: string; value: string | null | undefined }) {
+function DetailItem({
+	label,
+	value,
+	wrap = false,
+	className,
+}: {
+	label: string;
+	value: string | null | undefined;
+	wrap?: boolean;
+	className?: string;
+}) {
 	return (
-		<div className="space-y-1">
+		<div className={cn("space-y-1", className)}>
 			<p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-			<p className="text-sm text-slate-100">{value || "—"}</p>
+			<p className={cn("text-sm text-slate-100", wrap && "whitespace-pre-wrap break-words")}>
+				{value || "—"}
+			</p>
 		</div>
 	);
 }
@@ -224,6 +237,8 @@ export function AmostraDetailsPage() {
 											key={field}
 											label={fieldLabels[field]}
 											value={formatValue(field, amostra[field as keyof Amostra] as string | number)}
+											wrap={textareaFields.has(field)}
+											className={textareaFields.has(field) ? "sm:col-span-2 lg:col-span-3" : undefined}
 										/>
 									))}
 								</SectionGrid>
