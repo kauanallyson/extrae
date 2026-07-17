@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type AmostrasPage as AmostrasPageResult, downloadAmostrasPlanilha, fetchAmostras } from "@/lib/api";
 import { triggerDownload } from "@/lib/download";
-import { brl, formatDate } from "@/lib/format";
+import { formatBrlCents, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
@@ -147,10 +147,10 @@ export function AmostrasPage() {
 													: "-"}
 											</td>
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
-												{amostra.valorImovel != null ? brl.format(amostra.valorImovel) : "-"}
+												{amostra.valorImovel != null ? formatBrlCents(amostra.valorImovel) : "-"}
 											</td>
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
-												{amostra.valorTerreno != null ? brl.format(amostra.valorTerreno) : "-"}
+												{amostra.valorTerreno != null ? formatBrlCents(amostra.valorTerreno) : "-"}
 											</td>
 											<td className="py-3 pr-4 text-slate-300">{formatDate(amostra.dataReferencia)}</td>
 											<td className="rounded-r-lg py-3 pr-3">

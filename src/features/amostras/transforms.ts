@@ -1,11 +1,5 @@
 import type { CreateAmostraInput } from "@/lib/api";
-import {
-	maskCep,
-	maskCentsDecimal,
-	maskTelefone,
-	unmaskCentsDecimal,
-	unmaskCentsToInteger,
-} from "@/lib/validators";
+import { maskCep, maskCentsDecimal, maskTelefone, unmaskCentsToInteger } from "@/lib/validators";
 import { type AmostraFormValues, type ArrayValue, incidenciaServicos } from "./fields";
 
 function parseFixedNumberArray(values: ArrayValue[]) {
@@ -36,10 +30,10 @@ function nullableDigits(value: string): string | null {
 }
 
 function nullableNumber(value: string): number | null {
-	const trimmed = unmaskCentsDecimal(value.trim());
-	if (!trimmed) return null;
-	const parsed = Number(trimmed);
-	return Number.isFinite(parsed) ? Math.round(parsed) : null;
+	const digits = unmaskCentsToInteger(value.trim());
+	if (!digits) return null;
+	const parsed = Number(digits);
+	return Number.isFinite(parsed) ? parsed : null;
 }
 
 function nullableArray<T>(values: T[]): T[] | null {
@@ -48,10 +42,6 @@ function nullableArray<T>(values: T[]): T[] | null {
 
 function formatTelefone(digits: string | null | undefined): string {
 	return maskTelefone(str(digits));
-}
-
-function maskedIntToString(value: number | null | undefined): string {
-	return value != null ? maskCentsDecimal(String(Math.trunc(value) * 100)) : "";
 }
 
 function maskedArrayValue(value: number | null | undefined): string {
@@ -86,18 +76,18 @@ export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormVal
 		municipio: str(amostra.municipio),
 		uf: str(amostra.uf),
 		empresaResponsavel: str(amostra.empresaResponsavel),
-		valorTerreno: maskedIntToString(amostra.valorTerreno),
+		valorTerreno: maskedArrayValue(amostra.valorTerreno),
 		matricula: str(amostra.matricula),
 		oficio: str(amostra.oficio),
 		comarca: str(amostra.comarca),
 		ufMatricula: str(amostra.ufMatricula),
-		valorImovel: maskedIntToString(amostra.valorImovel),
+		valorImovel: maskedArrayValue(amostra.valorImovel),
 		numeroEtapas: amostra.numeroEtapas != null ? String(amostra.numeroEtapas) : "",
-		valorUnitario: maskedIntToString(amostra.valorUnitario),
-		testada: maskedIntToString(amostra.testada),
+		valorUnitario: maskedArrayValue(amostra.valorUnitario),
+		testada: maskedArrayValue(amostra.testada),
 		idadeEstimada: str(amostra.idadeEstimada),
-		areaTerreno: maskedIntToString(amostra.areaTerreno),
-		areaConstruida: maskedIntToString(amostra.areaConstruida),
+		areaTerreno: maskedArrayValue(amostra.areaTerreno),
+		areaConstruida: maskedArrayValue(amostra.areaConstruida),
 		quartos: amostra.quartos != null ? String(amostra.quartos) : "",
 		banheiros: amostra.banheiros != null ? String(amostra.banheiros) : "",
 		suites: amostra.suites != null ? String(amostra.suites) : "",

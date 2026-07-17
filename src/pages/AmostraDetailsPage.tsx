@@ -24,15 +24,15 @@ import {
 	fetchAmostra,
 	fetchAvaliadores,
 } from "@/lib/api";
-import { brl } from "@/lib/format";
+import { formatBrlCents, formatDecimalFromCents } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";
 
 function formatValue(field: TextField, value: string | number): string {
 	if (value == null || value === "") return "—";
-	if (moneyFields.has(field)) return brl.format(Number(value));
-	if (areaFields.has(field)) return `${value} m²`;
-	if (meterFields.has(field)) return `${value} m`;
+	if (moneyFields.has(field)) return formatBrlCents(Number(value));
+	if (areaFields.has(field)) return `${formatDecimalFromCents(Number(value))} m²`;
+	if (meterFields.has(field)) return `${formatDecimalFromCents(Number(value))} m`;
 	return String(value) || "—";
 }
 
