@@ -29,10 +29,7 @@ export const coordenadaDmsRegex = /^\d+º\d+'\d+(?:,\d+)?"$/;
 export const coordenadaDmsMessage = "Use o formato XXºYY'ZZ,ZZZ\" (ex.: 05º39'05,497\").";
 
 export function normalizeCoordenadaDms(value: string): string {
-	return value
-		.replace(/[°]/g, "º")
-		.replace(/[‘’]/g, "'")
-		.replace(/[“”]/g, '"');
+	return value.replace(/[°]/g, "º").replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 }
 
 export function maskCentsDecimal(value: string): string {

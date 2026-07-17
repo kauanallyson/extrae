@@ -1,5 +1,5 @@
 import type { CreateAmostraInput } from "@/lib/api";
-import { maskCep, maskCentsDecimal, maskTelefone, unmaskCentsToInteger } from "@/lib/validators";
+import { maskCentsDecimal, maskCep, maskTelefone, unmaskCentsToInteger } from "@/lib/validators";
 import { type AmostraFormValues, type ArrayValue, incidenciaServicos } from "./fields";
 
 function parseFixedNumberArray(values: ArrayValue[]) {

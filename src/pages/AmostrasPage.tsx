@@ -6,7 +6,11 @@ import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type AmostrasPage as AmostrasPageResult, downloadAmostrasPlanilha, fetchAmostras } from "@/lib/api";
+import {
+	type AmostrasPage as AmostrasPageResult,
+	downloadAmostrasPlanilha,
+	fetchAmostras,
+} from "@/lib/api";
 import { triggerDownload } from "@/lib/download";
 import { formatBrlCents, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
@@ -17,18 +21,12 @@ export function AmostrasPage() {
 	const [exporting, setExporting] = useState(false);
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 
-	const {
-		data,
-		isLoading,
-		error,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery<AmostrasPageResult, Error>({
-		queryKey: queryKeys.amostras,
-		queryFn: ({ pageParam }) => fetchAmostras({ cursor: pageParam as number | undefined }),
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-	});
+	const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
+		useInfiniteQuery<AmostrasPageResult, Error>({
+			queryKey: queryKeys.amostras,
+			queryFn: ({ pageParam }) => fetchAmostras({ cursor: pageParam as number | undefined }),
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		});
 
 	useEffect(() => {
 		if (error) toast.error(error.message ?? "Erro ao carregar amostras.");
@@ -152,7 +150,9 @@ export function AmostrasPage() {
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
 												{amostra.valorTerreno != null ? formatBrlCents(amostra.valorTerreno) : "-"}
 											</td>
-											<td className="py-3 pr-4 text-slate-300">{formatDate(amostra.dataReferencia)}</td>
+											<td className="py-3 pr-4 text-slate-300">
+												{formatDate(amostra.dataReferencia)}
+											</td>
 											<td className="rounded-r-lg py-3 pr-3">
 												<div className="flex items-center gap-1">
 													<Link

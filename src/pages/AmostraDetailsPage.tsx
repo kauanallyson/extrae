@@ -15,8 +15,8 @@ import {
 	incidenciaServicos,
 	meterFields,
 	moneyFields,
-	textareaFields,
 	type TextField,
+	textareaFields,
 } from "@/features/amostras/fields";
 import {
 	type Amostra,
@@ -30,11 +30,11 @@ import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";
 
 function formatValue(field: TextField, value: string | number): string {
-	if (value == null || value === "") return "—";
+	if (value == null || value === "") return "-";
 	if (moneyFields.has(field)) return formatBrlCents(Number(value));
 	if (areaFields.has(field)) return `${formatDecimalFromCents(Number(value))} m²`;
 	if (meterFields.has(field)) return `${formatDecimalFromCents(Number(value))} m`;
-	return String(value) || "—";
+	return String(value) || "-";
 }
 
 function DetailItem({
@@ -51,8 +51,8 @@ function DetailItem({
 	return (
 		<div className={cn("space-y-1", className)}>
 			<p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-			<p className={cn("text-sm text-slate-100", wrap && "whitespace-pre-wrap break-words")}>
-				{value || "—"}
+			<p className={cn("text-sm text-slate-100", wrap && "whitespace-pre-wrap wrap-break-word")}>
+				{value || "-"}
 			</p>
 		</div>
 	);
@@ -146,7 +146,7 @@ export function AmostraDetailsPage() {
 	}
 
 	const telefoneFormatted =
-		amostra.ddd && amostra.telefone ? `(${amostra.ddd}) ${amostra.telefone}` : "—";
+		amostra.ddd && amostra.telefone ? `(${amostra.ddd}) ${amostra.telefone}` : "-";
 
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
@@ -238,7 +238,9 @@ export function AmostraDetailsPage() {
 											label={fieldLabels[field]}
 											value={formatValue(field, amostra[field as keyof Amostra] as string | number)}
 											wrap={textareaFields.has(field)}
-											className={textareaFields.has(field) ? "sm:col-span-2 lg:col-span-3" : undefined}
+											className={
+												textareaFields.has(field) ? "sm:col-span-2 lg:col-span-3" : undefined
+											}
 										/>
 									))}
 								</SectionGrid>
@@ -266,7 +268,9 @@ export function AmostraDetailsPage() {
 											<tr key={servico} className="border-b border-white/5 last:border-0">
 												<td className="py-1.5 text-slate-300">{servico}</td>
 												<td className="py-1.5 text-right tabular-nums text-slate-100">
-													{amostra.incidencias?.[i] != null ? `${amostra.incidencias[i]}%` : "—"}
+													{amostra.incidencias?.[i] != null
+														? `${formatDecimalFromCents(amostra.incidencias[i])}%`
+														: "-"}
 												</td>
 											</tr>
 										))}
@@ -291,13 +295,15 @@ export function AmostraDetailsPage() {
 												// biome-ignore lint/suspicious/noArrayIndexKey: positional values without stable id
 												<tr key={`acum-${i}`} className="border-b border-white/5 last:border-0">
 													<td className="py-1.5 text-slate-500">{i + 1}</td>
-													<td className="py-1.5 text-right tabular-nums text-slate-100">{v}%</td>
+													<td className="py-1.5 text-right tabular-nums text-slate-100">
+														{formatDecimalFromCents(v)}%
+													</td>
 												</tr>
 											))}
 										</tbody>
 									</table>
 								) : (
-									<p className="text-sm text-slate-500">—</p>
+									<p className="text-sm text-slate-500">-</p>
 								)}
 							</div>
 						</div>
