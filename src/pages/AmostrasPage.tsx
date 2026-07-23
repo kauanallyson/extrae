@@ -24,6 +24,11 @@ import { formatBrlCents, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
+const TIPO_LABELS: Record<AmostraTipo, string> = {
+	imovel: "Imóvel",
+	terreno: "Terreno",
+};
+
 export function AmostrasPage() {
 	const navigate = useNavigate();
 	const [exporting, setExporting] = useState(false);
@@ -104,18 +109,21 @@ export function AmostrasPage() {
 								aria-label="Filtrar por tipo"
 								className="w-32 rounded-md border-slate-600 bg-slate-800 text-slate-100 hover:text-white dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400"
 							>
-								<SelectValue className="text-slate-100" />
+								<SelectValue className="text-slate-100">{TIPO_LABELS[tipo]}</SelectValue>
 							</SelectTrigger>
 							<SelectContent
 								alignItemWithTrigger={false}
 								className="dark border border-slate-600 bg-slate-800 text-slate-100"
 							>
-								<SelectItem value="imovel" className="focus:bg-slate-700 focus:text-slate-50">
-									Imóvel
-								</SelectItem>
-								<SelectItem value="terreno" className="focus:bg-slate-700 focus:text-slate-50">
-									Terreno
-								</SelectItem>
+								{(Object.keys(TIPO_LABELS) as AmostraTipo[]).map((value) => (
+									<SelectItem
+										key={value}
+										value={value}
+										className="focus:bg-slate-700 focus:text-slate-50"
+									>
+										{TIPO_LABELS[value]}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 						<Button
