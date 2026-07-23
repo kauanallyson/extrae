@@ -7,7 +7,15 @@ import { Layout } from "@/components/Layout";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	type AmostrasPage as AmostrasPageResult,
+	type AmostraTipo,
 	downloadAmostrasPlanilha,
 	fetchAmostras,
 } from "@/lib/api";
@@ -19,12 +27,14 @@ import { cn } from "@/lib/utils";
 export function AmostrasPage() {
 	const navigate = useNavigate();
 	const [exporting, setExporting] = useState(false);
+	const [tipo, setTipo] = useState<AmostraTipo>("imovel");
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 
 	const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery<AmostrasPageResult, Error>({
-			queryKey: queryKeys.amostras,
-			queryFn: ({ pageParam }) => fetchAmostras({ cursor: pageParam as number | undefined }),
+			queryKey: [...queryKeys.amostras, tipo],
+			queryFn: ({ pageParam }) =>
+				fetchAmostras({ cursor: pageParam as number | undefined, tipo }),
 			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		});
 
@@ -88,6 +98,26 @@ export function AmostrasPage() {
 						</span>
 					</div>
 					<div className="flex items-center gap-2">
+						<Select value={tipo} onValueChange={(value) => setTipo(value as AmostraTipo)}>
+							<SelectTrigger
+								size="sm"
+								aria-label="Filtrar por tipo"
+								className="w-32 rounded-md border-slate-600 bg-slate-800 text-slate-100 hover:text-white dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400"
+							>
+								<SelectValue className="text-slate-100" />
+							</SelectTrigger>
+							<SelectContent
+								alignItemWithTrigger={false}
+								className="dark border border-slate-600 bg-slate-800 text-slate-100"
+							>
+								<SelectItem value="imovel" className="focus:bg-slate-700 focus:text-slate-50">
+									Imóvel
+								</SelectItem>
+								<SelectItem value="terreno" className="focus:bg-slate-700 focus:text-slate-50">
+									Terreno
+								</SelectItem>
+							</SelectContent>
+						</Select>
 						<Button
 							type="button"
 							variant="outline"

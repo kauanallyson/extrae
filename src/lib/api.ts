@@ -243,12 +243,15 @@ export async function downloadAmostrasPlanilha(
 	return toDownloadResult(res, "amostras.xlsx");
 }
 
+export type AmostraTipo = "imovel" | "terreno";
+
 export async function fetchAmostras(
-	params: { cursor?: number; limit?: number } = {},
+	params: { cursor?: number; limit?: number; tipo?: AmostraTipo } = {},
 ): Promise<AmostrasPage> {
 	const query = new URLSearchParams();
 	if (params.cursor != null) query.set("cursor", String(params.cursor));
 	if (params.limit != null) query.set("limit", String(params.limit));
+	if (params.tipo != null) query.set("tipo", params.tipo);
 	const qs = query.toString();
 
 	const res = await fetch(`${BASE_URL}/amostras${qs ? `?${qs}` : ""}`, { headers: authHeaders() });
