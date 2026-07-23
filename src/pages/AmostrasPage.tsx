@@ -38,8 +38,7 @@ export function AmostrasPage() {
 	const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery<AmostrasPageResult, Error>({
 			queryKey: [...queryKeys.amostras, tipo],
-			queryFn: ({ pageParam }) =>
-				fetchAmostras({ cursor: pageParam as number | undefined, tipo }),
+			queryFn: ({ pageParam }) => fetchAmostras({ cursor: pageParam as number | undefined, tipo }),
 			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		});
 
@@ -98,9 +97,6 @@ export function AmostrasPage() {
 				<CardHeader className="flex flex-row items-center justify-between px-6 pt-6">
 					<div className="flex items-center gap-3">
 						<CardTitle className="text-xl">Amostras</CardTitle>
-						<span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-400">
-							{amostras.length}
-						</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<Select value={tipo} onValueChange={(value) => setTipo(value as AmostraTipo)}>
