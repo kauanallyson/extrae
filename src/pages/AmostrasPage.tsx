@@ -28,7 +28,7 @@ import {
 	fetchAmostras,
 } from "@/lib/api";
 import { triggerDownload } from "@/lib/download";
-import { formatBrlCents, formatDate } from "@/lib/format";
+import { formatBrl, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 
@@ -178,6 +178,7 @@ export function AmostrasPage() {
 									<tr className="border-b border-white/10 text-left text-xs text-slate-500">
 										<th className="pb-2 pl-3 pr-4 font-medium">Proponente</th>
 										<th className="pb-2 pr-4 font-medium">Município/UF</th>
+										<th className="pb-2 pr-4 text-right font-medium">Valor Unitário</th>
 										<th className="pb-2 pr-4 text-right font-medium">Valor Imóvel</th>
 										<th className="pb-2 pr-4 text-right font-medium">Valor Terreno</th>
 										<th className="pb-2 pr-4 font-medium">Data Referência</th>
@@ -200,10 +201,13 @@ export function AmostrasPage() {
 													: "-"}
 											</td>
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
-												{amostra.valorImovel != null ? formatBrlCents(amostra.valorImovel) : "-"}
+												{amostra.valorUnitario != null ? formatBrl(amostra.valorUnitario) : "-"}
 											</td>
 											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
-												{amostra.valorTerreno != null ? formatBrlCents(amostra.valorTerreno) : "-"}
+												{amostra.valorImovel != null ? formatBrl(amostra.valorImovel) : "-"}
+											</td>
+											<td className="py-3 pr-4 text-right tabular-nums text-slate-100">
+												{amostra.valorTerreno != null ? formatBrl(amostra.valorTerreno) : "-"}
 											</td>
 											<td className="py-3 pr-4 text-slate-300">
 												{formatDate(amostra.dataReferencia)}

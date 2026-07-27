@@ -19,7 +19,7 @@ import {
 } from "@/features/amostras/fields";
 import { fieldInputClassName, inputGroupClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
-import { maskCentsDecimal, maskCep, normalizeCoordenadaDms } from "@/lib/validators";
+import { maskCep, maskDecimal, normalizeCoordenadaDms } from "@/lib/validators";
 
 type AmostraTextFieldProps = {
 	control: Control<AmostraFormValues>;
@@ -29,12 +29,12 @@ type AmostraTextFieldProps = {
 };
 
 const coordenadaFields = new Set<TextField>(["coordenadaS", "coordenadaW"]);
-const centsMaskFields = new Set<TextField>([...moneyFields, ...areaFields, ...meterFields]);
+const decimalMaskFields = new Set<TextField>([...moneyFields, ...areaFields, ...meterFields]);
 
 function transformValue(name: TextField, value: string): string {
 	if (name === "cep") return maskCep(value);
 	if (coordenadaFields.has(name)) return normalizeCoordenadaDms(value);
-	if (centsMaskFields.has(name)) return maskCentsDecimal(value);
+	if (decimalMaskFields.has(name)) return maskDecimal(value);
 	return value;
 }
 

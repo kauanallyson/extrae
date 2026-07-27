@@ -5,8 +5,7 @@ import {
 	cpfRegex,
 	dddRegex,
 	phoneRegex,
-	unmaskCentsDecimal,
-	unmaskCentsToInteger,
+	unmaskDecimal,
 } from "@/lib/validators";
 import { createZodResolver } from "@/lib/zodResolver";
 import {
@@ -21,8 +20,6 @@ import {
 	type TextField,
 	textFields,
 } from "./fields";
-
-const integerRegex = /^\d+$/;
 
 function positiveNumberString(field: TextField) {
 	if (integerFields.has(field)) {
@@ -39,7 +36,7 @@ function positiveNumberString(field: TextField) {
 	return z.string().refine(
 		(value) => {
 			if (!value.trim()) return !requiredFields.has(field);
-			const parsed = Number(unmaskCentsDecimal(value.trim()));
+			const parsed = Number(unmaskDecimal(value.trim()));
 			return Number.isFinite(parsed) && parsed >= 0;
 		},
 		{
@@ -80,25 +77,28 @@ const textFieldShape = Object.fromEntries(
 	textFields.map((field) => [field, textFieldSchema(field)]),
 ) as unknown as Record<TextField, z.ZodType<string>>;
 
-const integerArrayValueSchema = z.object({
+const percentualArrayValueSchema = z.object({
 	value: z.string().refine(
 		(value) => {
 			const trimmed = value.trim();
 			if (!trimmed) return true;
-			return integerRegex.test(unmaskCentsToInteger(trimmed));
+			const parsed = Number(unmaskDecimal(trimmed));
+			return Number.isFinite(parsed) && parsed >= 0;
 		},
 		{ message: "Informe um valor percentual válido." },
 	),
 });
 
-function hasIntegerArrayValue(values: ArrayValue[]) {
-	return values.some((item) => unmaskCentsToInteger(item.value.trim()) !== "");
+function hasPercentualArrayValue(values: ArrayValue[]) {
+	return values.some((item) => item.value.trim() !== "");
 }
 
 function sumArrayValues(values: ArrayValue[]) {
 	return values.reduce((acc, item) => {
-		const digits = unmaskCentsToInteger(item.value.trim());
-		return acc + (digits ? Number(digits) : 0);
+		const trimmed = item.value.trim();
+		if (!trimmed) return acc;
+		const parsed = Number(unmaskDecimal(trimmed));
+		return acc + (Number.isFinite(parsed) ? parsed : 0);
 	}, 0);
 }
 
@@ -111,13 +111,13 @@ export const amostraFormSchema: z.ZodType<AmostraFormValues> = z.object({
 	ddd: z.string().regex(dddRegex, "Use 2 dígitos."),
 	telefone: z.string().regex(phoneRegex, "Informe 8 ou 9 dígitos do telefone."),
 	incidencias: z
-		.array(integerArrayValueSchema)
+		.array(percentualArrayValueSchema)
 		.length(incidenciaServicos.length)
 		.refine(incidenciasSumValid, "A soma dos pesos deve totalizar 100%."),
 	acumuladoProposto: z
-		.array(integerArrayValueSchema)
+		.array(percentualArrayValueSchema)
 		.min(1)
-		.refine(hasIntegerArrayValue, "Informe ao menos um valor inteiro."),
+		.refine(hasPercentualArrayValue, "Informe ao menos um valor."),
 	...textFieldShape,
 });
 

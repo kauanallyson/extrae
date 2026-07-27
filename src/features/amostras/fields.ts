@@ -135,8 +135,8 @@ export const incidenciaServicos = [
 	"Outros Serviços",
 ] as const;
 
-export const INCIDENCIA_SUM_TARGET = 10000;
-export const INCIDENCIA_SUM_TOLERANCE = 5;
+export const INCIDENCIA_SUM_TARGET = 100;
+export const INCIDENCIA_SUM_TOLERANCE = 0.05;
 
 export const identificationGroupTitle = "Identificação";
 

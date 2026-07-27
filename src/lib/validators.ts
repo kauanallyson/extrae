@@ -32,7 +32,7 @@ export function normalizeCoordenadaDms(value: string): string {
 	return value.replace(/[°]/g, "º").replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 }
 
-export function maskCentsDecimal(value: string): string {
+export function maskDecimal(value: string): string {
 	const digits = value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 	if (!digits) return "";
 	const padded = digits.padStart(3, "0");
@@ -42,10 +42,6 @@ export function maskCentsDecimal(value: string): string {
 	return `${groupedInt},${decDigits}`;
 }
 
-export function unmaskCentsDecimal(value: string): string {
+export function unmaskDecimal(value: string): string {
 	return value.replace(/\./g, "").replace(",", ".");
-}
-
-export function unmaskCentsToInteger(value: string): string {
-	return value.replace(/\D/g, "");
 }

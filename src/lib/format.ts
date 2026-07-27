@@ -1,16 +1,16 @@
 export const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
-export function formatBrlCents(cents: number): string {
-	return brl.format(cents / 100);
+export function formatBrl(value: number): string {
+	return brl.format(value);
 }
 
-const decimalFromCentsFormat = new Intl.NumberFormat("pt-BR", {
+const decimalFormat = new Intl.NumberFormat("pt-BR", {
 	minimumFractionDigits: 2,
 	maximumFractionDigits: 2,
 });
 
-export function formatDecimalFromCents(value: number): string {
-	return decimalFromCentsFormat.format(value / 100);
+export function formatDecimal(value: number): string {
+	return decimalFormat.format(value);
 }
 
 const dateFormat = new Intl.DateTimeFormat("pt-BR");

@@ -25,15 +25,15 @@ import {
 	fetchAmostra,
 	fetchAvaliadores,
 } from "@/lib/api";
-import { formatBrlCents, formatDecimalFromCents } from "@/lib/format";
+import { formatBrl, formatDecimal } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";
 
 function formatValue(field: TextField, value: string | number): string {
 	if (value == null || value === "") return "-";
-	if (moneyFields.has(field)) return formatBrlCents(Number(value));
-	if (areaFields.has(field)) return `${formatDecimalFromCents(Number(value))} m²`;
-	if (meterFields.has(field)) return `${formatDecimalFromCents(Number(value))} m`;
+	if (moneyFields.has(field)) return formatBrl(Number(value));
+	if (areaFields.has(field)) return `${formatDecimal(Number(value))} m²`;
+	if (meterFields.has(field)) return `${formatDecimal(Number(value))} m`;
 	return String(value) || "-";
 }
 
@@ -269,7 +269,7 @@ export function AmostraDetailsPage() {
 												<td className="py-1.5 text-slate-300">{servico}</td>
 												<td className="py-1.5 text-right tabular-nums text-slate-100">
 													{amostra.incidencias?.[i] != null
-														? `${formatDecimalFromCents(amostra.incidencias[i])}%`
+														? `${formatDecimal(amostra.incidencias[i])}%`
 														: "-"}
 												</td>
 											</tr>
@@ -296,7 +296,7 @@ export function AmostraDetailsPage() {
 												<tr key={`acum-${i}`} className="border-b border-white/5 last:border-0">
 													<td className="py-1.5 text-slate-500">{i + 1}</td>
 													<td className="py-1.5 text-right tabular-nums text-slate-100">
-														{formatDecimalFromCents(v)}%
+														{formatDecimal(v)}%
 													</td>
 												</tr>
 											))}

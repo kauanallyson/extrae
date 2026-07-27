@@ -10,7 +10,7 @@ import {
 } from "@/features/amostras/fields";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
-import { maskCentsDecimal, unmaskCentsToInteger } from "@/lib/validators";
+import { maskDecimal, unmaskDecimal } from "@/lib/validators";
 
 type IncidenciaServicosFieldProps = {
 	control: Control<AmostraFormValues>;
@@ -25,12 +25,14 @@ export function IncidenciaServicosField({
 	const { errors } = useFormState({ control, name: "incidencias" });
 
 	const sum = (values ?? []).reduce((acc, item) => {
-		const digits = unmaskCentsToInteger(String(item?.value ?? "").trim());
-		return acc + (digits ? Number(digits) : 0);
+		const trimmed = String(item?.value ?? "").trim();
+		if (!trimmed) return acc;
+		const parsed = Number(unmaskDecimal(trimmed));
+		return acc + (Number.isFinite(parsed) ? parsed : 0);
 	}, 0);
 
 	const sumOk = Math.abs(sum - INCIDENCIA_SUM_TARGET) <= INCIDENCIA_SUM_TOLERANCE;
-	const sumLabel = (sum / 100).toFixed(2).replace(".", ",");
+	const sumLabel = sum.toFixed(2).replace(".", ",");
 	const rootError = errors.incidencias as unknown as { message?: string } | undefined;
 
 	return (
@@ -49,7 +51,7 @@ export function IncidenciaServicosField({
 										name={field.name}
 										ref={field.ref}
 										onBlur={field.onBlur}
-										onChange={(event) => field.onChange(maskCentsDecimal(event.target.value))}
+										onChange={(event) => field.onChange(maskDecimal(event.target.value))}
 										value={typeof field.value === "string" ? field.value : ""}
 										type="text"
 										inputMode="numeric"

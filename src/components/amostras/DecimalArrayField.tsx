@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import type { AmostraFormValues } from "@/features/amostras/fields";
 import { fieldInputClassName, secondaryButtonClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
-import { maskCentsDecimal } from "@/lib/validators";
+import { maskDecimal } from "@/lib/validators";
 
 type DecimalArrayName = "incidencias" | "acumuladoProposto";
 
@@ -67,7 +67,7 @@ export function DecimalArrayField<TName extends DecimalArrayName>({
 										name={field.name}
 										ref={field.ref}
 										onBlur={field.onBlur}
-										onChange={(event) => field.onChange(maskCentsDecimal(event.target.value))}
+										onChange={(event) => field.onChange(maskDecimal(event.target.value))}
 										value={typeof field.value === "string" ? field.value : ""}
 										type="text"
 										inputMode="numeric"

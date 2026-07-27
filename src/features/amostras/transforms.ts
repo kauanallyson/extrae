@@ -1,19 +1,21 @@
 import type { CreateAmostraInput } from "@/lib/api";
-import { maskCentsDecimal, maskCep, maskTelefone, unmaskCentsToInteger } from "@/lib/validators";
+import { maskCep, maskDecimal, maskTelefone, unmaskDecimal } from "@/lib/validators";
 import { type AmostraFormValues, type ArrayValue, incidenciaServicos } from "./fields";
 
 function parseFixedNumberArray(values: ArrayValue[]) {
 	return values.map((item) => {
-		const digits = unmaskCentsToInteger(item.value.trim());
-		return digits ? Number(digits) : 0;
+		const trimmed = item.value.trim();
+		if (!trimmed) return 0;
+		const parsed = Number(unmaskDecimal(trimmed));
+		return Number.isFinite(parsed) ? parsed : 0;
 	});
 }
 
 function parseNumberArray(values: ArrayValue[]) {
 	return values
-		.map((item) => unmaskCentsToInteger(item.value.trim()))
+		.map((item) => item.value.trim())
 		.filter(Boolean)
-		.map(Number)
+		.map((value) => Number(unmaskDecimal(value)))
 		.filter((item) => Number.isFinite(item));
 }
 
@@ -30,9 +32,9 @@ function nullableDigits(value: string): string | null {
 }
 
 function nullableNumber(value: string): number | null {
-	const digits = unmaskCentsToInteger(value.trim());
-	if (!digits) return null;
-	const parsed = Number(digits);
+	const trimmed = value.trim();
+	if (!trimmed) return null;
+	const parsed = Number(unmaskDecimal(trimmed));
 	return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -45,7 +47,7 @@ function formatTelefone(digits: string | null | undefined): string {
 }
 
 function maskedArrayValue(value: number | null | undefined): string {
-	return value != null ? maskCentsDecimal(String(Math.trunc(value))) : "";
+	return value != null ? maskDecimal(value.toFixed(2)) : "";
 }
 
 export function amostraToFormValues(amostra: CreateAmostraInput): AmostraFormValues {
