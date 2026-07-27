@@ -3,7 +3,6 @@ import { LoaderCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { ComparativoChart } from "@/components/estatisticas/ComparativoChart";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
 import { Layout } from "@/components/Layout";
 import { Badge } from "@/components/ui/badge";
@@ -15,14 +14,7 @@ import { fieldInputClassName } from "@/lib/formStyles";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function EstatisticasPage() {
-	const [texto, setTexto] = useState("");
 	const [municipio, setMunicipio] = useState("");
-
-	// Espera o usuário parar de digitar antes de consultar a rota.
-	useEffect(() => {
-		const id = setTimeout(() => setMunicipio(texto.trim()), 400);
-		return () => clearTimeout(id);
-	}, [texto]);
 
 	const { data, isLoading, error } = useQuery<AmostrasStats, Error>({
 		queryKey: queryKeys.stats(municipio || undefined),
@@ -49,13 +41,7 @@ export function EstatisticasPage() {
 						<CardTitle className="text-xl">Estatísticas</CardTitle>
 						<p className="text-sm text-slate-400">Distribuição do valor unitário (R$/m²)</p>
 					</div>
-					<Input
-						value={texto}
-						onChange={(event) => setTexto(event.target.value)}
-						aria-label="Filtrar por município"
-						placeholder="Todos os municípios"
-						className={`${fieldInputClassName} w-56`}
-					/>
+					<MunicipioInput onChange={setMunicipio} />
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
@@ -74,36 +60,52 @@ export function EstatisticasPage() {
 					) : (
 						<div className="flex flex-col gap-8">
 							<div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-								<Indicador label="Amostras" valor={String(data.total)} />
-								<Indicador label="Média" valor={data.mean != null ? formatBrl(data.mean) : "-"} />
+								<Indicador
+									label="Amostras"
+									valor={String(data.total)}
+									geral={geral && String(geral.total)}
+								/>
+								<Indicador
+									label="Média"
+									valor={data.mean != null ? formatBrl(data.mean) : "-"}
+									geral={geral?.mean != null ? formatBrl(geral.mean) : undefined}
+								/>
 								<Indicador
 									label="Mediana"
 									valor={data.median != null ? formatBrl(data.median) : "-"}
+									geral={geral?.median != null ? formatBrl(geral.median) : undefined}
 								/>
 								<Indicador
 									label="Desvio padrão"
 									valor={data.stdDev != null ? formatBrl(data.stdDev) : "-"}
+									geral={geral?.stdDev != null ? formatBrl(geral.stdDev) : undefined}
 								/>
-								<Indicador label="Outliers" valor={String(data.outlierIds.length)} />
+								<Indicador
+									label="Outliers"
+									valor={String(data.outlierIds.length)}
+									geral={geral && String(geral.outlierIds.length)}
+								/>
 							</div>
 
 							<section className="flex flex-col gap-2">
-								<h2 className="text-sm font-medium text-slate-300">Distribuição — {titulo}</h2>
+								<h2 className="text-sm font-medium text-slate-300">
+									Distribuição do valor unitário
+								</h2>
 								<p className="text-xs text-slate-500">
-									A caixa vai de Q1 a Q3, dividida na mediana. Os bigodes marcam os limites de Tukey
-									(Q1 − 1,5·IQR e Q3 + 1,5·IQR); as linhas tracejadas, o mínimo e o máximo.
+									A caixa vai de Q1 a Q3, com a mediana marcada dentro dela; os bigodes vão do menor
+									ao maior valor observado.
 								</p>
-								<DistribuicaoChart stats={data} titulo={titulo} />
+								<DistribuicaoChart
+									series={
+										geral
+											? [
+													{ nome: titulo, stats: data },
+													{ nome: "Ceará (geral)", stats: geral },
+												]
+											: [{ nome: titulo, stats: data }]
+									}
+								/>
 							</section>
-
-							{municipio && geral && (
-								<section className="flex flex-col gap-2">
-									<h2 className="text-sm font-medium text-slate-300">
-										{municipio} comparado ao Ceará
-									</h2>
-									<ComparativoChart municipio={municipio} stats={data} geral={geral} />
-								</section>
-							)}
 
 							{data.outlierIds.length > 0 && (
 								<section className="flex flex-col gap-2">
@@ -132,11 +134,33 @@ export function EstatisticasPage() {
 	);
 }
 
-function Indicador({ label, valor }: { label: string; valor: string }) {
+// O texto digitado fica aqui dentro para que cada tecla não re-renderize os gráficos:
+// a página só é avisada 400 ms depois da última tecla.
+function MunicipioInput({ onChange }: { onChange: (municipio: string) => void }) {
+	const [texto, setTexto] = useState("");
+
+	useEffect(() => {
+		const id = setTimeout(() => onChange(texto.trim()), 400);
+		return () => clearTimeout(id);
+	}, [texto, onChange]);
+
+	return (
+		<Input
+			value={texto}
+			onChange={(event) => setTexto(event.target.value)}
+			aria-label="Filtrar por município"
+			placeholder="Todos os municípios"
+			className={`${fieldInputClassName} w-56`}
+		/>
+	);
+}
+
+function Indicador({ label, valor, geral }: { label: string; valor: string; geral?: string }) {
 	return (
 		<div className="rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3">
 			<p className="text-xs text-slate-400">{label}</p>
-			<p className="mt-1 text-lg font-semibold tabular-nums text-slate-100">{valor}</p>
+			<p className="mt-1 text-lg font-semibold text-slate-100">{valor}</p>
+			{geral && <p className="mt-0.5 text-xs text-slate-500">Ceará: {geral}</p>}
 		</div>
 	);
 }
