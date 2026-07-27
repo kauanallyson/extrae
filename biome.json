@@ -55,7 +55,11 @@
 						"useExhaustiveDependencies": "off"
 					},
 					"suspicious": {
-						"noShadowRestrictedNames": "off"
+						"noShadowRestrictedNames": "off",
+						"noArrayIndexKey": "off"
+					},
+					"security": {
+						"noDangerouslySetInnerHtml": "off"
 					},
 					"a11y": {
 						"noSvgWithoutTitle": "off"

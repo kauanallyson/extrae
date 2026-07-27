@@ -9,6 +9,7 @@ import { Logo } from "./Logo";
 const textRoutes = [
 	{ to: "/amostras", label: "Amostras" },
 	{ to: "/avaliadores", label: "Avaliadores" },
+	{ to: "/estatisticas", label: "Estatísticas" },
 ];
 
 export function Navbar() {

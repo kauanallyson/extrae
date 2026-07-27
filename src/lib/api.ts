@@ -262,6 +262,41 @@ export async function fetchAmostras(
 	return res.json();
 }
 
+export type AmostrasStats = {
+	total: number;
+	min: number | null;
+	max: number | null;
+	mean: number | null;
+	median: number | null;
+	q1: number | null;
+	q3: number | null;
+	iqr: number | null;
+	stdDev: number | null;
+	lowerFence: number | null;
+	upperFence: number | null;
+	outlierIds: number[];
+};
+
+// total e outlierIds chegam como string ou number, conforme o schema da rota
+export async function fetchAmostrasStats(municipio?: string): Promise<AmostrasStats> {
+	const query = new URLSearchParams();
+	const trimmed = municipio?.trim();
+	if (trimmed) query.set("municipio", trimmed.toUpperCase());
+	const qs = query.toString();
+
+	const res = await fetch(`${BASE_URL}/amostras/stats${qs ? `?${qs}` : ""}`, {
+		headers: authHeaders(),
+	});
+	await assertOk(res, "Erro ao carregar estatísticas");
+
+	const stats = await res.json();
+	return {
+		...stats,
+		total: Number(stats.total),
+		outlierIds: (stats.outlierIds ?? []).map(Number),
+	};
+}
+
 export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostra> {
 	const res = await fetch(`${BASE_URL}/amostras/`, {
 		method: "POST",

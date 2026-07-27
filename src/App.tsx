@@ -6,6 +6,7 @@ import { AmostraDetailsPage } from "./pages/AmostraDetailsPage";
 import { AmostrasPage } from "./pages/AmostrasPage";
 import { AvaliadorPage } from "./pages/AvaliadorPage";
 import { EditAmostraPage } from "./pages/EditAmostraPage";
+import { EstatisticasPage } from "./pages/EstatisticasPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { NewAmostraPage } from "./pages/NewAmostraPage";
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
 			{
 				path: "/amostras/:id/editar",
 				element: <EditAmostraPage />,
+			},
+			{
+				path: "/estatisticas",
+				element: <EstatisticasPage />,
 			},
 			{
 				path: "/avaliadores",
