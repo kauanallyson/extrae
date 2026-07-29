@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
 import { Layout } from "@/components/Layout";
@@ -14,7 +14,23 @@ import { fieldInputClassName } from "@/lib/formStyles";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function EstatisticasPage() {
-	const [municipio, setMunicipio] = useState("");
+	const [searchParams, setSearchParams] = useSearchParams();
+	const municipio = (searchParams.get("municipio") ?? "").trim();
+
+	const handleMunicipioChange = useCallback(
+		(valor: string) => {
+			if (valor === municipio) return;
+			setSearchParams(
+				(params) => {
+					if (valor) params.set("municipio", valor);
+					else params.delete("municipio");
+					return params;
+				},
+				{ replace: true },
+			);
+		},
+		[municipio, setSearchParams],
+	);
 
 	const { data, isLoading, error } = useQuery<AmostrasStats, Error>({
 		queryKey: queryKeys.stats(municipio || undefined),
@@ -41,7 +57,7 @@ export function EstatisticasPage() {
 						<CardTitle className="text-xl">Estatísticas</CardTitle>
 						<p className="text-sm text-slate-400">Distribuição do valor unitário (R$/m²)</p>
 					</div>
-					<MunicipioInput onChange={setMunicipio} />
+					<MunicipioInput inicial={municipio} onChange={handleMunicipioChange} />
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
@@ -135,9 +151,15 @@ export function EstatisticasPage() {
 }
 
 // O texto digitado fica aqui dentro para que cada tecla não re-renderize os gráficos:
-// a página só é avisada 400 ms depois da última tecla.
-function MunicipioInput({ onChange }: { onChange: (municipio: string) => void }) {
-	const [texto, setTexto] = useState("");
+// a página (e a URL) só são avisadas 400 ms depois da última tecla.
+function MunicipioInput({
+	inicial,
+	onChange,
+}: {
+	inicial: string;
+	onChange: (municipio: string) => void;
+}) {
+	const [texto, setTexto] = useState(inicial);
 
 	useEffect(() => {
 		const id = setTimeout(() => onChange(texto.trim()), 400);
