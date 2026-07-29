@@ -1,16 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
 import { Layout } from "@/components/Layout";
+import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilterCombobox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { type AmostrasStats, fetchAmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
-import { fieldInputClassName } from "@/lib/formStyles";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function EstatisticasPage() {
@@ -57,7 +56,7 @@ export function EstatisticasPage() {
 						<CardTitle className="text-xl">Estatísticas</CardTitle>
 						<p className="text-sm text-slate-400">Distribuição do valor unitário (R$/m²)</p>
 					</div>
-					<MunicipioInput inicial={municipio} onChange={handleMunicipioChange} />
+					<MunicipioFilterCombobox value={municipio} onValueChange={handleMunicipioChange} />
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">
@@ -147,33 +146,6 @@ export function EstatisticasPage() {
 				</CardContent>
 			</Card>
 		</Layout>
-	);
-}
-
-// O texto digitado fica aqui dentro para que cada tecla não re-renderize os gráficos:
-// a página (e a URL) só são avisadas 400 ms depois da última tecla.
-function MunicipioInput({
-	inicial,
-	onChange,
-}: {
-	inicial: string;
-	onChange: (municipio: string) => void;
-}) {
-	const [texto, setTexto] = useState(inicial);
-
-	useEffect(() => {
-		const id = setTimeout(() => onChange(texto.trim()), 400);
-		return () => clearTimeout(id);
-	}, [texto, onChange]);
-
-	return (
-		<Input
-			value={texto}
-			onChange={(event) => setTexto(event.target.value)}
-			aria-label="Filtrar por município"
-			placeholder="Todos os municípios"
-			className={`${fieldInputClassName} w-56`}
-		/>
 	);
 }
 

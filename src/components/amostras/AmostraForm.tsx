@@ -2,6 +2,7 @@ import { type KeyboardEvent, type ReactNode, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { AvaliadorSelectField } from "@/components/avaliadores/AvaliadorSelectField";
+import { MunicipioField } from "@/components/municipios/MunicipioField";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -164,6 +165,16 @@ export function AmostraForm({
 									if (fieldName === "dataReferencia") {
 										return (
 											<DataReferenciaField
+												key={fieldName}
+												control={form.control}
+												disabled={isSubmitting}
+												missing={camposNaoEncontrados.has(fieldName)}
+											/>
+										);
+									}
+									if (fieldName === "municipio") {
+										return (
+											<MunicipioField
 												key={fieldName}
 												control={form.control}
 												disabled={isSubmitting}

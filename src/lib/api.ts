@@ -297,6 +297,26 @@ export async function fetchAmostrasStats(municipio?: string): Promise<AmostrasSt
 	};
 }
 
+export type Municipio = {
+	id: number;
+	nome: string;
+	uf: string | null;
+	totalAmostras: number;
+};
+
+// id e totalAmostras chegam como string ou number, conforme o schema da rota
+export async function fetchMunicipios(): Promise<Municipio[]> {
+	const res = await fetch(`${BASE_URL}/municipios/`, { headers: authHeaders() });
+	await assertOk(res, "Erro ao carregar municípios");
+
+	const municipios = await res.json();
+	return municipios.map((municipio: Municipio) => ({
+		...municipio,
+		id: Number(municipio.id),
+		totalAmostras: Number(municipio.totalAmostras),
+	}));
+}
+
 export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostra> {
 	const res = await fetch(`${BASE_URL}/amostras/`, {
 		method: "POST",
