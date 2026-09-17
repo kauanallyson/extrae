@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Control, FieldValues, Path } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { FormField, FormItem, FormMessage } from "@/components/ui/form";
 import {
 	Select,
@@ -8,23 +8,22 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { AmostraFormValues } from "@/features/amostras/fields";
 import { type Avaliador, fetchAvaliadores } from "@/lib/api";
+import {
+	selectContentClassName,
+	selectItemClassName,
+	selectTriggerClassName,
+} from "@/lib/formStyles";
 import { queryKeys } from "@/lib/queryKeys";
-import { cn } from "@/lib/utils";
 
-type AvaliadorSelectFieldProps<TFieldValues extends FieldValues> = {
-	control: Control<TFieldValues>;
-	name: Path<TFieldValues>;
+type AvaliadorSelectFieldProps = {
+	control: Control<AmostraFormValues>;
 	disabled?: boolean;
-	triggerClassName?: string;
 };
 
-export function AvaliadorSelectField<TFieldValues extends FieldValues>({
-	control,
-	name,
-	disabled = false,
-	triggerClassName,
-}: AvaliadorSelectFieldProps<TFieldValues>) {
+// A obrigatoriedade vem do schema do formulário, não daqui.
+export function AvaliadorSelectField({ control, disabled = false }: AvaliadorSelectFieldProps) {
 	const {
 		data: avaliadores,
 		isLoading: avaliadoresLoading,
@@ -40,8 +39,7 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 	return (
 		<FormField
 			control={control}
-			name={name}
-			rules={{ required: "Selecione um avaliador." }}
+			name="avaliadorId"
 			render={({ field, fieldState }) => (
 				<FormItem>
 					<Select
@@ -50,19 +48,15 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 						onValueChange={(value) => field.onChange(value ?? "")}
 					>
 						<SelectTrigger
-							id="avaliador-trigger"
 							aria-label="Selecione um avaliador"
-							className={cn(
-								"h-10 min-h-10 w-full rounded-md border-slate-600 bg-slate-800 px-2.5 py-1 text-slate-100 hover:text-white data-placeholder:text-slate-500 data-[size=default]:h-10 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 [&>svg]:text-slate-400",
-								triggerClassName,
-							)}
+							className={selectTriggerClassName}
 							aria-invalid={fieldState.invalid}
 						>
 							<SelectValue
 								className="text-slate-100"
 								placeholder={
 									avaliadoresLoading
-										? "Carregando!"
+										? "Carregando..."
 										: avaliadoresIsError
 											? "Erro ao carregar"
 											: "Selecione um avaliador"
@@ -71,15 +65,12 @@ export function AvaliadorSelectField<TFieldValues extends FieldValues>({
 								{field.value ? getAvaliadorNome(field.value) : null}
 							</SelectValue>
 						</SelectTrigger>
-						<SelectContent
-							alignItemWithTrigger={false}
-							className="dark border border-slate-600 bg-slate-800 text-slate-100"
-						>
+						<SelectContent alignItemWithTrigger={false} className={selectContentClassName}>
 							{avaliadores?.map((avaliador) => (
 								<SelectItem
 									key={avaliador.id}
 									value={String(avaliador.id)}
-									className="focus:bg-slate-700 focus:text-slate-50"
+									className={selectItemClassName}
 								>
 									{avaliador.nome}
 								</SelectItem>

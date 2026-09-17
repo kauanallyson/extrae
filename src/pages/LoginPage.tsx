@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { FieldError } from "@/components/FieldError";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,11 +15,6 @@ import {
 } from "@/features/auth/schema";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { getErrorMessage } from "@/lib/utils";
-
-function FieldError({ message }: { message?: string }) {
-	if (!message) return null;
-	return <p className="mt-1 text-xs text-red-400">{message}</p>;
-}
 
 export function LoginPage() {
 	const { login } = useAuth();

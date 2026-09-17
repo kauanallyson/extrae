@@ -69,7 +69,7 @@ export function AmostraForm({
 				className="space-y-8"
 			>
 				<FormSection title="Avaliador" description="Profissional responsável pela avaliação.">
-					<AvaliadorSelectField control={form.control} name="avaliadorId" disabled={isSubmitting} />
+					<AvaliadorSelectField control={form.control} disabled={isSubmitting} />
 				</FormSection>
 
 				<FormSection title="Identificação" description="Dados do proponente e contato.">
