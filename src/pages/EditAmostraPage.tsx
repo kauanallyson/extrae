@@ -1,11 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeftIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AmostraForm } from "@/components/amostras/AmostraForm";
-import { AmostraFormFooter } from "@/components/amostras/AmostraFormFooter";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,8 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
 import { amostraFormResolver } from "@/features/amostras/schema";
 import { amostraToFormValues } from "@/features/amostras/transforms";
-import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
-import { type Amostra, deleteAmostra, fetchAmostra, updateAmostra } from "@/lib/api";
+import { useDeleteAmostra, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
+import { type Amostra, fetchAmostra, updateAmostra } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";
 
@@ -22,7 +21,6 @@ export function EditAmostraPage() {
 	const navigate = useNavigate();
 	const { id } = useParams<{ id: string }>();
 	const amostraId = Number(id);
-	const queryClient = useQueryClient();
 
 	const {
 		data: amostra,
@@ -47,19 +45,8 @@ export function EditAmostraPage() {
 		if (loadError) toast.error(getErrorMessage(loadError));
 	}, [loadError]);
 
-	const [gerarRae, setGerarRae] = useGerarRaePreference("editar-amostra-gerar-rae");
-
-	const saveMutation = useSaveAmostra((input) => updateAmostra(amostraId, input));
-	const isSubmitting = saveMutation.isPending;
-
-	const deleteMutation = useMutation({
-		mutationFn: () => deleteAmostra(amostraId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.amostras });
-			navigate("/amostras");
-		},
-		onError: (error) => toast.error(getErrorMessage(error)),
-	});
+	const save = useSaveAmostra((input) => updateAmostra(amostraId, input));
+	const deleteMutation = useDeleteAmostra(amostraId);
 
 	if (isLoading) {
 		return (
@@ -134,22 +121,11 @@ export function EditAmostraPage() {
 				<CardContent className="px-6 pb-6">
 					<AmostraForm
 						form={form}
-						isSubmitting={isSubmitting}
-						onSubmit={(values) => saveMutation.mutate({ values, gerarRae })}
-						footer={
-							<AmostraFormFooter
-								checkboxId="gerar-rae"
-								gerarRae={gerarRae}
-								onGerarRaeChange={setGerarRae}
-								isSubmitting={isSubmitting}
-								resetLabel="Restaurar"
-								resetDisabled={isSubmitting}
-								onReset={() => {
-									if (amostra) form.reset(amostraToFormValues(amostra));
-									saveMutation.reset();
-								}}
-							/>
-						}
+						save={save}
+						resetLabel="Restaurar"
+						onReset={() => {
+							if (amostra) form.reset(amostraToFormValues(amostra));
+						}}
 					/>
 				</CardContent>
 			</Card>

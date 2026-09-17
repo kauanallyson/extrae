@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeftIcon, LoaderCircleIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
@@ -14,16 +14,11 @@ import {
 	incidenciaServicos,
 } from "@/features/amostras/fields";
 import { formatTextField } from "@/features/amostras/transforms";
-import {
-	type Amostra,
-	type Avaliador,
-	deleteAmostra,
-	fetchAmostra,
-	fetchAvaliadores,
-} from "@/lib/api";
+import { useDeleteAmostra } from "@/features/amostras/useSaveAmostra";
+import { type Amostra, type Avaliador, fetchAmostra, fetchAvaliadores } from "@/lib/api";
 import { formatDecimal } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
-import { cn, getErrorMessage } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 function DetailItem({
 	label,
@@ -79,8 +74,6 @@ function AmostraSection({
 export function AmostraDetailsPage() {
 	const { id } = useParams<{ id: string }>();
 	const amostraId = Number(id);
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
 
 	const {
 		data: amostra,
@@ -99,14 +92,7 @@ export function AmostraDetailsPage() {
 
 	const avaliador = avaliadores?.find((a) => a.id === amostra?.avaliadorId);
 
-	const deleteMutation = useMutation({
-		mutationFn: () => deleteAmostra(amostraId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.amostras });
-			navigate("/amostras");
-		},
-		onError: (error) => toast.error(getErrorMessage(error)),
-	});
+	const deleteMutation = useDeleteAmostra(amostraId);
 
 	useEffect(() => {
 		if (error) toast.error(error.message ?? "Erro ao carregar amostra.");

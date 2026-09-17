@@ -20,11 +20,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useDownloadRae } from "@/features/amostras/useSaveAmostra";
 import {
 	type AmostrasPage as AmostrasPageResult,
 	type AmostraTipo,
 	downloadAmostrasPlanilha,
-	downloadExcelRae,
 	fetchAmostras,
 } from "@/lib/api";
 import { saveFile } from "@/lib/download";
@@ -41,7 +41,7 @@ export function AmostrasPage() {
 	const navigate = useNavigate();
 	const [exporting, setExporting] = useState(false);
 	const [tipo, setTipo] = useState<AmostraTipo>("imovel");
-	const [gerandoRaeId, setGerandoRaeId] = useState<number | null>(null);
+	const downloadRae = useDownloadRae();
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 
 	const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -77,18 +77,6 @@ export function AmostrasPage() {
 			toast.error(err instanceof Error ? err.message : "Erro ao exportar planilha.");
 		} finally {
 			setExporting(false);
-		}
-	}
-
-	async function handleGerarRae(amostraId: number) {
-		setGerandoRaeId(amostraId);
-		try {
-			saveFile(await downloadExcelRae(amostraId));
-			toast.success("Planilha RAE baixada com sucesso.");
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Erro ao gerar planilha RAE.");
-		} finally {
-			setGerandoRaeId(null);
 		}
 	}
 
@@ -241,14 +229,14 @@ export function AmostrasPage() {
 														variant="ghost"
 														size="icon"
 														title="Gerar RAE"
-														disabled={gerandoRaeId === amostra.id}
+														disabled={downloadRae.isPending && downloadRae.variables === amostra.id}
 														onClick={(e) => {
 															e.stopPropagation();
-															handleGerarRae(amostra.id);
+															downloadRae.mutate(amostra.id);
 														}}
 														className="h-7 w-7 hover:bg-white/10"
 													>
-														{gerandoRaeId === amostra.id ? (
+														{downloadRae.isPending && downloadRae.variables === amostra.id ? (
 															<LoaderCircleIcon className="h-3.5 w-3.5 animate-spin" />
 														) : (
 															<FileSpreadsheetIcon className="h-3.5 w-3.5" />

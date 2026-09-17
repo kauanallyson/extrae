@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AmostraForm } from "@/components/amostras/AmostraForm";
-import { AmostraFormFooter } from "@/components/amostras/AmostraFormFooter";
 import { PreencherComIaButton } from "@/components/amostras/PreencherComIaButton";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
 import { amostraFormResolver } from "@/features/amostras/schema";
-import { useGerarRaePreference, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
+import { useSaveAmostra } from "@/features/amostras/useSaveAmostra";
 import { createAmostra } from "@/lib/api";
 
 export function NewAmostraPage() {
@@ -16,17 +15,14 @@ export function NewAmostraPage() {
 		resolver: amostraFormResolver,
 	});
 
-	const [gerarRae, setGerarRae] = useGerarRaePreference("nova-amostra-gerar-rae");
 	const [camposNaoEncontrados, setCamposNaoEncontrados] = useState<Set<string>>(new Set());
 
-	const saveMutation = useSaveAmostra(createAmostra, {
+	const save = useSaveAmostra(createAmostra, {
 		onSuccess: () => {
 			form.reset(defaultValues);
 			setCamposNaoEncontrados(new Set());
 		},
 	});
-
-	const { reset: resetMutation, isPending: isSubmitting } = saveMutation;
 
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
@@ -39,7 +35,7 @@ export function NewAmostraPage() {
 						</CardDescription>
 					</div>
 					<PreencherComIaButton
-						disabled={isSubmitting}
+						disabled={save.isPending}
 						onFill={(values, campos) => {
 							form.reset(values);
 							setCamposNaoEncontrados(new Set(campos));
@@ -50,23 +46,13 @@ export function NewAmostraPage() {
 				<CardContent className="px-6 pb-6">
 					<AmostraForm
 						form={form}
-						isSubmitting={isSubmitting}
-						onSubmit={(values) => saveMutation.mutate({ values, gerarRae })}
+						save={save}
 						camposNaoEncontrados={camposNaoEncontrados}
-						footer={
-							<AmostraFormFooter
-								checkboxId="gerar-rae-nova"
-								gerarRae={gerarRae}
-								onGerarRaeChange={setGerarRae}
-								isSubmitting={isSubmitting}
-								resetLabel="Limpar"
-								onReset={() => {
-									form.reset(defaultValues);
-									resetMutation();
-									setCamposNaoEncontrados(new Set());
-								}}
-							/>
-						}
+						resetLabel="Limpar"
+						onReset={() => {
+							form.reset(defaultValues);
+							setCamposNaoEncontrados(new Set());
+						}}
 					/>
 				</CardContent>
 			</Card>
