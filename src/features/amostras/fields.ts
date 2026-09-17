@@ -20,20 +20,32 @@ export type TextField = Exclude<
 	"avaliadorId" | "ddd" | "telefone" | "incidencias" | "acumuladoProposto"
 >;
 
-export const moneyFields = new Set<TextField>(["valorTerreno", "valorImovel", "valorUnitario"]);
-export const areaFields = new Set<TextField>(["areaTerreno", "areaConstruida"]);
-export const meterFields = new Set<TextField>(["testada"]);
-export const integerFields = new Set<TextField>(["quartos", "banheiros", "suites", "vagas"]);
-export const roundedDecimalFields = new Set<TextField>([
-	"valorTerreno",
-	"valorImovel",
-	"valorUnitario",
-	"testada",
-	"areaTerreno",
-	"areaConstruida",
-]);
-export const requiredFields = new Set<TextField>(["cpf", "cep", "dataReferencia"]);
-export const textareaFields = new Set<TextField>(["equacaoSISDEA"]);
+// Um registro por campo. Validação, máscara, parse, renderização e formatação
+// de exibição são derivados daqui; adicionar um campo é adicionar uma entrada.
+export type FieldKind =
+	| "text"
+	| "textarea"
+	| "cpf"
+	| "cnpj"
+	| "cep"
+	| "uf"
+	| "coordenada"
+	| "money"
+	| "area"
+	| "meter"
+	| "integer"
+	| "decimal"
+	| "enum"
+	| "date"
+	| "municipio";
+
+export type FieldSpec = {
+	label: string;
+	kind: FieldKind;
+	required?: boolean;
+	options?: readonly string[];
+	placeholder?: string;
+};
 
 export const padraoAcabamentoOptions = [
 	"Mínimo",
@@ -54,63 +66,68 @@ export const estadoConservacaoOptions = [
 	"Ruim",
 ] as const;
 
-export const enumFieldOptions: Partial<Record<TextField, readonly string[]>> = {
-	padraoAcabamento: padraoAcabamentoOptions,
-	estadoConservacao: estadoConservacaoOptions,
+export const fieldSpecs: Record<TextField, FieldSpec> = {
+	proponente: { label: "Proponente", kind: "text" },
+	cpf: { label: "CPF", kind: "cpf", required: true, placeholder: "000.000.000-00" },
+	cnpj: { label: "CNPJ", kind: "cnpj", placeholder: "00.000.000/0000-00" },
+	endereco: { label: "Endereço", kind: "text" },
+	coordenadaS: { label: "Coordenada S", kind: "coordenada", placeholder: "05º39'05,497\"" },
+	coordenadaW: { label: "Coordenada W", kind: "coordenada", placeholder: "40º31'12,209\"" },
+	complemento: { label: "Complemento", kind: "text" },
+	bairro: { label: "Bairro", kind: "text" },
+	cep: { label: "CEP", kind: "cep", required: true, placeholder: "00000-000" },
+	municipio: { label: "Município", kind: "municipio" },
+	uf: { label: "UF", kind: "uf", placeholder: "CE" },
+	empresaResponsavel: { label: "Empresa responsável", kind: "text" },
+	valorTerreno: { label: "Valor do terreno", kind: "money" },
+	matricula: { label: "Matrícula", kind: "text" },
+	oficio: { label: "Ofício", kind: "text" },
+	comarca: { label: "Comarca", kind: "text" },
+	ufMatricula: { label: "UF da matrícula", kind: "uf", placeholder: "CE" },
+	valorImovel: { label: "Valor do imóvel", kind: "money" },
+	numeroEtapas: { label: "Número de etapas", kind: "integer" },
+	valorUnitario: { label: "Valor unitário", kind: "money" },
+	testada: { label: "Testada", kind: "meter" },
+	idadeEstimada: { label: "Idade estimada", kind: "text" },
+	areaTerreno: { label: "Área do terreno", kind: "area" },
+	areaConstruida: { label: "Área construída", kind: "area" },
+	quartos: { label: "Quartos", kind: "integer" },
+	banheiros: { label: "Banheiros", kind: "integer" },
+	suites: { label: "Suítes", kind: "integer" },
+	vagas: { label: "Vagas", kind: "integer" },
+	padraoAcabamento: {
+		label: "Padrão de acabamento",
+		kind: "enum",
+		options: padraoAcabamentoOptions,
+	},
+	estadoConservacao: {
+		label: "Estado de conservação",
+		kind: "enum",
+		options: estadoConservacaoOptions,
+	},
+	infraestrutura: { label: "Infraestrutura", kind: "text" },
+	servicosPublicos: { label: "Serviços públicos", kind: "text" },
+	usosPredominantes: { label: "Usos predominantes", kind: "text" },
+	viaAcesso: { label: "Via de acesso", kind: "text" },
+	regiaoContexto: { label: "Região no contexto urbano", kind: "text" },
+	equacaoSISDEA: { label: "Equação SISDEA", kind: "textarea" },
+	dataReferencia: { label: "Data de referência", kind: "date", required: true },
 };
-export const positiveNumberFields = new Set<TextField>([
-	"valorTerreno",
-	"valorImovel",
-	"numeroEtapas",
-	"valorUnitario",
-	"testada",
-	"areaTerreno",
-	"areaConstruida",
-	"quartos",
-	"banheiros",
-	"suites",
-	"vagas",
-]);
 
-export const fieldLabels: Record<TextField, string> = {
-	proponente: "Proponente",
-	cpf: "CPF",
-	cnpj: "CNPJ",
-	endereco: "Endereço",
-	coordenadaS: "Coordenada S",
-	coordenadaW: "Coordenada W",
-	complemento: "Complemento",
-	bairro: "Bairro",
-	cep: "CEP",
-	municipio: "Município",
-	uf: "UF",
-	empresaResponsavel: "Empresa responsável",
-	valorTerreno: "Valor do terreno",
-	matricula: "Matrícula",
-	oficio: "Ofício",
-	comarca: "Comarca",
-	ufMatricula: "UF da matrícula",
-	valorImovel: "Valor do imóvel",
-	numeroEtapas: "Número de etapas",
-	valorUnitario: "Valor unitário",
-	testada: "Testada",
-	idadeEstimada: "Idade estimada",
-	areaTerreno: "Área do terreno",
-	areaConstruida: "Área construída",
-	quartos: "Quartos",
-	banheiros: "Banheiros",
-	suites: "Suítes",
-	vagas: "Vagas",
-	padraoAcabamento: "Padrão de acabamento",
-	estadoConservacao: "Estado de conservação",
-	infraestrutura: "Infraestrutura",
-	servicosPublicos: "Serviços públicos",
-	usosPredominantes: "Usos predominantes",
-	viaAcesso: "Via de acesso",
-	regiaoContexto: "Região no contexto urbano",
-	equacaoSISDEA: "Equação SISDEA",
-	dataReferencia: "Data de referência",
-};
+// Campos numéricos digitados com máscara decimal (1.234,56).
+export function isMaskedDecimalKind(kind: FieldKind) {
+	return kind === "money" || kind === "area" || kind === "meter" || kind === "decimal";
+}
+
+export function isNumberKind(kind: FieldKind) {
+	return kind === "integer" || isMaskedDecimalKind(kind);
+}
+
+export function getInputMode(field: TextField) {
+	const { kind } = fieldSpecs[field];
+	if (isNumberKind(kind) || kind === "cpf" || kind === "cnpj" || kind === "cep") return "numeric";
+	return "text";
+}
 
 export const incidenciaServicos = [
 	"Serviços preliminares e gerais",
@@ -207,30 +224,13 @@ export const fieldGroups = [
 	},
 ];
 
-export const textFields = fieldGroups.flatMap((group) => group.fields);
+export const textFields = Object.keys(fieldSpecs) as TextField[];
 
-export const defaultValues = {
+export const defaultValues: AmostraFormValues = {
 	avaliadorId: "",
 	ddd: "",
 	telefone: "",
 	incidencias: incidenciaServicos.map(() => ({ value: "" })),
 	acumuladoProposto: [{ value: "" }],
-	...Object.fromEntries(textFields.map((field) => [field, ""])),
-} as AmostraFormValues;
-
-export function getPlaceholder(field: TextField) {
-	if (field === "cpf") return "000.000.000-00";
-	if (field === "cnpj") return "00.000.000/0000-00";
-	if (field === "cep") return "00000-000";
-	if (field === "uf" || field === "ufMatricula") return "CE";
-	if (field === "coordenadaS") return "05º39'05,497\"";
-	if (field === "coordenadaW") return "40º31'12,209\"";
-	return undefined;
-}
-
-export function getInputMode(field: TextField) {
-	if (integerFields.has(field) || roundedDecimalFields.has(field)) return "numeric";
-	if (positiveNumberFields.has(field)) return "decimal";
-	if (field === "cpf" || field === "cnpj" || field === "cep") return "numeric";
-	return "text";
-}
+	...(Object.fromEntries(textFields.map((field) => [field, ""])) as Record<TextField, string>),
+};

@@ -11,49 +11,25 @@ import { createZodResolver } from "@/lib/zodResolver";
 import {
 	type AmostraFormValues,
 	type ArrayValue,
+	fieldSpecs,
 	INCIDENCIA_SUM_TARGET,
 	INCIDENCIA_SUM_TOLERANCE,
 	incidenciaServicos,
-	integerFields,
-	positiveNumberFields,
-	requiredFields,
+	isMaskedDecimalKind,
 	type TextField,
 	textFields,
 } from "./fields";
 
-function positiveNumberString(field: TextField) {
-	if (integerFields.has(field)) {
-		return z.string().refine(
-			(value) => {
-				const trimmed = value.trim();
-				if (!trimmed) return true;
-				const parsed = Number(trimmed);
-				return Number.isInteger(parsed) && parsed >= 0;
-			},
-			{ message: "Informe um número inteiro." },
-		);
-	}
-	return z.string().refine(
-		(value) => {
-			if (!value.trim()) return !requiredFields.has(field);
-			const parsed = Number(unmaskDecimal(value.trim()));
-			return Number.isFinite(parsed) && parsed >= 0;
-		},
-		{
-			message: requiredFields.has(field) ? "Preencha este campo." : "Informe um número positivo.",
-		},
-	);
-}
-
 function textFieldSchema(field: TextField) {
-	if (field === "cpf") {
+	const { kind, required } = fieldSpecs[field];
+	if (kind === "cpf") {
 		return z
 			.string()
 			.trim()
 			.min(1, "Informe o CPF.")
 			.regex(cpfRegex, "Informe o CPF com máscara: 000.000.000-00.");
 	}
-	if (field === "cnpj") {
+	if (kind === "cnpj") {
 		return z
 			.string()
 			.trim()
@@ -61,15 +37,35 @@ function textFieldSchema(field: TextField) {
 				message: "Informe o CNPJ com máscara: 00.000.000/0000-00.",
 			});
 	}
-	if (field === "cep") {
+	if (kind === "cep") {
 		return z
 			.string()
 			.trim()
 			.min(1, "Informe o CEP.")
 			.regex(cepRegex, "Informe o CEP com máscara: 00000-000.");
 	}
-	if (positiveNumberFields.has(field)) return positiveNumberString(field);
-	if (requiredFields.has(field)) return z.string().trim().min(1, "Preencha este campo.");
+	if (kind === "integer") {
+		return z.string().refine(
+			(value) => {
+				const trimmed = value.trim();
+				if (!trimmed) return !required;
+				const parsed = Number(trimmed);
+				return Number.isInteger(parsed) && parsed >= 0;
+			},
+			{ message: "Informe um número inteiro." },
+		);
+	}
+	if (isMaskedDecimalKind(kind)) {
+		return z.string().refine(
+			(value) => {
+				if (!value.trim()) return !required;
+				const parsed = Number(unmaskDecimal(value.trim()));
+				return Number.isFinite(parsed) && parsed >= 0;
+			},
+			{ message: required ? "Preencha este campo." : "Informe um número positivo." },
+		);
+	}
+	if (required) return z.string().trim().min(1, "Preencha este campo.");
 	return z.string();
 }
 
@@ -93,7 +89,7 @@ function hasPercentualArrayValue(values: ArrayValue[]) {
 	return values.some((item) => item.value.trim() !== "");
 }
 
-function sumArrayValues(values: ArrayValue[]) {
+export function sumArrayValues(values: ArrayValue[]) {
 	return values.reduce((acc, item) => {
 		const trimmed = item.value.trim();
 		if (!trimmed) return acc;
@@ -102,7 +98,7 @@ function sumArrayValues(values: ArrayValue[]) {
 	}, 0);
 }
 
-function incidenciasSumValid(values: ArrayValue[]) {
+export function incidenciasSumValid(values: ArrayValue[]) {
 	return Math.abs(sumArrayValues(values) - INCIDENCIA_SUM_TARGET) <= INCIDENCIA_SUM_TOLERANCE;
 }
 

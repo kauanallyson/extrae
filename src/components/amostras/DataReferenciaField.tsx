@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { type AmostraFormValues, fieldLabels } from "@/features/amostras/fields";
+import { type AmostraFormValues, fieldSpecs } from "@/features/amostras/fields";
 import { secondaryButtonClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +42,7 @@ export function DataReferenciaField({
 				return (
 					<FormItem className="flex flex-col">
 						<FormLabel className="text-slate-200">
-							{fieldLabels.dataReferencia}
+							{fieldSpecs.dataReferencia.label}
 							{missing && (
 								<span className="ml-2 text-xs font-normal text-amber-400">Não identificado</span>
 							)}

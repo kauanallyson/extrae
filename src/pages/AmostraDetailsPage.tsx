@@ -8,16 +8,12 @@ import { Layout } from "@/components/Layout";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	areaFields,
 	fieldGroups,
-	fieldLabels,
+	fieldSpecs,
 	identificationGroupTitle,
 	incidenciaServicos,
-	meterFields,
-	moneyFields,
-	type TextField,
-	textareaFields,
 } from "@/features/amostras/fields";
+import { formatTextField } from "@/features/amostras/transforms";
 import {
 	type Amostra,
 	type Avaliador,
@@ -25,17 +21,9 @@ import {
 	fetchAmostra,
 	fetchAvaliadores,
 } from "@/lib/api";
-import { formatBrl, formatDecimal } from "@/lib/format";
+import { formatDecimal } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, getErrorMessage } from "@/lib/utils";
-
-function formatValue(field: TextField, value: string | number): string {
-	if (value == null || value === "") return "-";
-	if (moneyFields.has(field)) return formatBrl(Number(value));
-	if (areaFields.has(field)) return `${formatDecimal(Number(value))} m²`;
-	if (meterFields.has(field)) return `${formatDecimal(Number(value))} m`;
-	return String(value) || "-";
-}
 
 function DetailItem({
 	label,
@@ -235,11 +223,13 @@ export function AmostraDetailsPage() {
 									{group.fields.map((field) => (
 										<DetailItem
 											key={field}
-											label={fieldLabels[field]}
-											value={formatValue(field, amostra[field as keyof Amostra] as string | number)}
-											wrap={textareaFields.has(field)}
+											label={fieldSpecs[field].label}
+											value={formatTextField(field, amostra[field])}
+											wrap={fieldSpecs[field].kind === "textarea"}
 											className={
-												textareaFields.has(field) ? "sm:col-span-2 lg:col-span-3" : undefined
+												fieldSpecs[field].kind === "textarea"
+													? "sm:col-span-2 lg:col-span-3"
+													: undefined
 											}
 										/>
 									))}

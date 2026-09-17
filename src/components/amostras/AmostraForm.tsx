@@ -2,23 +2,18 @@ import { type KeyboardEvent, type ReactNode, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { AvaliadorSelectField } from "@/components/avaliadores/AvaliadorSelectField";
-import { MunicipioField } from "@/components/municipios/MunicipioField";
 import { Form, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
 	type AmostraFormValues,
-	enumFieldOptions,
 	fieldGroups,
+	fieldSpecs,
 	identificationGroupTitle,
-	textareaFields,
 } from "@/features/amostras/fields";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
 import { maskTelefone } from "@/lib/validators";
-import { AmostraSelectField } from "./AmostraSelectField";
-import { AmostraTextareaField } from "./AmostraTextareaField";
-import { AmostraTextField } from "./AmostraTextField";
-import { DataReferenciaField } from "./DataReferenciaField";
+import { AmostraField } from "./AmostraField";
 import { DecimalArrayField } from "./DecimalArrayField";
 import { FormSection } from "./FormSection";
 import { IncidenciaServicosField } from "./IncidenciaServicosField";
@@ -72,7 +67,7 @@ export function AmostraForm({
 				</FormSection>
 
 				<FormSection title="Identificação" description="Dados do proponente e contato.">
-					<AmostraTextField
+					<AmostraField
 						control={form.control}
 						name="proponente"
 						disabled={isSubmitting}
@@ -80,7 +75,7 @@ export function AmostraForm({
 					/>
 					<div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem_minmax(0,1fr)]">
 						{(["cpf", "cnpj"] as const).map((fieldName) => (
-							<AmostraTextField
+							<AmostraField
 								key={fieldName}
 								control={form.control}
 								name={fieldName}
@@ -160,62 +155,23 @@ export function AmostraForm({
 					.map((group) => (
 						<FormSection key={group.title} title={group.title} description={group.description}>
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-								{group.fields.map((fieldName) => {
-									const enumOptions = enumFieldOptions[fieldName];
-									if (fieldName === "dataReferencia") {
-										return (
-											<DataReferenciaField
-												key={fieldName}
-												control={form.control}
-												disabled={isSubmitting}
-												missing={camposNaoEncontrados.has(fieldName)}
-											/>
-										);
-									}
-									if (fieldName === "municipio") {
-										return (
-											<MunicipioField
-												key={fieldName}
-												control={form.control}
-												disabled={isSubmitting}
-												missing={camposNaoEncontrados.has(fieldName)}
-											/>
-										);
-									}
-									if (enumOptions) {
-										return (
-											<AmostraSelectField
-												key={fieldName}
-												control={form.control}
-												name={fieldName}
-												options={enumOptions}
-												disabled={isSubmitting}
-												missing={camposNaoEncontrados.has(fieldName)}
-											/>
-										);
-									}
-									if (textareaFields.has(fieldName)) {
-										return (
-											<div key={fieldName} className="sm:col-span-2 lg:col-span-3">
-												<AmostraTextareaField
-													control={form.control}
-													name={fieldName}
-													disabled={isSubmitting}
-													missing={camposNaoEncontrados.has(fieldName)}
-												/>
-											</div>
-										);
-									}
-									return (
-										<AmostraTextField
-											key={fieldName}
+								{group.fields.map((fieldName) => (
+									<div
+										key={fieldName}
+										className={
+											fieldSpecs[fieldName].kind === "textarea"
+												? "sm:col-span-2 lg:col-span-3"
+												: undefined
+										}
+									>
+										<AmostraField
 											control={form.control}
 											name={fieldName}
 											disabled={isSubmitting}
 											missing={camposNaoEncontrados.has(fieldName)}
 										/>
-									);
-								})}
+									</div>
+								))}
 							</div>
 						</FormSection>
 					))}

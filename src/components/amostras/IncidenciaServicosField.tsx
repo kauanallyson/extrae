@@ -2,15 +2,11 @@ import type { Control, FieldPath } from "react-hook-form";
 import { useFormState, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-	type AmostraFormValues,
-	INCIDENCIA_SUM_TARGET,
-	INCIDENCIA_SUM_TOLERANCE,
-	incidenciaServicos,
-} from "@/features/amostras/fields";
+import { type AmostraFormValues, incidenciaServicos } from "@/features/amostras/fields";
+import { incidenciasSumValid, sumArrayValues } from "@/features/amostras/schema";
 import { fieldInputClassName } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
-import { maskDecimal, unmaskDecimal } from "@/lib/validators";
+import { maskDecimal } from "@/lib/validators";
 
 type IncidenciaServicosFieldProps = {
 	control: Control<AmostraFormValues>;
@@ -24,14 +20,9 @@ export function IncidenciaServicosField({
 	const values = useWatch({ control, name: "incidencias" });
 	const { errors } = useFormState({ control, name: "incidencias" });
 
-	const sum = (values ?? []).reduce((acc, item) => {
-		const trimmed = String(item?.value ?? "").trim();
-		if (!trimmed) return acc;
-		const parsed = Number(unmaskDecimal(trimmed));
-		return acc + (Number.isFinite(parsed) ? parsed : 0);
-	}, 0);
-
-	const sumOk = Math.abs(sum - INCIDENCIA_SUM_TARGET) <= INCIDENCIA_SUM_TOLERANCE;
+	const items = (values ?? []).map((item) => ({ value: String(item?.value ?? "") }));
+	const sum = sumArrayValues(items);
+	const sumOk = incidenciasSumValid(items);
 	const sumLabel = sum.toFixed(2).replace(".", ",");
 	const rootError = errors.incidencias as unknown as { message?: string } | undefined;
 
