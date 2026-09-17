@@ -1,11 +1,12 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { LoaderCircleIcon } from "lucide-react";
+import { InfoIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
 import { Layout } from "@/components/Layout";
 import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilterCombobox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAmostrasFilters } from "@/features/amostras/filters";
 import { type AmostrasStats, fetchAmostra, fetchAmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
@@ -66,68 +67,82 @@ export function EstatisticasPage() {
 						</p>
 					) : (
 						<div className="flex flex-col gap-8">
-							<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-								<Indicador
-									label="Amostras"
-									valor={String(data.total)}
-									geral={geral && String(geral.total)}
-								/>
-								<Indicador
-									label="Média"
-									valor={data.mean != null ? formatBrl(data.mean) : "-"}
-									geral={geral?.mean != null ? formatBrl(geral.mean) : undefined}
-								/>
-								<Indicador
-									label="Mediana"
-									valor={data.median != null ? formatBrl(data.median) : "-"}
-									geral={geral?.median != null ? formatBrl(geral.median) : undefined}
-								/>
-								<Indicador
-									label="Desvio padrão"
-									valor={data.stdDev != null ? formatBrl(data.stdDev) : "-"}
-									geral={geral?.stdDev != null ? formatBrl(geral.stdDev) : undefined}
-								/>
-								<Indicador
-									label="Outliers"
-									valor={String(data.outlierIds.length)}
-									geral={geral && String(geral.outlierIds.length)}
-								/>
-								<Indicador
-									label="IQR"
-									valor={data.iqr != null ? formatBrl(data.iqr) : "-"}
-									geral={geral?.iqr != null ? formatBrl(geral.iqr) : undefined}
-								/>
-								<Indicador
-									label="Mínimo"
-									valor={data.min != null ? formatBrl(data.min) : "-"}
-									geral={geral?.min != null ? formatBrl(geral.min) : undefined}
-								/>
-								<Indicador
-									label="Limite inferior"
-									valor={data.lowerFence != null ? formatBrl(data.lowerFence) : "-"}
-									geral={geral?.lowerFence != null ? formatBrl(geral.lowerFence) : undefined}
-								/>
-								<Indicador
-									label="Q1"
-									valor={data.q1 != null ? formatBrl(data.q1) : "-"}
-									geral={geral?.q1 != null ? formatBrl(geral.q1) : undefined}
-								/>
-								<Indicador
-									label="Q3"
-									valor={data.q3 != null ? formatBrl(data.q3) : "-"}
-									geral={geral?.q3 != null ? formatBrl(geral.q3) : undefined}
-								/>
-								<Indicador
-									label="Limite superior"
-									valor={data.upperFence != null ? formatBrl(data.upperFence) : "-"}
-									geral={geral?.upperFence != null ? formatBrl(geral.upperFence) : undefined}
-								/>
-								<Indicador
-									label="Máximo"
-									valor={data.max != null ? formatBrl(data.max) : "-"}
-									geral={geral?.max != null ? formatBrl(geral.max) : undefined}
-								/>
-							</div>
+							<TooltipProvider>
+								<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+									<Indicador
+										label="Amostras"
+										descricao="Quantidade de amostras consideradas no cálculo."
+										valor={String(data.total)}
+										geral={geral && String(geral.total)}
+									/>
+									<Indicador
+										label="Média"
+										descricao="Soma dos valores unitários dividida pela quantidade de amostras."
+										valor={data.mean != null ? formatBrl(data.mean) : "-"}
+										geral={geral?.mean != null ? formatBrl(geral.mean) : undefined}
+									/>
+									<Indicador
+										label="Mediana"
+										descricao="Valor central: metade das amostras está abaixo e metade acima."
+										valor={data.median != null ? formatBrl(data.median) : "-"}
+										geral={geral?.median != null ? formatBrl(geral.median) : undefined}
+									/>
+									<Indicador
+										label="Desvio padrão"
+										descricao="Quanto os valores se afastam da média, em média."
+										valor={data.stdDev != null ? formatBrl(data.stdDev) : "-"}
+										geral={geral?.stdDev != null ? formatBrl(geral.stdDev) : undefined}
+									/>
+									<Indicador
+										label="Outliers"
+										descricao="Amostras com valor unitário fora dos limites de Tukey."
+										valor={String(data.outlierIds.length)}
+										geral={geral && String(geral.outlierIds.length)}
+									/>
+									<Indicador
+										label="IQR"
+										descricao="Intervalo interquartil: Q3 − Q1, a faixa onde está a metade central das amostras."
+										valor={data.iqr != null ? formatBrl(data.iqr) : "-"}
+										geral={geral?.iqr != null ? formatBrl(geral.iqr) : undefined}
+									/>
+									<Indicador
+										label="Mínimo"
+										descricao="Menor valor unitário observado."
+										valor={data.min != null ? formatBrl(data.min) : "-"}
+										geral={geral?.min != null ? formatBrl(geral.min) : undefined}
+									/>
+									<Indicador
+										label="Limite inferior"
+										descricao="Q1 − 1,5 × IQR. Valores abaixo são considerados outliers."
+										valor={data.lowerFence != null ? formatBrl(data.lowerFence) : "-"}
+										geral={geral?.lowerFence != null ? formatBrl(geral.lowerFence) : undefined}
+									/>
+									<Indicador
+										label="Q1"
+										descricao="Primeiro quartil: 25% das amostras têm valor abaixo dele."
+										valor={data.q1 != null ? formatBrl(data.q1) : "-"}
+										geral={geral?.q1 != null ? formatBrl(geral.q1) : undefined}
+									/>
+									<Indicador
+										label="Q3"
+										descricao="Terceiro quartil: 75% das amostras têm valor abaixo dele."
+										valor={data.q3 != null ? formatBrl(data.q3) : "-"}
+										geral={geral?.q3 != null ? formatBrl(geral.q3) : undefined}
+									/>
+									<Indicador
+										label="Limite superior"
+										descricao="Q3 + 1,5 × IQR. Valores acima são considerados outliers."
+										valor={data.upperFence != null ? formatBrl(data.upperFence) : "-"}
+										geral={geral?.upperFence != null ? formatBrl(geral.upperFence) : undefined}
+									/>
+									<Indicador
+										label="Máximo"
+										descricao="Maior valor unitário observado."
+										valor={data.max != null ? formatBrl(data.max) : "-"}
+										geral={geral?.max != null ? formatBrl(geral.max) : undefined}
+									/>
+								</div>
+							</TooltipProvider>
 
 							<section className="flex flex-col gap-2">
 								<h2 className="text-sm font-medium text-slate-300">
@@ -173,10 +188,33 @@ function useOutliers(ids: number[]) {
 	);
 }
 
-function Indicador({ label, valor, geral }: { label: string; valor: string; geral?: string }) {
+function Indicador({
+	label,
+	descricao,
+	valor,
+	geral,
+}: {
+	label: string;
+	descricao: string;
+	valor: string;
+	geral?: string;
+}) {
 	return (
 		<div className="rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3">
-			<p className="text-xs text-slate-400">{label}</p>
+			<div className="flex items-center gap-1.5 text-xs text-slate-400">
+				{label}
+				<Tooltip>
+					<TooltipTrigger
+						aria-label={`O que é ${label}`}
+						className="text-slate-500 hover:text-slate-300"
+					>
+						<InfoIcon className="h-3.5 w-3.5" />
+					</TooltipTrigger>
+					<TooltipContent className="dark border border-slate-600 bg-slate-800 text-slate-100">
+						{descricao}
+					</TooltipContent>
+				</Tooltip>
+			</div>
 			<p className="mt-1 text-lg font-semibold text-slate-100">{valor}</p>
 			{geral && <p className="mt-0.5 text-xs text-slate-500">Ceará: {geral}</p>}
 		</div>
