@@ -1,12 +1,10 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
 import { Layout } from "@/components/Layout";
 import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilterCombobox";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAmostrasFilters } from "@/features/amostras/filters";
 import { type AmostrasStats, fetchAmostra, fetchAmostrasStats } from "@/lib/api";
@@ -150,26 +148,6 @@ export function EstatisticasPage() {
 									}
 								/>
 							</section>
-
-							{data.outlierIds.length > 0 && (
-								<section className="flex flex-col gap-2">
-									<h2 className="text-sm font-medium text-slate-300">
-										Amostras fora dos limites de Tukey
-									</h2>
-									<div className="flex flex-wrap gap-1.5">
-										{data.outlierIds.map((id) => (
-											<Link key={id} to={`/amostras/${id}`}>
-												<Badge
-													variant="outline"
-													className="border-slate-600 text-slate-300 hover:bg-white/5"
-												>
-													#{id}
-												</Badge>
-											</Link>
-										))}
-									</div>
-								</section>
-							)}
 						</div>
 					)}
 				</CardContent>
