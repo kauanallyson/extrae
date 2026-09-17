@@ -1,10 +1,10 @@
 import { LogOutIcon } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import { Logo } from "@/components/layout/Logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthContext";
-import { cn } from "../lib/utils";
-import { Logo } from "./Logo";
+import { cn } from "@/lib/utils";
 
 const textRoutes = [
 	{ to: "/amostras", label: "Amostras" },

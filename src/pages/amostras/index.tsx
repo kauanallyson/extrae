@@ -10,8 +10,9 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Layout } from "@/components/Layout";
-import { PageLoading, PageMessage } from "@/components/PageStatus";
+import { Layout } from "@/components/layout/Layout";
+import { PageLoading } from "@/components/shared/PageLoading";
+import { PageMessage } from "@/components/shared/PageMessage";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {

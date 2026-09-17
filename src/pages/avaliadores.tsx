@@ -6,9 +6,10 @@ import {
 	type AvaliadorDialogState,
 	AvaliadorFormDialog,
 } from "@/components/avaliadores/AvaliadorFormDialog";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
-import { Layout } from "@/components/Layout";
-import { PageLoading, PageMessage } from "@/components/PageStatus";
+import { Layout } from "@/components/layout/Layout";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { PageLoading } from "@/components/shared/PageLoading";
+import { PageMessage } from "@/components/shared/PageMessage";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Avaliador, deleteAvaliador, fetchAvaliadores } from "@/lib/api";

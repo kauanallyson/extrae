@@ -3,7 +3,7 @@ import { LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { FieldError } from "@/components/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

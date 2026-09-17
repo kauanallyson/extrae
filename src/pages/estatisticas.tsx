@@ -1,14 +1,16 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
-import { InfoIcon, LoaderCircleIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
-import { Layout } from "@/components/Layout";
+import { Indicador } from "@/components/estatisticas/Indicador";
+import { Layout } from "@/components/layout/Layout";
 import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilterCombobox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAmostrasFilters } from "@/features/amostras/filters";
-import { type AmostrasStats, fetchAmostra, fetchAmostrasStats } from "@/lib/api";
+import { useOutliers } from "@/features/estatisticas/useOutliers";
+import { type AmostrasStats, fetchAmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -168,51 +170,5 @@ export function EstatisticasPage() {
 				</CardContent>
 			</Card>
 		</Layout>
-	);
-}
-
-// A rota de estatísticas devolve só os ids fora dos limites; o valor de cada um
-// vem da própria amostra.
-function useOutliers(ids: number[]) {
-	const queries = useQueries({
-		queries: ids.map((id) => ({
-			queryKey: queryKeys.amostra(id),
-			queryFn: () => fetchAmostra(id),
-			staleTime: 5 * 60 * 1000,
-		})),
-	});
-	return queries.flatMap((query) =>
-		query.data?.valorUnitario != null
-			? [{ id: query.data.id, valor: query.data.valorUnitario }]
-			: [],
-	);
-}
-
-function Indicador({
-	label,
-	descricao,
-	valor,
-	geral,
-}: {
-	label: string;
-	descricao: string;
-	valor: string;
-	geral?: string;
-}) {
-	return (
-		<div className="relative rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3">
-			<Tooltip>
-				<TooltipTrigger
-					aria-label={`O que é ${label}`}
-					className="absolute top-2.5 right-2.5 text-slate-500 hover:text-slate-300"
-				>
-					<InfoIcon className="h-3.5 w-3.5" />
-				</TooltipTrigger>
-				<TooltipContent>{descricao}</TooltipContent>
-			</Tooltip>
-			<p className="text-xs text-slate-400">{label}</p>
-			<p className="mt-1 text-lg font-semibold text-slate-100">{valor}</p>
-			{geral && <p className="mt-0.5 text-xs text-slate-500">Ceará: {geral}</p>}
-		</div>
 	);
 }

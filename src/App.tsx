@@ -2,14 +2,14 @@ import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/features/auth/AuthContext";
-import { AmostraDetailsPage } from "./pages/AmostraDetailsPage";
-import { AmostrasPage } from "./pages/AmostrasPage";
-import { AvaliadorPage } from "./pages/AvaliadorPage";
-import { EditAmostraPage } from "./pages/EditAmostraPage";
-import { EstatisticasPage } from "./pages/EstatisticasPage";
-import { HomePage } from "./pages/HomePage";
-import { LoginPage } from "./pages/LoginPage";
-import { NewAmostraPage } from "./pages/NewAmostraPage";
+import { HomePage } from "./pages";
+import { AmostrasPage } from "./pages/amostras";
+import { AmostraDetailsPage } from "./pages/amostras/[id]";
+import { EditAmostraPage } from "./pages/amostras/[id]/editar";
+import { AvaliadorPage } from "./pages/avaliadores";
+import { EstatisticasPage } from "./pages/estatisticas";
+import { LoginPage } from "./pages/login";
+import { NewAmostraPage } from "./pages/nova-amostra";
 
 const router = createBrowserRouter([
 	{

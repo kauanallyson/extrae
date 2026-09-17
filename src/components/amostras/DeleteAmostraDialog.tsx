@@ -1,5 +1,5 @@
 import { Trash2Icon } from "lucide-react";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { buttonVariants } from "@/components/ui/button";
 import { useDeleteAmostra } from "@/features/amostras/useSaveAmostra";
 import { cn } from "@/lib/utils";

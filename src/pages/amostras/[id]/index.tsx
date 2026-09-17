@@ -3,9 +3,13 @@ import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { AmostraSection } from "@/components/amostras/AmostraSection";
 import { DeleteAmostraDialog } from "@/components/amostras/DeleteAmostraDialog";
-import { Layout } from "@/components/Layout";
-import { PageLoading, PageMessage } from "@/components/PageStatus";
+import { DetailItem } from "@/components/amostras/DetailItem";
+import { SectionGrid } from "@/components/amostras/SectionGrid";
+import { Layout } from "@/components/layout/Layout";
+import { PageLoading } from "@/components/shared/PageLoading";
+import { PageMessage } from "@/components/shared/PageMessage";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,57 +23,6 @@ import { type Amostra, type Avaliador, fetchAmostra, fetchAvaliadores } from "@/
 import { formatDecimal } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
-
-function DetailItem({
-	label,
-	value,
-	wrap = false,
-	className,
-}: {
-	label: string;
-	value: string | null | undefined;
-	wrap?: boolean;
-	className?: string;
-}) {
-	return (
-		<div className={cn("space-y-1", className)}>
-			<p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-			<p className={cn("text-sm text-slate-100", wrap && "whitespace-pre-wrap wrap-break-word")}>
-				{value || "-"}
-			</p>
-		</div>
-	);
-}
-
-function SectionGrid({ children }: { children: React.ReactNode }) {
-	return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
-}
-
-function SectionHeader({ title, description }: { title: string; description?: string }) {
-	return (
-		<div className="border-b border-white/10 pb-2">
-			<h3 className="text-base font-semibold text-slate-200">{title}</h3>
-			{description && <p className="text-xs text-slate-500">{description}</p>}
-		</div>
-	);
-}
-
-function AmostraSection({
-	title,
-	description,
-	children,
-}: {
-	title: string;
-	description?: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="space-y-3">
-			<SectionHeader title={title} description={description} />
-			{children}
-		</div>
-	);
-}
 
 export function AmostraDetailsPage() {
 	const { id } = useParams<{ id: string }>();

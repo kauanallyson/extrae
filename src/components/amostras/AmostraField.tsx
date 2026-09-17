@@ -1,6 +1,6 @@
 import type { Control } from "react-hook-form";
 import { MunicipioField } from "@/components/municipios/MunicipioField";
-import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
 	InputGroup,
@@ -31,6 +31,7 @@ import {
 	selectTriggerClassName,
 } from "@/lib/formStyles";
 import { cn } from "@/lib/utils";
+import { AmostraFieldLabel } from "./AmostraFieldLabel";
 import { DataReferenciaField } from "./DataReferenciaField";
 
 type AmostraFieldProps = {
@@ -39,15 +40,6 @@ type AmostraFieldProps = {
 	disabled?: boolean;
 	missing?: boolean;
 };
-
-export function AmostraFieldLabel({ name, missing }: { name: TextField; missing: boolean }) {
-	return (
-		<FormLabel className="text-slate-200">
-			{fieldSpecs[name].label}
-			{missing && <span className="ml-2 text-xs font-normal text-amber-400">Não identificado</span>}
-		</FormLabel>
-	);
-}
 
 // Decide como cada campo é renderizado a partir do registro em fieldSpecs.
 export function AmostraField({

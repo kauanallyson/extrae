@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AmostraForm } from "@/components/amostras/AmostraForm";
 import { PreencherComIaButton } from "@/components/amostras/PreencherComIaButton";
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
 import { amostraFormResolver } from "@/features/amostras/schema";

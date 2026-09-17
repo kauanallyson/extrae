@@ -1,7 +1,7 @@
 import { ArrowRightIcon, FileSpreadsheetIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "../lib/utils";
-import { buttonVariants } from "./ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function Hero() {
 	return (
