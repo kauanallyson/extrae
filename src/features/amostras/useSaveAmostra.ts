@@ -35,7 +35,7 @@ function useGerarRaePreference() {
 function useInvalidateAmostras() {
 	const queryClient = useQueryClient();
 	return (id?: number) => {
-		queryClient.invalidateQueries({ queryKey: queryKeys.amostras });
+		queryClient.invalidateQueries({ queryKey: queryKeys.amostras() });
 		queryClient.invalidateQueries({ queryKey: queryKeys.municipios });
 		queryClient.invalidateQueries({ queryKey: queryKeys.stats() });
 		if (id != null) queryClient.invalidateQueries({ queryKey: queryKeys.amostra(id) });

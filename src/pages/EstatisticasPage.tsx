@@ -1,43 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
-import { useCallback, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
 import { Layout } from "@/components/Layout";
 import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilterCombobox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAmostrasFilters } from "@/features/amostras/filters";
 import { type AmostrasStats, fetchAmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function EstatisticasPage() {
-	const [searchParams, setSearchParams] = useSearchParams();
-	const municipio = (searchParams.get("municipio") ?? "").trim();
-
-	const handleMunicipioChange = useCallback(
-		(valor: string) => {
-			if (valor === municipio) return;
-			setSearchParams(
-				(params) => {
-					if (valor) params.set("municipio", valor);
-					else params.delete("municipio");
-					return params;
-				},
-				{ replace: true },
-			);
-		},
-		[municipio, setSearchParams],
-	);
+	const { filters, setFilter } = useAmostrasFilters();
+	const municipio = filters.municipio ?? "";
 
 	const { data, isLoading, error } = useQuery<AmostrasStats, Error>({
-		queryKey: queryKeys.stats(municipio || undefined),
-		queryFn: () => fetchAmostrasStats(municipio),
+		queryKey: queryKeys.stats(filters),
+		queryFn: () => fetchAmostrasStats(filters),
 	});
 
 	const { data: geral } = useQuery<AmostrasStats, Error>({
-		queryKey: queryKeys.stats(),
+		queryKey: queryKeys.stats({}),
 		queryFn: () => fetchAmostrasStats(),
 		enabled: Boolean(municipio),
 	});
@@ -56,7 +42,10 @@ export function EstatisticasPage() {
 						<CardTitle className="text-xl">Estatísticas</CardTitle>
 						<p className="text-sm text-slate-400">Distribuição do valor unitário (R$/m²)</p>
 					</div>
-					<MunicipioFilterCombobox value={municipio} onValueChange={handleMunicipioChange} />
+					<MunicipioFilterCombobox
+						value={municipio}
+						onValueChange={(valor) => setFilter("municipio", valor)}
+					/>
 				</CardHeader>
 
 				<CardContent className="px-6 pb-6">

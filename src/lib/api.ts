@@ -165,11 +165,14 @@ export type AmostrasPage = {
 	nextCursor: number | null;
 };
 
+export type AmostraTipo = "imovel" | "terreno";
+
 export type AmostrasFilters = {
-	from?: string;
-	to?: string;
+	tipo?: AmostraTipo;
 	municipio?: string;
 	uf?: string;
+	from?: string;
+	to?: string;
 	valorImovelMin?: string;
 	valorImovelMax?: string;
 	valorTerrenoMin?: string;
@@ -178,7 +181,8 @@ export type AmostrasFilters = {
 
 const upperFilterKeys = new Set<keyof AmostrasFilters>(["municipio", "uf"]);
 
-function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
+// Única codificação dos filtros para a query string: município e UF vão em maiúsculas.
+export function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
 	const params = new URLSearchParams();
 	for (const [key, value] of Object.entries(filters)) {
 		let trimmed = value?.trim();
@@ -245,15 +249,13 @@ export async function downloadAmostrasPlanilha(
 	);
 }
 
-export type AmostraTipo = "imovel" | "terreno";
-
 export async function fetchAmostras(
-	params: { cursor?: number; limit?: number; tipo?: AmostraTipo } = {},
+	filters: AmostrasFilters = {},
+	page: { cursor?: number; limit?: number } = {},
 ): Promise<AmostrasPage> {
-	const query = new URLSearchParams();
-	if (params.cursor != null) query.set("cursor", String(params.cursor));
-	if (params.limit != null) query.set("limit", String(params.limit));
-	if (params.tipo != null) query.set("tipo", params.tipo);
+	const query = amostrasFilterParams(filters);
+	if (page.cursor != null) query.set("cursor", String(page.cursor));
+	if (page.limit != null) query.set("limit", String(page.limit));
 	return requestJson(withQuery("/amostras", query), "Erro ao carregar as amostras");
 }
 
@@ -286,13 +288,9 @@ const statsNumberKeys = [
 ] as const;
 
 // Os números chegam como string ou number, conforme o schema da rota; normaliza tudo aqui.
-export async function fetchAmostrasStats(municipio?: string): Promise<AmostrasStats> {
-	const query = new URLSearchParams();
-	const trimmed = municipio?.trim();
-	if (trimmed) query.set("municipio", trimmed.toUpperCase());
-
+export async function fetchAmostrasStats(filters: AmostrasFilters = {}): Promise<AmostrasStats> {
 	const stats = await requestJson<Record<string, unknown>>(
-		withQuery("/amostras/stats", query),
+		withQuery("/amostras/stats", amostrasFilterParams(filters)),
 		"Erro ao carregar estatísticas",
 	);
 	const numbers = Object.fromEntries(

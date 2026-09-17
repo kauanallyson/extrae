@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
 	Combobox,
@@ -11,10 +10,9 @@ import {
 	ComboboxTrigger,
 	ComboboxValue,
 } from "@/components/ui/combobox";
-import { fetchMunicipios, type Municipio } from "@/lib/api";
 import { secondaryButtonClassName, selectContentClassName } from "@/lib/formStyles";
-import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
+import { useMunicipios } from "./useMunicipios";
 
 type MunicipioFilterComboboxProps = {
 	value: string;
@@ -29,17 +27,7 @@ export function MunicipioFilterCombobox({
 	onValueChange,
 	className,
 }: MunicipioFilterComboboxProps) {
-	const {
-		data: municipios,
-		isLoading,
-		isError,
-	} = useQuery<Municipio[]>({
-		queryKey: queryKeys.municipios,
-		queryFn: fetchMunicipios,
-	});
-
-	const nomes = municipios?.map((municipio) => municipio.nome) ?? [];
-	const totais = new Map(municipios?.map((municipio) => [municipio.nome, municipio.totalAmostras]));
+	const { nomes, totais, isLoading, isError } = useMunicipios();
 
 	return (
 		<Combobox

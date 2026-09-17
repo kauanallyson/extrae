@@ -20,6 +20,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useAmostrasFilters } from "@/features/amostras/filters";
 import { useDownloadRae } from "@/features/amostras/useSaveAmostra";
 import {
 	type AmostrasPage as AmostrasPageResult,
@@ -37,17 +38,21 @@ const TIPO_LABELS: Record<AmostraTipo, string> = {
 	terreno: "Terreno",
 };
 
+const defaultFilters = { tipo: "imovel" } as const;
+
 export function AmostrasPage() {
 	const navigate = useNavigate();
 	const [exporting, setExporting] = useState(false);
-	const [tipo, setTipo] = useState<AmostraTipo>("imovel");
+	const { filters, setFilter } = useAmostrasFilters(defaultFilters);
+	const tipo = filters.tipo ?? "imovel";
 	const downloadRae = useDownloadRae();
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 
 	const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		useInfiniteQuery<AmostrasPageResult, Error>({
-			queryKey: [...queryKeys.amostras, tipo],
-			queryFn: ({ pageParam }) => fetchAmostras({ cursor: pageParam as number | undefined, tipo }),
+			queryKey: queryKeys.amostras(filters),
+			queryFn: ({ pageParam }) =>
+				fetchAmostras(filters, { cursor: pageParam as number | undefined }),
 			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		});
 
@@ -72,7 +77,7 @@ export function AmostrasPage() {
 	async function handleExport() {
 		setExporting(true);
 		try {
-			saveFile(await downloadAmostrasPlanilha());
+			saveFile(await downloadAmostrasPlanilha(filters));
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Erro ao exportar planilha.");
 		} finally {
@@ -108,7 +113,7 @@ export function AmostrasPage() {
 						<CardTitle className="text-xl">Amostras</CardTitle>
 					</div>
 					<div className="flex items-center gap-2">
-						<Select value={tipo} onValueChange={(value) => setTipo(value as AmostraTipo)}>
+						<Select value={tipo} onValueChange={(value) => setFilter("tipo", value ?? undefined)}>
 							<SelectTrigger
 								size="sm"
 								aria-label="Filtrar por tipo"

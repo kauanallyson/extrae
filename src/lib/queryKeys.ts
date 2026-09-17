@@ -1,7 +1,11 @@
+import type { AmostrasFilters } from "@/lib/api";
+
 export const queryKeys = {
-	amostras: ["amostras"] as const,
+	amostras: (filters?: AmostrasFilters) =>
+		filters ? (["amostras", filters] as const) : (["amostras"] as const),
 	amostra: (id: number) => ["amostra", id] as const,
-	stats: (municipio?: string) => ["stats", municipio ?? null] as const,
+	stats: (filters?: AmostrasFilters) =>
+		filters ? (["stats", filters] as const) : (["stats"] as const),
 	municipios: ["municipios"] as const,
 	avaliadores: ["avaliadores"] as const,
 	me: ["me"] as const,

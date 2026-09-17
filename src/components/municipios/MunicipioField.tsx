@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import type { Control } from "react-hook-form";
 import {
 	Combobox,
@@ -9,10 +8,9 @@ import {
 } from "@/components/ui/combobox";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { AmostraFormValues } from "@/features/amostras/fields";
-import { fetchMunicipios, type Municipio } from "@/lib/api";
 import { inputGroupClassName, selectContentClassName } from "@/lib/formStyles";
-import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
+import { useMunicipios } from "./useMunicipios";
 
 type MunicipioFieldProps = {
 	control: Control<AmostraFormValues>;
@@ -27,12 +25,7 @@ export function MunicipioField({
 	disabled = false,
 	missing = false,
 }: MunicipioFieldProps) {
-	const { data: municipios } = useQuery<Municipio[]>({
-		queryKey: queryKeys.municipios,
-		queryFn: fetchMunicipios,
-	});
-
-	const nomes = municipios?.map((municipio) => municipio.nome) ?? [];
+	const { nomes } = useMunicipios();
 
 	return (
 		<FormField
