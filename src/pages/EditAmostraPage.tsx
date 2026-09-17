@@ -1,21 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, LoaderCircleIcon, Trash2Icon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AmostraForm } from "@/components/amostras/AmostraForm";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { DeleteAmostraDialog } from "@/components/amostras/DeleteAmostraDialog";
 import { Layout } from "@/components/Layout";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { PageLoading, PageMessage } from "@/components/PageStatus";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { type AmostraFormValues, defaultValues } from "@/features/amostras/fields";
 import { amostraFormResolver } from "@/features/amostras/schema";
 import { amostraToFormValues } from "@/features/amostras/transforms";
-import { useDeleteAmostra, useSaveAmostra } from "@/features/amostras/useSaveAmostra";
+import { useSaveAmostra } from "@/features/amostras/useSaveAmostra";
 import { type Amostra, fetchAmostra, updateAmostra } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
-import { cn, getErrorMessage } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/utils";
 
 export function EditAmostraPage() {
 	const navigate = useNavigate();
@@ -46,36 +47,11 @@ export function EditAmostraPage() {
 	}, [loadError]);
 
 	const save = useSaveAmostra((input) => updateAmostra(amostraId, input));
-	const deleteMutation = useDeleteAmostra(amostraId);
 
-	if (isLoading) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<div className="flex items-center justify-center py-20 text-slate-400">
-					<LoaderCircleIcon className="animate-spin mr-3" />
-					Carregando amostra...
-				</div>
-			</Layout>
-		);
-	}
-
-	if (loadError || Number.isNaN(amostraId)) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<p className="py-8 text-center text-sm text-slate-500">
-					{Number.isNaN(amostraId) ? "ID de amostra inválido." : "Erro ao carregar amostra."}
-				</p>
-			</Layout>
-		);
-	}
-
-	if (!isLoading && !amostra) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<p className="py-8 text-center text-sm text-slate-500">Amostra não encontrada.</p>
-			</Layout>
-		);
-	}
+	if (isLoading) return <PageLoading label="Carregando amostra..." />;
+	if (Number.isNaN(amostraId)) return <PageMessage>ID de amostra inválido.</PageMessage>;
+	if (loadError) return <PageMessage>Erro ao carregar amostra.</PageMessage>;
+	if (!amostra) return <PageMessage>Amostra não encontrada.</PageMessage>;
 
 	return (
 		<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
@@ -97,24 +73,7 @@ export function EditAmostraPage() {
 								Verifique e corrija os dados extraídos pelo sistema antes de salvar.
 							</CardDescription>
 						</div>
-						<ConfirmDeleteDialog
-							trigger={
-								<button
-									type="button"
-									className={cn(
-										buttonVariants({ variant: "ghost", size: "icon-sm" }),
-										"text-red-400 hover:bg-red-950/60 hover:text-red-300",
-									)}
-									title="Deletar amostra"
-								>
-									<Trash2Icon />
-								</button>
-							}
-							title="Deletar amostra?"
-							description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
-							pending={deleteMutation.isPending}
-							onConfirm={() => deleteMutation.mutate()}
-						/>
+						<DeleteAmostraDialog amostraId={amostraId} />
 					</div>
 				</CardHeader>
 

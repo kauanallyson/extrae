@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
+import { PageLoading, PageMessage } from "@/components/PageStatus";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -85,23 +86,8 @@ export function AmostrasPage() {
 		}
 	}
 
-	if (isLoading) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<div className="flex justify-center py-20">
-					<LoaderCircleIcon className="h-6 w-6 animate-spin text-slate-400" />
-				</div>
-			</Layout>
-		);
-	}
-
-	if (error || !data) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<p className="py-8 text-center text-sm text-slate-500">Erro ao carregar amostras.</p>
-			</Layout>
-		);
-	}
+	if (isLoading) return <PageLoading />;
+	if (error || !data) return <PageMessage>Erro ao carregar amostras.</PageMessage>;
 
 	const amostras = data.pages.flatMap((page) => page.data);
 

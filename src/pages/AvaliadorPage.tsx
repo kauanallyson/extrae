@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LoaderCircleIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -8,6 +8,7 @@ import {
 } from "@/components/avaliadores/AvaliadorFormDialog";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { Layout } from "@/components/Layout";
+import { PageLoading, PageMessage } from "@/components/PageStatus";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Avaliador, deleteAvaliador, fetchAvaliadores } from "@/lib/api";
@@ -44,23 +45,8 @@ export function AvaliadorPage() {
 		if (error) toast.error(error.message ?? "Erro ao carregar avaliadores.");
 	}, [error]);
 
-	if (isLoading) {
-		return (
-			<Layout contentClassName="block max-w-4xl py-8 sm:py-10">
-				<div className="flex justify-center py-20">
-					<LoaderCircleIcon className="h-6 w-6 animate-spin text-slate-400" />
-				</div>
-			</Layout>
-		);
-	}
-
-	if (error || !avaliadores) {
-		return (
-			<Layout contentClassName="block max-w-4xl py-8 sm:py-10">
-				<p className="py-8 text-center text-sm text-slate-500">Erro ao carregar avaliadores.</p>
-			</Layout>
-		);
-	}
+	if (isLoading) return <PageLoading />;
+	if (error || !avaliadores) return <PageMessage>Erro ao carregar avaliadores.</PageMessage>;
 
 	return (
 		<Layout contentClassName="block max-w-4xl py-8 sm:py-10">

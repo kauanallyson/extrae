@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, LoaderCircleIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { DeleteAmostraDialog } from "@/components/amostras/DeleteAmostraDialog";
 import { Layout } from "@/components/Layout";
+import { PageLoading, PageMessage } from "@/components/PageStatus";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,7 +15,6 @@ import {
 	incidenciaServicos,
 } from "@/features/amostras/fields";
 import { formatTextField } from "@/features/amostras/transforms";
-import { useDeleteAmostra } from "@/features/amostras/useSaveAmostra";
 import { type Amostra, type Avaliador, fetchAmostra, fetchAvaliadores } from "@/lib/api";
 import { formatDecimal } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
@@ -92,32 +92,13 @@ export function AmostraDetailsPage() {
 
 	const avaliador = avaliadores?.find((a) => a.id === amostra?.avaliadorId);
 
-	const deleteMutation = useDeleteAmostra(amostraId);
-
 	useEffect(() => {
 		if (error) toast.error(error.message ?? "Erro ao carregar amostra.");
 	}, [error]);
 
-	if (isLoading) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<div className="flex items-center justify-center py-20 text-slate-400">
-					<LoaderCircleIcon className="animate-spin mr-3" />
-					Carregando amostra...
-				</div>
-			</Layout>
-		);
-	}
-
-	if (error || !amostra) {
-		return (
-			<Layout contentClassName="block max-w-6xl py-8 sm:py-10">
-				<p className="py-8 text-center text-sm text-slate-500">
-					{error ? "Erro ao carregar amostra." : "Amostra não encontrada."}
-				</p>
-			</Layout>
-		);
-	}
+	if (isLoading) return <PageLoading label="Carregando amostra..." />;
+	if (error) return <PageMessage>Erro ao carregar amostra.</PageMessage>;
+	if (!amostra) return <PageMessage>Amostra não encontrada.</PageMessage>;
 
 	const telefoneFormatted =
 		amostra.ddd && amostra.telefone ? `(${amostra.ddd}) ${amostra.telefone}` : "-";
@@ -157,24 +138,7 @@ export function AmostraDetailsPage() {
 								<PencilIcon />
 								Editar
 							</Link>
-							<ConfirmDeleteDialog
-								trigger={
-									<button
-										type="button"
-										className={cn(
-											buttonVariants({ variant: "ghost", size: "icon-sm" }),
-											"text-red-400 hover:bg-red-950/60 hover:text-red-300",
-										)}
-										title="Deletar amostra"
-									>
-										<Trash2Icon />
-									</button>
-								}
-								title="Deletar amostra?"
-								description="Essa ação não pode ser desfeita. A amostra será permanentemente removida."
-								pending={deleteMutation.isPending}
-								onConfirm={() => deleteMutation.mutate()}
-							/>
+							<DeleteAmostraDialog amostraId={amostraId} />
 						</div>
 					</div>
 				</CardHeader>
