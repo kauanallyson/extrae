@@ -210,9 +210,7 @@ function Indicador({
 					>
 						<InfoIcon className="h-3.5 w-3.5" />
 					</TooltipTrigger>
-					<TooltipContent className="dark border border-slate-600 bg-slate-800 text-slate-100">
-						{descricao}
-					</TooltipContent>
+					<TooltipContent>{descricao}</TooltipContent>
 				</Tooltip>
 			</div>
 			<p className="mt-1 text-lg font-semibold text-slate-100">{valor}</p>
