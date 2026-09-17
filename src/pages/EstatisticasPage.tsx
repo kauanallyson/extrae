@@ -68,7 +68,7 @@ export function EstatisticasPage() {
 						</p>
 					) : (
 						<div className="flex flex-col gap-8">
-							<div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+							<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 								<Indicador
 									label="Amostras"
 									valor={String(data.total)}
@@ -93,6 +93,41 @@ export function EstatisticasPage() {
 									label="Outliers"
 									valor={String(data.outlierIds.length)}
 									geral={geral && String(geral.outlierIds.length)}
+								/>
+								<Indicador
+									label="IQR"
+									valor={data.iqr != null ? formatBrl(data.iqr) : "-"}
+									geral={geral?.iqr != null ? formatBrl(geral.iqr) : undefined}
+								/>
+								<Indicador
+									label="Mínimo"
+									valor={data.min != null ? formatBrl(data.min) : "-"}
+									geral={geral?.min != null ? formatBrl(geral.min) : undefined}
+								/>
+								<Indicador
+									label="Limite inferior"
+									valor={data.lowerFence != null ? formatBrl(data.lowerFence) : "-"}
+									geral={geral?.lowerFence != null ? formatBrl(geral.lowerFence) : undefined}
+								/>
+								<Indicador
+									label="Q1"
+									valor={data.q1 != null ? formatBrl(data.q1) : "-"}
+									geral={geral?.q1 != null ? formatBrl(geral.q1) : undefined}
+								/>
+								<Indicador
+									label="Q3"
+									valor={data.q3 != null ? formatBrl(data.q3) : "-"}
+									geral={geral?.q3 != null ? formatBrl(geral.q3) : undefined}
+								/>
+								<Indicador
+									label="Limite superior"
+									valor={data.upperFence != null ? formatBrl(data.upperFence) : "-"}
+									geral={geral?.upperFence != null ? formatBrl(geral.upperFence) : undefined}
+								/>
+								<Indicador
+									label="Máximo"
+									valor={data.max != null ? formatBrl(data.max) : "-"}
+									geral={geral?.max != null ? formatBrl(geral.max) : undefined}
 								/>
 							</div>
 
