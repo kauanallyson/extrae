@@ -3,6 +3,7 @@ import { LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { DistribuicaoChart } from "@/components/estatisticas/DistribuicaoChart";
+import { HistogramaChart } from "@/components/estatisticas/HistogramaChart";
 import { Indicador } from "@/components/estatisticas/Indicador";
 import { Layout } from "@/components/layout/Layout";
 import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilterCombobox";
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAmostrasFilters } from "@/features/amostras/filters";
 import { useOutliers } from "@/features/estatisticas/useOutliers";
+import { useValoresUnitarios } from "@/features/estatisticas/useValoresUnitarios";
 import { type AmostrasStats, fetchAmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
@@ -33,6 +35,9 @@ export function EstatisticasPage() {
 
 	const outliers = useOutliers(data?.outlierIds ?? []);
 	const outliersGeral = useOutliers(geral?.outlierIds ?? []);
+
+	const valores = useValoresUnitarios(filters);
+	const valoresGeral = useValoresUnitarios({}, Boolean(municipio));
 
 	useEffect(() => {
 		if (error) toast.error(error.message ?? "Erro ao carregar estatísticas.");
@@ -164,6 +169,30 @@ export function EstatisticasPage() {
 											: [{ nome: titulo, stats: data, outliers }]
 									}
 								/>
+							</section>
+
+							<section className="flex flex-col gap-2">
+								<h2 className="text-sm font-medium text-slate-300">Histograma do valor unitário</h2>
+								<p className="text-xs text-slate-500">
+									Cada barra conta as amostras dentro de uma faixa de valor; os riscos acima marcam
+									cada amostra individualmente.
+								</p>
+								{valores.isLoading || (municipio && valoresGeral.isLoading) ? (
+									<div className="flex justify-center py-12">
+										<LoaderCircleIcon className="h-6 w-6 animate-spin text-slate-400" />
+									</div>
+								) : (
+									<HistogramaChart
+										series={
+											municipio
+												? [
+														{ nome: titulo, valores: valores.data ?? [] },
+														{ nome: "Ceará (geral)", valores: valoresGeral.data ?? [] },
+													]
+												: [{ nome: titulo, valores: valores.data ?? [] }]
+										}
+									/>
+								)}
 							</section>
 						</div>
 					)}
