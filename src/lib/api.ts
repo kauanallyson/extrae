@@ -313,7 +313,7 @@ export type Municipio = {
 
 // id e totalAmostras chegam como string ou number, conforme o schema da rota
 export async function fetchMunicipios(): Promise<Municipio[]> {
-	const municipios = await requestJson<Municipio[]>("/municipios/", "Erro ao carregar municípios");
+	const municipios = await requestJson<Municipio[]>("/municipios", "Erro ao carregar municípios");
 	return municipios.map((municipio) => ({
 		...municipio,
 		id: Number(municipio.id),
@@ -322,7 +322,7 @@ export async function fetchMunicipios(): Promise<Municipio[]> {
 }
 
 export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostra> {
-	return requestJson("/amostras/", "Erro ao criar a amostra", { method: "POST", body: amostra });
+	return requestJson("/amostras", "Erro ao criar a amostra", { method: "POST", body: amostra });
 }
 
 export async function fetchAmostra(id: number): Promise<Amostra> {
