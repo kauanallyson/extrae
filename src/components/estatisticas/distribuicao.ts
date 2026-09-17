@@ -43,8 +43,8 @@ export function distribuicaoLinhas(series: Serie[]): {
 	if (linhas.length === 0) return { linhas, dominio: [0, 0] };
 
 	// O eixo cobre só a faixa dos dados — começar em zero espremeria as caixas num canto.
+	// As bordas caem na centena redonda mais próxima fora dos dados.
 	const menor = Math.min(...linhas.map((linha) => linha.stats.min ?? 0));
 	const maior = Math.max(...linhas.map((linha) => linha.stats.max ?? 0));
-	const folga = (maior - menor || maior * 0.1 || 1) * 0.08;
-	return { linhas, dominio: [menor - folga, maior + folga] };
+	return { linhas, dominio: [Math.floor(menor / 100) * 100, Math.ceil(maior / 100) * 100] };
 }
