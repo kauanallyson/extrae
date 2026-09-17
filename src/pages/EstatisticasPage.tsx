@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -9,7 +9,7 @@ import { MunicipioFilterCombobox } from "@/components/municipios/MunicipioFilter
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAmostrasFilters } from "@/features/amostras/filters";
-import { type AmostrasStats, fetchAmostrasStats } from "@/lib/api";
+import { type AmostrasStats, fetchAmostra, fetchAmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -29,6 +29,9 @@ export function EstatisticasPage() {
 		enabled: Boolean(municipio),
 	});
 	const geral = municipio ? geralQuery.data : undefined;
+
+	const outliers = useOutliers(data?.outlierIds ?? []);
+	const outliersGeral = useOutliers(geral?.outlierIds ?? []);
 
 	useEffect(() => {
 		if (error) toast.error(error.message ?? "Erro ao carregar estatísticas.");
@@ -105,10 +108,10 @@ export function EstatisticasPage() {
 									series={
 										geral
 											? [
-													{ nome: titulo, stats: data },
-													{ nome: "Ceará (geral)", stats: geral },
+													{ nome: titulo, stats: data, outliers },
+													{ nome: "Ceará (geral)", stats: geral, outliers: outliersGeral },
 												]
-											: [{ nome: titulo, stats: data }]
+											: [{ nome: titulo, stats: data, outliers }]
 									}
 								/>
 							</section>
@@ -137,6 +140,23 @@ export function EstatisticasPage() {
 				</CardContent>
 			</Card>
 		</Layout>
+	);
+}
+
+// A rota de estatísticas devolve só os ids fora dos limites; o valor de cada um
+// vem da própria amostra.
+function useOutliers(ids: number[]) {
+	const queries = useQueries({
+		queries: ids.map((id) => ({
+			queryKey: queryKeys.amostra(id),
+			queryFn: () => fetchAmostra(id),
+			staleTime: 5 * 60 * 1000,
+		})),
+	});
+	return queries.flatMap((query) =>
+		query.data?.valorUnitario != null
+			? [{ id: query.data.id, valor: query.data.valorUnitario }]
+			: [],
 	);
 }
 

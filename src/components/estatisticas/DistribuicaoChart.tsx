@@ -73,6 +73,19 @@ function Caixa({ x = 0, y = 0, width = 0, height = 0, payload }: CaixaProps) {
 			<line x1={maxX} x2={maxX} y1={meioY - capa} y2={meioY + capa} {...bigode} />
 			<rect x={x} y={y} width={width} height={height} rx={4} fill={payload.cor} />
 			<line x1={mediana} x2={mediana} y1={y} y2={y + height} stroke="var(--card)" strokeWidth={2} />
+			{payload.outliers.map((outlier) => (
+				<circle
+					key={outlier.id}
+					cx={x + (outlier.valor - q1) * pxPorUnidade}
+					cy={meioY}
+					r={4}
+					fill="var(--card)"
+					stroke={payload.cor}
+					strokeWidth={2}
+				>
+					<title>{`#${outlier.id}: ${formatBrl(outlier.valor)}`}</title>
+				</circle>
+			))}
 		</g>
 	);
 }
