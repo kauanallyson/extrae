@@ -1,8 +1,9 @@
 import { getToken } from "@/lib/auth";
 
-const BASE_URL =
-	import.meta.env.VITE_API_BASE_URL ??
-	(import.meta.env.PROD ? "https://extrae.duckdns.org" : "/api");
+// Sempre same-origin: em dev o proxy do Vite e no Vercel o rewrite do vercel.json
+// encaminham /api para o servidor. Chamar o servidor direto barra os previews do
+// Vercel no CORS, que só libera o domínio de produção.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 // Quem monta a app decide o que fazer quando a sessão expira (limpar cache,
 // navegar para o login). O transporte só avisa.
