@@ -22,11 +22,13 @@ export function EstatisticasPage() {
 		queryFn: () => fetchAmostrasStats(filters),
 	});
 
-	const { data: geral } = useQuery<AmostrasStats, Error>({
+	// Sem município a consulta principal já é o geral; a comparação só faz sentido com filtro.
+	const geralQuery = useQuery<AmostrasStats, Error>({
 		queryKey: queryKeys.stats({}),
 		queryFn: () => fetchAmostrasStats(),
 		enabled: Boolean(municipio),
 	});
+	const geral = municipio ? geralQuery.data : undefined;
 
 	useEffect(() => {
 		if (error) toast.error(error.message ?? "Erro ao carregar estatísticas.");

@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, ErrorBar, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import type { AmostrasStats } from "@/lib/api";
 import { formatBrl } from "@/lib/format";
@@ -42,15 +42,7 @@ export function DistribuicaoChart({ series }: { series: Serie[] }) {
 						return linha ? <ResumoTooltip nome={linha.nome} stats={linha.stats} /> : null;
 					}}
 				/>
-				<Bar dataKey="caixa" barSize={40} shape={<Caixa />} isAnimationActive={false}>
-					<ErrorBar
-						dataKey="bigodes"
-						direction="x"
-						width={10}
-						strokeWidth={2}
-						stroke="var(--muted-foreground)"
-					/>
-				</Bar>
+				<Bar dataKey="caixa" barSize={40} shape={<Caixa />} isAnimationActive={false} />
 			</BarChart>
 		</ChartContainer>
 	);
@@ -58,15 +50,27 @@ export function DistribuicaoChart({ series }: { series: Serie[] }) {
 
 type CaixaProps = { x?: number; y?: number; width?: number; height?: number; payload?: Linha };
 
+// A escala é linear: a caixa vai de x (Q1) a x + width (Q3), então qualquer valor
+// se converte em pixel a partir dessa proporção. Os bigodes param na borda da
+// caixa em vez de atravessá-la; só a mediana é desenhada dentro.
 function Caixa({ x = 0, y = 0, width = 0, height = 0, payload }: CaixaProps) {
 	if (!payload) return null;
 	const [q1, q3] = payload.caixa;
-	// A escala é linear, então a mediana cai proporcionalmente entre as bordas da caixa.
-	const fracao = q3 > q1 ? (payload.mediana - q1) / (q3 - q1) : 0.5;
-	const mediana = x + width * fracao;
+	const [aoMin, aoMax] = payload.bigodes;
+	const pxPorUnidade = q3 > q1 ? width / (q3 - q1) : 0;
+	const mediana = q3 > q1 ? x + (payload.mediana - q1) * pxPorUnidade : x + width / 2;
+	const minX = x + width - aoMin * pxPorUnidade;
+	const maxX = x + width + aoMax * pxPorUnidade;
+	const meioY = y + height / 2;
+	const capa = height / 3;
+	const bigode = { stroke: "var(--muted-foreground)", strokeWidth: 2 };
 
 	return (
 		<g>
+			<line x1={minX} x2={x} y1={meioY} y2={meioY} {...bigode} />
+			<line x1={minX} x2={minX} y1={meioY - capa} y2={meioY + capa} {...bigode} />
+			<line x1={x + width} x2={maxX} y1={meioY} y2={meioY} {...bigode} />
+			<line x1={maxX} x2={maxX} y1={meioY - capa} y2={meioY + capa} {...bigode} />
 			<rect x={x} y={y} width={width} height={height} rx={4} fill={payload.cor} />
 			<line x1={mediana} x2={mediana} y1={y} y2={y + height} stroke="var(--card)" strokeWidth={2} />
 		</g>
