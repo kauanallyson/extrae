@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatBrl } from "@/lib/format";
 import { distribuicaoLinhas, type Linha, type Serie } from "./distribuicao";
 
@@ -14,30 +15,32 @@ export function DistribuicaoChart({ series }: { series: Serie[] }) {
 	if (linhas.length === 0) return null;
 
 	return (
-		<ChartContainer
-			config={chartConfig}
-			className="aspect-auto w-full"
-			style={{ height: 72 + linhas.length * 64 }}
-		>
-			<BarChart
-				accessibilityLayer
-				data={linhas}
-				layout="vertical"
-				margin={{ top: 8, right: 16, bottom: 8 }}
+		<TooltipProvider>
+			<ChartContainer
+				config={chartConfig}
+				className="aspect-auto w-full"
+				style={{ height: 72 + linhas.length * 64 }}
 			>
-				<CartesianGrid horizontal={false} />
-				<XAxis
-					type="number"
-					domain={dominio}
-					tickCount={5}
-					tickLine={false}
-					axisLine={false}
-					tickFormatter={(value: number) => formatBrl(value)}
-				/>
-				<YAxis type="category" dataKey="nome" width={120} tickLine={false} axisLine={false} />
-				<Bar dataKey="caixa" barSize={40} shape={<Caixa />} isAnimationActive={false} />
-			</BarChart>
-		</ChartContainer>
+				<BarChart
+					accessibilityLayer
+					data={linhas}
+					layout="vertical"
+					margin={{ top: 8, right: 16, bottom: 8 }}
+				>
+					<CartesianGrid horizontal={false} />
+					<XAxis
+						type="number"
+						domain={dominio}
+						tickCount={5}
+						tickLine={false}
+						axisLine={false}
+						tickFormatter={(value: number) => formatBrl(value)}
+					/>
+					<YAxis type="category" dataKey="nome" width={120} tickLine={false} axisLine={false} />
+					<Bar dataKey="caixa" barSize={40} shape={<Caixa />} isAnimationActive={false} />
+				</BarChart>
+			</ChartContainer>
+		</TooltipProvider>
 	);
 }
 
@@ -70,25 +73,31 @@ function Caixa({ x = 0, y = 0, width = 0, height = 0, payload }: CaixaProps) {
 			{payload.outliers.map((outlier) => {
 				const href = `/amostras/${outlier.id}`;
 				return (
-					<a
-						key={outlier.id}
-						href={href}
-						onClick={(event) => {
-							event.preventDefault();
-							navigate(href);
-						}}
-						className="cursor-pointer"
-					>
-						<circle
-							cx={x + (outlier.valor - q1) * pxPorUnidade}
-							cy={meioY}
-							r={4}
-							fill="var(--card)"
-							stroke={payload.cor}
-							strokeWidth={2}
-						/>
-						<title>{`#${outlier.id}: ${formatBrl(outlier.valor)}`}</title>
-					</a>
+					<Tooltip key={outlier.id}>
+						<TooltipTrigger
+							render={
+								<a
+									href={href}
+									aria-label={`Amostra #${outlier.id}`}
+									onClick={(event) => {
+										event.preventDefault();
+										navigate(href);
+									}}
+									className="cursor-pointer"
+								/>
+							}
+						>
+							<circle
+								cx={x + (outlier.valor - q1) * pxPorUnidade}
+								cy={meioY}
+								r={4}
+								fill="var(--card)"
+								stroke={payload.cor}
+								strokeWidth={2}
+							/>
+						</TooltipTrigger>
+						<TooltipContent>{`Amostra #${outlier.id}: ${formatBrl(outlier.valor)}`}</TooltipContent>
+					</Tooltip>
 				);
 			})}
 		</g>
