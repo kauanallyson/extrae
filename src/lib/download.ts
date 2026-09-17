@@ -1,6 +1,8 @@
-import type { DownloadResult } from "@/lib/api";
+import type { DownloadFile } from "@/lib/api";
 
-export function triggerDownload({ blobUrl, filename }: DownloadResult) {
+// Cria a URL do blob, dispara o download e revoga a URL no mesmo lugar.
+export function saveFile({ blob, filename }: DownloadFile) {
+	const blobUrl = URL.createObjectURL(blob);
 	const a = document.createElement("a");
 	a.href = blobUrl;
 	a.download = filename;

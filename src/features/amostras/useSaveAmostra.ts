@@ -4,10 +4,10 @@ import { toast } from "sonner";
 import {
 	type Amostra,
 	type CreateAmostraInput,
-	type DownloadResult,
+	type DownloadFile,
 	downloadExcelRae,
 } from "@/lib/api";
-import { triggerDownload } from "@/lib/download";
+import { saveFile } from "@/lib/download";
 import { getErrorMessage } from "@/lib/utils";
 import type { AmostraFormValues } from "./fields";
 import { parseFormValues } from "./transforms";
@@ -28,7 +28,7 @@ export function useGerarRaePreference(storageKey: string) {
 
 export type SaveAmostraResult = {
 	amostra: Amostra;
-	download?: DownloadResult;
+	download?: DownloadFile;
 	downloadError?: Error;
 };
 
@@ -57,7 +57,7 @@ export function useSaveAmostra(
 			}
 		},
 		onSuccess: (result) => {
-			if (result.download) triggerDownload(result.download);
+			if (result.download) saveFile(result.download);
 			if (result.downloadError) {
 				toast.warning(`Amostra ${result.amostra.id} salva, mas o download da planilha RAE falhou.`);
 			} else if (result.download) {

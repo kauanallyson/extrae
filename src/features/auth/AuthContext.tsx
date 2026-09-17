@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, type ReactNode, useContext, useState } from "react";
-import { type AuthUser, login as loginRequest, me } from "@/lib/api";
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { type AuthUser, login as loginRequest, me, setOnUnauthorized } from "@/lib/api";
 import { clearToken, getToken, setToken } from "@/lib/auth";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -13,8 +14,10 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Precisa estar dentro do router: sair da sessão (logout ou 401) navega para o login.
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 	const [hasToken, setHasToken] = useState(() => getToken() !== null);
 
 	const { data: user, isLoading } = useQuery<AuthUser>({
@@ -34,9 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	function logout() {
 		clearToken();
 		setHasToken(false);
-		queryClient.removeQueries({ queryKey: queryKeys.me });
-		window.location.href = "/login";
+		queryClient.clear();
+		navigate("/login", { replace: true });
 	}
+
+	useEffect(() => {
+		setOnUnauthorized(logout);
+		return () => setOnUnauthorized(() => {});
+	});
 
 	return (
 		<AuthContext.Provider

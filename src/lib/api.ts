@@ -1,18 +1,92 @@
-import { clearToken, getToken } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
 
 const BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ??
 	(import.meta.env.PROD ? "https://extrae.duckdns.org" : "/api");
 
-function authHeaders(): HeadersInit {
-	const token = getToken();
-	return token ? { Authorization: `Bearer ${token}` } : {};
+// Quem monta a app decide o que fazer quando a sessão expira (limpar cache,
+// navegar para o login). O transporte só avisa.
+let onUnauthorized: () => void = () => {};
+
+export function setOnUnauthorized(handler: () => void): void {
+	onUnauthorized = handler;
 }
 
-function handleUnauthorized(res: Response): void {
-	if (res.status !== 401) return;
-	clearToken();
-	window.location.href = "/login";
+async function readErrorMessage(res: Response): Promise<string> {
+	try {
+		const body = await res.json();
+		return body?.message ?? res.statusText;
+	} catch {
+		return (await res.text().catch(() => res.statusText)) || res.statusText;
+	}
+}
+
+type RequestOptions = {
+	method?: "GET" | "POST" | "PUT" | "DELETE";
+	body?: unknown;
+	auth?: boolean;
+};
+
+// Único ponto de saída para o servidor: cabeçalho de auth, checagem de ok,
+// mensagem de erro e política de 401 vivem aqui.
+async function request(
+	path: string,
+	errorPrefix: string,
+	{ method = "GET", body, auth = true }: RequestOptions = {},
+): Promise<Response> {
+	const headers: Record<string, string> = {};
+	const token = auth ? getToken() : null;
+	if (token) headers.Authorization = `Bearer ${token}`;
+
+	let payload: BodyInit | undefined;
+	if (body instanceof FormData) {
+		payload = body;
+	} else if (body !== undefined) {
+		headers["Content-Type"] = "application/json";
+		payload = JSON.stringify(body);
+	}
+
+	const res = await fetch(`${BASE_URL}${path}`, { method, headers, body: payload });
+	if (res.ok) return res;
+	if (res.status === 401) onUnauthorized();
+	throw new Error(`${errorPrefix}: ${await readErrorMessage(res)}`);
+}
+
+async function requestJson<T>(path: string, errorPrefix: string, options?: RequestOptions) {
+	const res = await request(path, errorPrefix, options);
+	return res.json() as Promise<T>;
+}
+
+function contentDispositionFilename(res: Response, fallback: string): string {
+	const disposition = res.headers.get("Content-Disposition");
+	if (!disposition) return fallback;
+
+	// RFC 5987 encoded filename (filename*=UTF-8''...) takes precedence
+	const encoded = disposition.match(/filename\*\s*=\s*utf-8''([^;]+)/i);
+	if (encoded) {
+		try {
+			return decodeURIComponent(encoded[1].trim());
+		} catch {
+			// fall back to the plain filename parameter
+		}
+	}
+
+	const plain = disposition.match(/filename\s*=\s*(?:"([^"]*)"|([^;\s]+))/);
+	return plain?.[1] || plain?.[2] || fallback;
+}
+
+async function requestFile(
+	path: string,
+	errorPrefix: string,
+	fallbackFilename: string,
+): Promise<DownloadFile> {
+	const res = await request(path, errorPrefix);
+	return { blob: await res.blob(), filename: contentDispositionFilename(res, fallbackFilename) };
+}
+
+function withQuery(path: string, query: URLSearchParams): string {
+	const qs = query.toString();
+	return qs ? `${path}?${qs}` : path;
 }
 
 export type AuthUser = {
@@ -84,7 +158,7 @@ export type CreateAmostraInput = Omit<Amostra, "id" | "createdAt" | "updatedAt">
 
 export type CreateAvaliadorInput = Omit<Avaliador, "id">;
 
-export type DownloadResult = { blobUrl: string; filename: string };
+export type DownloadFile = { blob: Blob; filename: string };
 
 export type AmostrasPage = {
 	data: Amostra[];
@@ -102,45 +176,6 @@ export type AmostrasFilters = {
 	valorTerrenoMax?: string;
 };
 
-async function readErrorMessage(res: Response): Promise<string> {
-	try {
-		const body = await res.json();
-		return body?.message ?? res.statusText;
-	} catch {
-		return (await res.text().catch(() => res.statusText)) || res.statusText;
-	}
-}
-
-async function assertOk(res: Response, errorPrefix: string): Promise<void> {
-	if (res.ok) return;
-	handleUnauthorized(res);
-	throw new Error(`${errorPrefix}: ${await readErrorMessage(res)}`);
-}
-
-function contentDispositionFilename(res: Response, fallback: string): string {
-	const disposition = res.headers.get("Content-Disposition");
-	if (!disposition) return fallback;
-
-	// RFC 5987 encoded filename (filename*=UTF-8''...) takes precedence
-	const encoded = disposition.match(/filename\*\s*=\s*utf-8''([^;]+)/i);
-	if (encoded) {
-		try {
-			return decodeURIComponent(encoded[1].trim());
-		} catch {
-			// fall back to the plain filename parameter
-		}
-	}
-
-	const plain = disposition.match(/filename\s*=\s*(?:"([^"]*)"|([^;\s]+))/);
-	return plain?.[1] || plain?.[2] || fallback;
-}
-
-async function toDownloadResult(res: Response, fallbackFilename: string): Promise<DownloadResult> {
-	const filename = contentDispositionFilename(res, fallbackFilename);
-	const blob = await res.blob();
-	return { blobUrl: URL.createObjectURL(blob), filename };
-}
-
 const upperFilterKeys = new Set<keyof AmostrasFilters>(["municipio", "uf"]);
 
 function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
@@ -155,56 +190,33 @@ function amostrasFilterParams(filters: AmostrasFilters): URLSearchParams {
 }
 
 export async function login(input: LoginInput): Promise<{ token: string }> {
-	const res = await fetch(`${BASE_URL}/auth/login`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(input),
-	});
-	await assertOk(res, "Erro ao entrar");
-	return res.json();
+	return requestJson("/auth/login", "Erro ao entrar", { method: "POST", body: input, auth: false });
 }
 
 export async function me(): Promise<AuthUser> {
-	const res = await fetch(`${BASE_URL}/auth/me`, { headers: authHeaders() });
-	await assertOk(res, "Erro ao validar sessão");
-	return res.json();
+	return requestJson("/auth/me", "Erro ao validar sessão");
 }
 
 export async function fetchAvaliadores(): Promise<Avaliador[]> {
-	const res = await fetch(`${BASE_URL}/avaliadores`, { headers: authHeaders() });
-	await assertOk(res, "Erro ao buscar avaliadores");
-	return res.json();
+	return requestJson("/avaliadores", "Erro ao buscar avaliadores");
 }
 
 export async function createAvaliador(input: CreateAvaliadorInput): Promise<Avaliador> {
-	const res = await fetch(`${BASE_URL}/avaliadores`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...authHeaders() },
-		body: JSON.stringify(input),
-	});
-	await assertOk(res, "Erro ao criar avaliador");
-	return res.json();
+	return requestJson("/avaliadores", "Erro ao criar avaliador", { method: "POST", body: input });
 }
 
 export async function updateAvaliador(
 	id: number,
 	input: Partial<CreateAvaliadorInput>,
 ): Promise<Avaliador> {
-	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
+	return requestJson(`/avaliadores/${id}`, "Erro ao atualizar avaliador", {
 		method: "PUT",
-		headers: { "Content-Type": "application/json", ...authHeaders() },
-		body: JSON.stringify(input),
+		body: input,
 	});
-	await assertOk(res, "Erro ao atualizar avaliador");
-	return res.json();
 }
 
 export async function deleteAvaliador(id: number): Promise<void> {
-	const res = await fetch(`${BASE_URL}/avaliadores/${id}`, {
-		method: "DELETE",
-		headers: authHeaders(),
-	});
-	await assertOk(res, "Erro ao deletar avaliador");
+	await request(`/avaliadores/${id}`, "Erro ao deletar avaliador", { method: "DELETE" });
 }
 
 export type AmostraIaResult = CreateAmostraInput & { camposNaoEncontrados: string[] };
@@ -212,35 +224,25 @@ export type AmostraIaResult = CreateAmostraInput & { camposNaoEncontrados: strin
 export async function gerarAmostraIa(pdf: File): Promise<AmostraIaResult> {
 	const form = new FormData();
 	form.append("pdf", pdf);
-
-	const res = await fetch(`${BASE_URL}/amostras/ia`, {
-		method: "POST",
-		headers: authHeaders(),
-		body: form,
-	});
-	await assertOk(res, "Geração da amostra");
-	return res.json() as Promise<AmostraIaResult>;
+	return requestJson("/amostras/ia", "Geração da amostra", { method: "POST", body: form });
 }
 
-export async function downloadExcelRae(amostraId: number): Promise<DownloadResult> {
-	const res = await fetch(`${BASE_URL}/amostras/${amostraId}/rae`, { headers: authHeaders() });
-	await assertOk(res, "Etapa 3 - Download do Excel");
-	return toDownloadResult(res, `dados-rae-${amostraId}.xlsx`);
+export async function downloadExcelRae(amostraId: number): Promise<DownloadFile> {
+	return requestFile(
+		`/amostras/${amostraId}/rae`,
+		"Etapa 3 - Download do Excel",
+		`dados-rae-${amostraId}.xlsx`,
+	);
 }
 
 export async function downloadAmostrasPlanilha(
 	filters: AmostrasFilters = {},
-): Promise<DownloadResult> {
-	const query = amostrasFilterParams(filters).toString();
-	const res = await fetch(`${BASE_URL}/amostras/planilha${query ? `?${query}` : ""}`, {
-		headers: authHeaders(),
-	});
-
-	if (!res.ok) {
-		handleUnauthorized(res);
-		throw new Error(await readErrorMessage(res));
-	}
-	return toDownloadResult(res, "amostras.xlsx");
+): Promise<DownloadFile> {
+	return requestFile(
+		withQuery("/amostras/planilha", amostrasFilterParams(filters)),
+		"Erro ao exportar planilha",
+		"amostras.xlsx",
+	);
 }
 
 export type AmostraTipo = "imovel" | "terreno";
@@ -252,14 +254,7 @@ export async function fetchAmostras(
 	if (params.cursor != null) query.set("cursor", String(params.cursor));
 	if (params.limit != null) query.set("limit", String(params.limit));
 	if (params.tipo != null) query.set("tipo", params.tipo);
-	const qs = query.toString();
-
-	const res = await fetch(`${BASE_URL}/amostras${qs ? `?${qs}` : ""}`, { headers: authHeaders() });
-	if (!res.ok) {
-		handleUnauthorized(res);
-		throw new Error(`Erro ao carregar as amostras: ${await readErrorMessage(res)}`);
-	}
-	return res.json();
+	return requestJson(withQuery("/amostras", query), "Erro ao carregar as amostras");
 }
 
 export type AmostrasStats = {
@@ -277,23 +272,36 @@ export type AmostrasStats = {
 	outlierIds: number[];
 };
 
-// total e outlierIds chegam como string ou number, conforme o schema da rota
+const statsNumberKeys = [
+	"min",
+	"max",
+	"mean",
+	"median",
+	"q1",
+	"q3",
+	"iqr",
+	"stdDev",
+	"lowerFence",
+	"upperFence",
+] as const;
+
+// Os números chegam como string ou number, conforme o schema da rota; normaliza tudo aqui.
 export async function fetchAmostrasStats(municipio?: string): Promise<AmostrasStats> {
 	const query = new URLSearchParams();
 	const trimmed = municipio?.trim();
 	if (trimmed) query.set("municipio", trimmed.toUpperCase());
-	const qs = query.toString();
 
-	const res = await fetch(`${BASE_URL}/amostras/stats${qs ? `?${qs}` : ""}`, {
-		headers: authHeaders(),
-	});
-	await assertOk(res, "Erro ao carregar estatísticas");
-
-	const stats = await res.json();
+	const stats = await requestJson<Record<string, unknown>>(
+		withQuery("/amostras/stats", query),
+		"Erro ao carregar estatísticas",
+	);
+	const numbers = Object.fromEntries(
+		statsNumberKeys.map((key) => [key, stats[key] == null ? null : Number(stats[key])]),
+	) as Pick<AmostrasStats, (typeof statsNumberKeys)[number]>;
 	return {
-		...stats,
+		...numbers,
 		total: Number(stats.total),
-		outlierIds: (stats.outlierIds ?? []).map(Number),
+		outlierIds: ((stats.outlierIds as unknown[]) ?? []).map(Number),
 	};
 }
 
@@ -306,11 +314,8 @@ export type Municipio = {
 
 // id e totalAmostras chegam como string ou number, conforme o schema da rota
 export async function fetchMunicipios(): Promise<Municipio[]> {
-	const res = await fetch(`${BASE_URL}/municipios/`, { headers: authHeaders() });
-	await assertOk(res, "Erro ao carregar municípios");
-
-	const municipios = await res.json();
-	return municipios.map((municipio: Municipio) => ({
+	const municipios = await requestJson<Municipio[]>("/municipios/", "Erro ao carregar municípios");
+	return municipios.map((municipio) => ({
 		...municipio,
 		id: Number(municipio.id),
 		totalAmostras: Number(municipio.totalAmostras),
@@ -318,35 +323,20 @@ export async function fetchMunicipios(): Promise<Municipio[]> {
 }
 
 export async function createAmostra(amostra: CreateAmostraInput): Promise<Amostra> {
-	const res = await fetch(`${BASE_URL}/amostras/`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...authHeaders() },
-		body: JSON.stringify(amostra),
-	});
-	await assertOk(res, "Erro ao criar a amostra");
-	return res.json();
+	return requestJson("/amostras/", "Erro ao criar a amostra", { method: "POST", body: amostra });
 }
 
 export async function fetchAmostra(id: number): Promise<Amostra> {
-	const res = await fetch(`${BASE_URL}/amostras/${id}`, { headers: authHeaders() });
-	await assertOk(res, "Erro ao carregar amostra");
-	return res.json();
+	return requestJson(`/amostras/${id}`, "Erro ao carregar amostra");
 }
 
 export async function updateAmostra(id: number, amostra: CreateAmostraInput): Promise<Amostra> {
-	const res = await fetch(`${BASE_URL}/amostras/${id}`, {
+	return requestJson(`/amostras/${id}`, "Erro ao atualizar amostra", {
 		method: "PUT",
-		headers: { "Content-Type": "application/json", ...authHeaders() },
-		body: JSON.stringify(amostra),
+		body: amostra,
 	});
-	await assertOk(res, "Erro ao atualizar amostra");
-	return res.json();
 }
 
 export async function deleteAmostra(id: number): Promise<void> {
-	const res = await fetch(`${BASE_URL}/amostras/${id}`, {
-		method: "DELETE",
-		headers: authHeaders(),
-	});
-	await assertOk(res, "Erro ao deletar amostra");
+	await request(`/amostras/${id}`, "Erro ao deletar amostra", { method: "DELETE" });
 }

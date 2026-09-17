@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/features/auth/AuthContext";
@@ -13,39 +13,48 @@ import { NewAmostraPage } from "./pages/NewAmostraPage";
 
 const router = createBrowserRouter([
 	{
-		path: "/login",
-		element: <LoginPage />,
-	},
-	{
-		element: <RequireAuth />,
+		element: (
+			<AuthProvider>
+				<Outlet />
+			</AuthProvider>
+		),
 		children: [
 			{
-				path: "/",
-				element: <HomePage />,
+				path: "/login",
+				element: <LoginPage />,
 			},
 			{
-				path: "/nova-amostra",
-				element: <NewAmostraPage />,
-			},
-			{
-				path: "/amostras",
-				element: <AmostrasPage />,
-			},
-			{
-				path: "/amostras/:id",
-				element: <AmostraDetailsPage />,
-			},
-			{
-				path: "/amostras/:id/editar",
-				element: <EditAmostraPage />,
-			},
-			{
-				path: "/estatisticas",
-				element: <EstatisticasPage />,
-			},
-			{
-				path: "/avaliadores",
-				element: <AvaliadorPage />,
+				element: <RequireAuth />,
+				children: [
+					{
+						path: "/",
+						element: <HomePage />,
+					},
+					{
+						path: "/nova-amostra",
+						element: <NewAmostraPage />,
+					},
+					{
+						path: "/amostras",
+						element: <AmostrasPage />,
+					},
+					{
+						path: "/amostras/:id",
+						element: <AmostraDetailsPage />,
+					},
+					{
+						path: "/amostras/:id/editar",
+						element: <EditAmostraPage />,
+					},
+					{
+						path: "/estatisticas",
+						element: <EstatisticasPage />,
+					},
+					{
+						path: "/avaliadores",
+						element: <AvaliadorPage />,
+					},
+				],
 			},
 		],
 	},
@@ -53,9 +62,9 @@ const router = createBrowserRouter([
 
 export function App() {
 	return (
-		<AuthProvider>
+		<>
 			<RouterProvider router={router} />
 			<Toaster />
-		</AuthProvider>
+		</>
 	);
 }

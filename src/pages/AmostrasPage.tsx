@@ -27,7 +27,7 @@ import {
 	downloadExcelRae,
 	fetchAmostras,
 } from "@/lib/api";
-import { triggerDownload } from "@/lib/download";
+import { saveFile } from "@/lib/download";
 import { formatBrl, formatDate } from "@/lib/format";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
@@ -72,7 +72,7 @@ export function AmostrasPage() {
 	async function handleExport() {
 		setExporting(true);
 		try {
-			triggerDownload(await downloadAmostrasPlanilha());
+			saveFile(await downloadAmostrasPlanilha());
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Erro ao exportar planilha.");
 		} finally {
@@ -83,7 +83,7 @@ export function AmostrasPage() {
 	async function handleGerarRae(amostraId: number) {
 		setGerandoRaeId(amostraId);
 		try {
-			triggerDownload(await downloadExcelRae(amostraId));
+			saveFile(await downloadExcelRae(amostraId));
 			toast.success("Planilha RAE baixada com sucesso.");
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Erro ao gerar planilha RAE.");
